@@ -1,0 +1,132 @@
+{
+  "name": "seekchat",
+  "version": "0.0.1",
+  "main": "src/main/main.js",
+  "description": "a ai chat app",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron .\"",
+    "build": "vite build",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:mac": "npm run build && electron-builder --mac --publish never --config.mac.identity=null",
+    "electron:build:win": "npm run build && electron-builder --win --publish never",
+    "electron:build:linux": "npm run build && electron-builder --linux --publish never",
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-icon": "electron-icon-builder --input=./public/assets/logo/logo.png --output=./public/assets/logo --flatten"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ant-design/icons": "^5.6.1",
+    "antd": "^5.24.2",
+    "better-sqlite3": "^11.8.1",
+    "electron-is-dev": "^3.0.1",
+    "i18next": "^24.2.2",
+    "i18next-browser-languagedetector": "^8.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^15.4.1",
+    "react-icons": "^4.10.1",
+    "react-markdown": "^10.0.1",
+    "react-router-dom": "^7.2.0",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-icon-builder": "^2.0.1",
+    "electron-rebuild": "^3.2.9",
+    "vite": "^6.2.0",
+    "wait-on": "^8.0.2"
+  },
+  "build": {
+    "appId": "com.seekrays.seekchat",
+    "productName": "SeekChat",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "src/main/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "identity": null,
+      "hardenedRuntime": false,
+      "icon": "public/assets/logo/icons/icon.icns"
+    },
+    "dmg": {
+      "icon": "public/assets/logo/icons/icon.icns",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 380,
+          "y": 180,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 180,
+          "type": "file"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "public/assets/logo/icons/icon.ico",
+      "publisherName": "seekrays"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SeekChat"
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "rpm",
+        "AppImage"
+      ],
+      "icon": "public/assets/logo/icons/512x512.png",
+      "category": "Office;Chat",
+      "maintainer": "seekrays",
+      "vendor": "seekrays",
+      "synopsis": "AI Chat App",
+      "desktop": {
+        "Name": "SeekChat",
+        "Comment": "AI Chat Application",
+        "Categories": "Office;Chat"
+      }
+    }
+  }
+}

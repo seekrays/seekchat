@@ -1,0 +1,502 @@
+.settings-page {
+  height: 100%;
+  background-color: #fff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-header {
+  padding: 0 16px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-bottom: 1px solid #eaeaea;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.settings-header .back-button {
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  color: #666;
+}
+
+.settings-header .save-button {
+  display: none;
+}
+
+.settings-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.settings-sider {
+  background-color: #f7f7f8;
+  border-right: 1px solid #eaeaea;
+  overflow: hidden;
+}
+
+.settings-sider .ant-menu {
+  background-color: #f7f7f8;
+  border-right: none;
+}
+
+.settings-sider .ant-menu-item {
+  margin: 0;
+  height: 50px;
+  line-height: 50px;
+  border-radius: 0;
+}
+
+.settings-sider .ant-menu-item.ant-menu-item-selected {
+  background-color: #e6f4ff;
+  color: #1677ff;
+  font-weight: 500;
+}
+
+.settings-content {
+  flex: 1;
+  background-color: #fff;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* 服务提供商列表 */
+.provider-list-container {
+  padding: 20px;
+}
+
+.provider-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.provider-grid-item {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 0;
+  cursor: pointer;
+  border: 1px solid #eaeaea;
+  transition: all 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 92px;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.provider-grid-item.provider-disabled {
+  /* 移除灰色效果 */
+  opacity: 1;
+  background-color: #fff;
+}
+
+.provider-grid-item.provider-disabled .provider-logo {
+  /* 移除灰度滤镜 */
+  filter: none;
+}
+
+.provider-content {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  /* 确保flex子项可以缩小 */
+}
+
+.provider-actions {
+  margin-left: 10px;
+  flex-shrink: 0;
+  /* 防止按钮被压缩 */
+  position: relative;
+  z-index: 1;
+}
+
+.provider-grid-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #d9d9d9;
+}
+
+.provider-logo-container {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  flex-shrink: 0;
+  /* 防止logo被压缩 */
+}
+
+.provider-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.provider-info {
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+  /* 确保flex子项可以缩小 */
+  overflow: hidden;
+  /* 防止内容溢出 */
+}
+
+.provider-name {
+  font-weight: 500;
+  font-size: 16px;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* 文本过长时显示省略号 */
+}
+
+.provider-model-count {
+  font-size: 12px;
+  color: #666;
+}
+
+/* 旧的提供商样式 */
+.provider-item,
+.provider-item:hover,
+.provider-item.active,
+.provider-item-arrow,
+.provider-item:hover .provider-item-arrow {
+  display: none;
+}
+
+/* 提供商设置 */
+.provider-settings-container {
+  height: 100%;
+  overflow-y: auto;
+  padding-bottom: 40px;
+}
+
+.provider-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.provider-settings-header button {
+  margin-right: 16px;
+}
+
+.provider-header-title {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.provider-header-logo {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  margin-right: 12px;
+}
+
+.provider-settings-content {
+  max-width: 700px;
+}
+
+/* Card样式 */
+.settings-card {
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.settings-card .ant-card-head {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.settings-card .ant-card-head-title {
+  padding: 0;
+}
+
+.settings-card .ant-card-body {
+  padding: 20px;
+}
+
+/* 添加提示信息图标的样式 */
+.ant-form-item-label .anticon-info-circle {
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+/* 滑块样式优化 */
+.ant-slider-mark-text {
+  min-width: 50px;
+  white-space: nowrap;
+}
+
+.model-params-form .ant-slider {
+  margin: 10px 10px 20px 10px;
+}
+
+.model-params-form .ant-slider-rail,
+.model-params-form .ant-slider-track {
+  height: 6px;
+}
+
+.model-params-form .ant-slider-handle {
+  width: 16px;
+  height: 16px;
+  margin-top: -5px;
+}
+
+.model-params-form .ant-slider-mark {
+  font-size: 12px;
+  margin-top: 10px;
+}
+
+/* 设置区域分组样式 */
+.settings-section {
+  margin-bottom: 24px;
+  padding: 0 0 24px 0;
+}
+
+/* 模型列表样式 - 卡片设计 */
+.models-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.model-card {
+  width: 100%;
+  margin-bottom: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.model-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.model-card .ant-card-head {
+  background-color: #f5f5f5;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 8px 16px;
+}
+
+.model-card .ant-card-head-title {
+  font-size: 14px;
+}
+
+.model-card .ant-card-extra {
+  padding: 0;
+}
+
+.model-card-title {
+  display: flex;
+  align-items: center;
+  font-weight: 500;
+}
+
+.model-card .ant-card-body {
+  padding: 12px 16px;
+}
+
+.model-card-content {
+  font-size: 12px;
+  color: #666;
+}
+
+.model-card .ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-bottom: 0;
+}
+
+.model-card .ant-statistic-content {
+  font-size: 13px;
+  color: #262626;
+}
+
+/* 设置部分的标题样式 */
+.settings-section-title {
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #262626;
+  margin-bottom: 16px !important;
+  display: flex;
+  align-items: center;
+}
+
+.settings-section-title::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  background-color: #1677ff;
+  margin-right: 8px;
+  border-radius: 2px;
+}
+
+/* 删除旧的样式 */
+.model-list,
+.model-list-item,
+.model-list-item:hover,
+.model-list-item:not(:last-child),
+.model-list-item .ant-list-item-meta,
+.model-list-item .ant-list-item-meta-title,
+.model-list-item .ant-list-item-meta-description,
+.model-list-item .ant-tag,
+.models-container,
+.model-card-old,
+.model-card-hover,
+.model-card-content-old,
+.model-card-icon,
+.model-card-info,
+.model-card-name,
+.model-card-specs,
+.model-card-tokens,
+.model-card-temperature,
+.model-card-tokens::before,
+.model-card-temperature::before,
+.model-card-actions,
+.model-icon {
+  display: none;
+}
+
+/* 表单样式 */
+.basic-settings-form .ant-form-item,
+.model-params-form .ant-form-item {
+  margin-bottom: 20px;
+}
+
+.basic-settings-form .ant-form-item-label > label,
+.model-params-form .ant-form-item-label > label {
+  font-size: 14px;
+  color: #333;
+  width: 100%;
+}
+
+.basic-settings-form .ant-form-item-label,
+.model-params-form .ant-form-item-label {
+  margin-bottom: 8px;
+}
+
+.ant-slider-mark-text {
+  font-size: 12px;
+  color: #999;
+}
+
+.ant-slider-rail {
+  background-color: #e0e0e0;
+}
+
+.ant-slider-track {
+  background-color: #1677ff;
+}
+
+.ant-divider {
+  margin: 24px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* 通用设置和关于部分 */
+.general-settings,
+.model-settings,
+.about-section {
+  background-color: #fff;
+  border-radius: 6px;
+  padding: 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .settings-header {
+    padding: 12px 16px;
+  }
+
+  .settings-sider {
+    width: 100% !important;
+  }
+
+  .settings-content {
+    padding: 0;
+    margin-left: 0;
+  }
+
+  .provider-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 576px) {
+  .settings-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .settings-body {
+    flex-direction: column;
+    height: calc(100vh - 60px);
+  }
+
+  .settings-sider {
+    width: 100% !important;
+    max-width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .settings-content {
+    padding: 0;
+    margin-left: 0;
+  }
+
+  .provider-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.models-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.model-status {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.provider-settings {
+  padding: 20px;
+}
+
+.provider-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.provider-header h2 {
+  margin: 0;
+  margin-left: 10px;
+}

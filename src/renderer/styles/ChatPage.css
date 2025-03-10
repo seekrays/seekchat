@@ -1,0 +1,156 @@
+.chat-page {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #ffffff;
+}
+
+.chat-body {
+  flex: 1;
+  overflow: hidden;
+  background-color: #fff;
+  height: 100%;
+}
+
+.session-sider {
+  background-color: #f7f7f8;
+  border-right: 1px solid #eaeaea;
+  overflow: hidden;
+  transition: all 0.3s;
+  padding: 0;
+}
+
+.session-list-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #eaeaea;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-collapse-button {
+  font-size: 16px;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  border: 1px solid #eaeaea;
+}
+
+.sidebar-collapse-button:hover {
+  background-color: #e0e0e0;
+  color: #333;
+  border-color: #d9d9d9;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.app-title .anticon {
+  font-size: 18px;
+  margin-right: 8px;
+  color: #1890ff;
+}
+
+.session-list-footer {
+  padding: 16px;
+  border-top: 1px solid #eaeaea;
+  margin-top: auto;
+}
+
+.create-chat-button {
+  height: 44px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin-bottom: 12px;
+  background-color: #1677ff;
+  border: none;
+  box-shadow: 0 2px 6px rgba(22, 119, 255, 0.2);
+}
+
+.create-chat-button:hover {
+  background-color: #4096ff;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+}
+
+.settings-button-bottom {
+  height: 40px;
+  color: #666;
+  font-size: 14px;
+}
+
+.chat-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background-color: #fff;
+  position: relative;
+  padding: 0;
+}
+
+.open-sidebar-button {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 18px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background-color: #1677ff;
+  color: white;
+  animation: fadeIn 0.3s;
+}
+
+.open-sidebar-button:hover {
+  background-color: #4096ff;
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.3);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-title span {
+    display: none;
+  }
+
+  .chat-body {
+    margin: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .chat-body {
+    margin: 0;
+    border-radius: 0;
+  }
+}
