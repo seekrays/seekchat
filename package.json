@@ -20,7 +20,6 @@
   "dependencies": {
     "@ant-design/icons": "^5.6.1",
     "antd": "^5.24.2",
-    "better-sqlite3": "^11.8.1",
     "electron-is-dev": "^3.0.1",
     "i18next": "^24.2.2",
     "i18next-browser-languagedetector": "^8.0.4",

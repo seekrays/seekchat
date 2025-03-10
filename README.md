@@ -27,7 +27,7 @@ SeekChat is a desktop chat application that supports multiple Large Language Mod
 
 - **Framework**: Electron + React
 - **UI Components**: Ant Design
-- **Database**: SQLite (better-sqlite3)
+- **Database**: SQLite
 - **Build Tool**: Vite
 - **Routing**: React Router
 
