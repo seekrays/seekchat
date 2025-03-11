@@ -100,19 +100,48 @@ const MessageContent = ({ content }) => {
   const parsedContent =
     typeof content === "string" ? parseMessageContent(content) : content;
 
+  // 复制代码到剪贴板
+  const copyCodeToClipboard = (code) => {
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        message.success(t("chat.codeCopied"));
+      })
+      .catch((error) => {
+        console.error("复制代码失败:", error);
+        message.error(t("chat.copyToClipboard") + t("common.failed"));
+      });
+  };
+
   // 自定义渲染器，添加代码高亮功能
   const renderers = {
     code({ node, inline, className, children, ...props }) {
       const match = /language-(\w+)/.exec(className || "");
+      const language = match ? match[1] : "text";
+      const codeString = String(children).replace(/\n$/, "");
+
       return !inline && match ? (
-        <SyntaxHighlighter
-          style={vscDarkPlus}
-          language={match[1]}
-          PreTag="div"
-          {...props}
-        >
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
+        <div className="code-block-wrapper">
+          <div className="code-block-header">
+            <span className="code-language">{language}</span>
+            <Tooltip title={t("chat.copyCode")}>
+              <Button
+                type="text"
+                icon={<CopyOutlined />}
+                className="code-copy-button"
+                onClick={() => copyCodeToClipboard(codeString)}
+              />
+            </Tooltip>
+          </div>
+          <SyntaxHighlighter
+            style={vscDarkPlus}
+            language={language}
+            PreTag="div"
+            {...props}
+          >
+            {codeString}
+          </SyntaxHighlighter>
+        </div>
       ) : (
         <code className={className} {...props}>
           {children}

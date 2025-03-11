@@ -70,6 +70,8 @@
     "regenerate": "Regenerate",
     "copyToClipboard": "Copy to Clipboard",
     "copiedToClipboard": "Copied to clipboard",
+    "copyCode": "Copy code",
+    "codeCopied": "Code copied",
     "stop": "Stop",
     "startNewChat": "Start a new chat",
     "renameChat": "Rename",

@@ -70,6 +70,8 @@
     "regenerate": "重新生成",
     "copyToClipboard": "复制到剪贴板",
     "copiedToClipboard": "已复制到剪贴板",
+    "copyCode": "复制代码",
+    "codeCopied": "代码已复制",
     "stop": "停止",
     "startNewChat": "开始新聊天",
     "renameChat": "重命名",
