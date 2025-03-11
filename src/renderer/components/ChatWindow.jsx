@@ -23,6 +23,8 @@ import {
   StopOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { getModelName, getEnabledProviders } from "../services/aiService";
 import { providers } from "../services/models";
 import { useUserConfig } from "../hooks/useUserConfig";
@@ -98,6 +100,27 @@ const MessageContent = ({ content }) => {
   const parsedContent =
     typeof content === "string" ? parseMessageContent(content) : content;
 
+  // 自定义渲染器，添加代码高亮功能
+  const renderers = {
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || "");
+      return !inline && match ? (
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={match[1]}
+          PreTag="div"
+          {...props}
+        >
+          {String(children).replace(/\n$/, "")}
+        </SyntaxHighlighter>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
+  };
+
   // 如果解析后是数组，渲染多个内容块
   if (Array.isArray(parsedContent)) {
     // 找到主要内容（类型为 content）
@@ -134,7 +157,9 @@ const MessageContent = ({ content }) => {
                   {reasoningContent.status === "pending" ? (
                     <Spin size="small" />
                   ) : (
-                    <ReactMarkdown>{reasoningContent.content}</ReactMarkdown>
+                    <ReactMarkdown components={renderers}>
+                      {reasoningContent.content}
+                    </ReactMarkdown>
                   )}
                 </div>
               </Panel>
@@ -144,7 +169,9 @@ const MessageContent = ({ content }) => {
         {/* 主要内容 - 移到思考内容之后 */}
         {mainContent && mainContent.status !== "error" && (
           <div className="message-main-content">
-            <ReactMarkdown>{mainContent.content}</ReactMarkdown>
+            <ReactMarkdown components={renderers}>
+              {mainContent.content}
+            </ReactMarkdown>
             {mainContent.status === "pending" && mainContent.content && (
               <div className="message-pending-indicator">
                 <Spin size="small" />
@@ -166,7 +193,7 @@ const MessageContent = ({ content }) => {
 
   // 如果不是数组，直接渲染内容
   return (
-    <ReactMarkdown>
+    <ReactMarkdown components={renderers}>
       {typeof parsedContent === "string"
         ? parsedContent
         : formatMessageContent(parsedContent)}

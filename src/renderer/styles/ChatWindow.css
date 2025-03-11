@@ -248,7 +248,8 @@
 }
 
 .message-text pre {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #1e1e1e;
+  color: #d4d4d4;
   padding: 12px;
   border-radius: 6px;
   margin: 10px 0;
@@ -258,6 +259,15 @@
   font-size: 13px;
   line-height: 1.45;
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 语法高亮相关样式 */
+.message-text pre > div {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border: none !important;
 }
 
 .message-text code {
