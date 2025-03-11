@@ -636,7 +636,7 @@ const SettingsPage = () => {
           <Space direction="vertical" size="middle" style={{ width: "100%" }}>
             <div style={{ textAlign: "center", marginBottom: 24 }}>
               <img
-                src="/assets/logo/logo.png"
+                src="assets/logo/logo.png"
                 alt="SeekChat Logo"
                 style={{ width: 80, height: 80 }}
               />
