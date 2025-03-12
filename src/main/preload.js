@@ -38,6 +38,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   createOrUpdateMessage: (message) =>
     safeIpcCall("create-or-update-message", message),
 
+  // MCP相关
+  invokeMCP: (channel, ...args) => safeIpcCall(channel, ...args),
+
   // 数据库事件
   onDatabaseError: (callback) => {
     ipcRenderer.on("db-error", (_, message) => callback(message));

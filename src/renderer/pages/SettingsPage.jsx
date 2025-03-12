@@ -52,6 +52,7 @@ import {
 import { providers as modelProviders } from "../services/models";
 import "../styles/SettingsPage.css";
 import { useTranslation } from "react-i18next";
+import MCPSettings from "./settings/MCPSettings";
 
 const { Content, Header, Sider } = Layout;
 const { Option } = Select;
@@ -680,6 +681,8 @@ const SettingsPage = () => {
         return renderGeneralSettings();
       case "about":
         return renderAbout();
+      case "mcp-settings":
+        return <MCPSettings />;
       default:
         return <div>未知设置页面</div>;
     }
@@ -710,6 +713,9 @@ const SettingsPage = () => {
           >
             <Menu.Item key="model-services" icon={<ApiOutlined />}>
               {t("settings.modelServices")}
+            </Menu.Item>
+            <Menu.Item key="mcp-settings" icon={<ThunderboltOutlined />}>
+              {t("settings.mcpSettings")}
             </Menu.Item>
             <Menu.Item key="general-settings" icon={<SettingOutlined />}>
               {t("settings.general")}

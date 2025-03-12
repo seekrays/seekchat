@@ -66,6 +66,38 @@ class ChatDatabase {
       )
     `);
 
+    // 创建MCP服务器表
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS mcp_servers (
+        id TEXT PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        url TEXT NOT NULL,
+        type TEXT NOT NULL,
+        api_key TEXT,
+        active BOOLEAN DEFAULT 0,
+        tools TEXT,
+        description TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL
+      )
+    `);
+
+    // 创建MCP工具调用表
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS mcp_tool_calls (
+        id TEXT PRIMARY KEY NOT NULL,
+        message_id TEXT NOT NULL,
+        session_id TEXT NOT NULL,
+        server_id TEXT NOT NULL,
+        tool_id TEXT NOT NULL,
+        parameters TEXT,
+        result TEXT,
+        status TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (server_id) REFERENCES mcp_servers (id)
+      )
+    `);
+
     console.log("数据库表初始化完成");
 
     // 检查是否有会话，如果没有则创建一个默认会话
@@ -636,6 +668,289 @@ class ChatDatabase {
               );
             });
           });
+        }
+      );
+    });
+  }
+
+  // MCP相关方法
+
+  // 获取所有MCP服务器
+  getAllMCPServers() {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        `SELECT * FROM mcp_servers ORDER BY created_at DESC`,
+        (err, servers) => {
+          if (err) {
+            console.error("获取MCP服务器失败:", err);
+            reject(err);
+            return;
+          }
+
+          resolve(
+            servers.map((server) => ({
+              ...server,
+              tools: server.tools ? JSON.parse(server.tools) : [],
+            }))
+          );
+        }
+      );
+    });
+  }
+
+  // 获取所有激活的MCP服务器
+  getActiveMCPServers() {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        `SELECT * FROM mcp_servers WHERE active = 1 ORDER BY created_at DESC`,
+        (err, servers) => {
+          if (err) {
+            console.error("获取激活的MCP服务器失败:", err);
+            reject(err);
+            return;
+          }
+
+          resolve(
+            servers.map((server) => ({
+              ...server,
+              tools: server.tools ? JSON.parse(server.tools) : [],
+            }))
+          );
+        }
+      );
+    });
+  }
+
+  // 根据ID获取MCP服务器
+  getMCPServerById(id) {
+    return new Promise((resolve, reject) => {
+      this.db.get(
+        `SELECT * FROM mcp_servers WHERE id = ?`,
+        [id],
+        (err, server) => {
+          if (err) {
+            console.error("获取MCP服务器失败:", err);
+            reject(err);
+            return;
+          }
+
+          if (server) {
+            resolve({
+              ...server,
+              tools: server.tools ? JSON.parse(server.tools) : [],
+            });
+          } else {
+            resolve(null);
+          }
+        }
+      );
+    });
+  }
+
+  // 添加MCP服务器
+  addMCPServer(serverData) {
+    return new Promise((resolve, reject) => {
+      const { v4: uuidv4 } = require("uuid");
+      const timestamp = Date.now();
+      const id = uuidv4();
+
+      this.db.run(
+        `INSERT INTO mcp_servers (id, name, url, type, api_key, active, tools, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          serverData.name,
+          serverData.url,
+          serverData.type,
+          serverData.apiKey || null,
+          serverData.active || 0,
+          JSON.stringify(serverData.tools || []),
+          timestamp,
+          timestamp,
+        ],
+        (err) => {
+          if (err) {
+            console.error("添加MCP服务器失败:", err);
+            reject(err);
+            return;
+          }
+
+          this.getMCPServerById(id).then(resolve).catch(reject);
+        }
+      );
+    });
+  }
+
+  // 更新MCP服务器
+  updateMCPServer(id, updates) {
+    return new Promise((resolve, reject) => {
+      const timestamp = Date.now();
+      const updateFields = [];
+      const updateValues = [];
+
+      // 处理tools字段，如果存在则转为JSON
+      if (updates.tools !== undefined) {
+        updates.tools = JSON.stringify(updates.tools);
+      }
+
+      // 构建更新字段
+      for (const [key, value] of Object.entries(updates)) {
+        if (key === "id") continue; // 不允许更新ID
+
+        // 转换驼峰命名为下划线命名
+        const dbField = key.replace(/([A-Z])/g, "_$1").toLowerCase();
+        updateFields.push(`${dbField} = ?`);
+        updateValues.push(value);
+      }
+
+      updateFields.push("updated_at = ?");
+      updateValues.push(timestamp);
+      updateValues.push(id);
+
+      const sql = `UPDATE mcp_servers SET ${updateFields.join(
+        ", "
+      )} WHERE id = ?`;
+
+      this.db.run(sql, updateValues, (err) => {
+        if (err) {
+          console.error("更新MCP服务器失败:", err);
+          reject(err);
+          return;
+        }
+
+        this.getMCPServerById(id).then(resolve).catch(reject);
+      });
+    });
+  }
+
+  // 删除MCP服务器
+  deleteMCPServer(id) {
+    return new Promise((resolve, reject) => {
+      this.db.run(`DELETE FROM mcp_servers WHERE id = ?`, [id], (err) => {
+        if (err) {
+          console.error("删除MCP服务器失败:", err);
+          reject(err);
+          return;
+        }
+
+        resolve(true);
+      });
+    });
+  }
+
+  // 设置MCP服务器激活状态
+  setMCPServerActive(id, active) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `UPDATE mcp_servers SET active = ?, updated_at = ? WHERE id = ?`,
+        [active ? 1 : 0, Date.now(), id],
+        (err) => {
+          if (err) {
+            console.error("设置MCP服务器激活状态失败:", err);
+            reject(err);
+            return;
+          }
+
+          this.getMCPServerById(id).then(resolve).catch(reject);
+        }
+      );
+    });
+  }
+
+  // 更新MCP服务器工具
+  updateMCPServerTools(id, tools) {
+    return new Promise((resolve, reject) => {
+      const timestamp = Date.now();
+      this.db.run(
+        `UPDATE mcp_servers SET tools = ?, updated_at = ? WHERE id = ?`,
+        [JSON.stringify(tools), timestamp, id],
+        (err) => {
+          if (err) {
+            console.error("更新MCP服务器工具失败:", err);
+            reject(err);
+            return;
+          }
+
+          this.getMCPServerById(id).then(resolve).catch(reject);
+        }
+      );
+    });
+  }
+
+  // 添加MCP工具调用记录
+  addMCPToolCall(toolCallData) {
+    return new Promise((resolve, reject) => {
+      const { v4: uuidv4 } = require("uuid");
+      const id = uuidv4();
+      const timestamp = Date.now();
+
+      this.db.run(
+        `INSERT INTO mcp_tool_calls (
+          id, message_id, session_id, server_id, tool_id, parameters, result, status, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          toolCallData.messageId,
+          toolCallData.sessionId,
+          toolCallData.serverId,
+          toolCallData.toolId,
+          JSON.stringify(toolCallData.parameters || {}),
+          JSON.stringify(toolCallData.result || {}),
+          toolCallData.status,
+          timestamp,
+        ],
+        (err) => {
+          if (err) {
+            console.error("添加MCP工具调用记录失败:", err);
+            reject(err);
+            return;
+          }
+
+          resolve(id);
+        }
+      );
+    });
+  }
+
+  // 更新MCP工具调用结果
+  updateMCPToolCallResult(id, result, status) {
+    return new Promise((resolve, reject) => {
+      this.db.run(
+        `UPDATE mcp_tool_calls SET result = ?, status = ? WHERE id = ?`,
+        [JSON.stringify(result || {}), status, id],
+        (err) => {
+          if (err) {
+            console.error("更新MCP工具调用结果失败:", err);
+            reject(err);
+            return;
+          }
+
+          resolve(true);
+        }
+      );
+    });
+  }
+
+  // 获取消息的工具调用记录
+  getMCPToolCallsByMessageId(messageId) {
+    return new Promise((resolve, reject) => {
+      this.db.all(
+        `SELECT * FROM mcp_tool_calls WHERE message_id = ? ORDER BY created_at ASC`,
+        [messageId],
+        (err, toolCalls) => {
+          if (err) {
+            console.error("获取消息工具调用记录失败:", err);
+            reject(err);
+            return;
+          }
+
+          resolve(
+            toolCalls.map((call) => ({
+              ...call,
+              parameters: JSON.parse(call.parameters || "{}"),
+              result: JSON.parse(call.result || "{}"),
+            }))
+          );
         }
       );
     });
