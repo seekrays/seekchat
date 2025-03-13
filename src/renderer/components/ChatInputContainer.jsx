@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Input, Button } from "antd";
 import { SendOutlined, StopOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import MCPToolsButton from "./MCPToolsButton";
 
 const { TextArea } = Input;
 
@@ -34,14 +33,6 @@ const ChatInputContainer = React.memo(
       }
     };
 
-    // 处理MCP工具使用结果
-    const handleToolUse = (toolResult) => {
-      setInputValue((prev) => {
-        if (!prev.trim()) return toolResult;
-        return `${prev}\n\n${toolResult}`;
-      });
-    };
-
     return (
       <div className="chat-input-container">
         <div className="input-wrapper">
@@ -66,7 +57,6 @@ const ChatInputContainer = React.memo(
               </Button>
             ) : (
               <>
-                <MCPToolsButton onToolUse={handleToolUse} />
                 <Button
                   type="primary"
                   icon={<SendOutlined />}
