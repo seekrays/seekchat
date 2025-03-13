@@ -82,22 +82,6 @@ class ChatDatabase {
       )
     `);
 
-    // 创建MCP工具调用表
-    this.db.run(`
-      CREATE TABLE IF NOT EXISTS mcp_tool_calls (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        message_id TEXT NOT NULL,
-        session_id TEXT NOT NULL,
-        server_id TEXT NOT NULL,
-        tool_id TEXT NOT NULL,
-        parameters TEXT,
-        result TEXT,
-        status TEXT NOT NULL,
-        created_at INTEGER NOT NULL,
-        FOREIGN KEY (server_id) REFERENCES mcp_servers (id)
-      )
-    `);
-
     console.log("数据库表初始化完成");
 
     // 检查是否有会话，如果没有则创建一个默认会话
@@ -753,7 +737,7 @@ class ChatDatabase {
       const timestamp = Date.now();
 
       this.db.run(
-        `INSERT INTO mcp_servers (id, name, url, type, api_key, active, tools, created_at, updated_at)
+        `INSERT INTO mcp_servers (name, url, type, api_key, active, tools, created_at, updated_at)
          VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           serverData.name,
@@ -771,8 +755,7 @@ class ChatDatabase {
             reject(err);
             return;
           }
-
-          this.getMCPServerById(id).then(resolve).catch(reject);
+          resolve(true);
         }
       );
     });
