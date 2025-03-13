@@ -79,43 +79,6 @@ class MCPService {
   }
 
   /**
-   * 添加工具调用记录
-   * @param {Object} toolCallData 工具调用数据
-   * @returns {Promise<string>} 调用记录ID
-   */
-  async addToolCall(toolCallData) {
-    return window.electronAPI.invokeMCP("add-mcp-tool-call", toolCallData);
-  }
-
-  /**
-   * 更新工具调用结果
-   * @param {string} id 调用记录ID
-   * @param {Object} result 结果数据
-   * @param {string} status 状态
-   * @returns {Promise<boolean>} 是否成功
-   */
-  async updateToolCallResult(id, result, status) {
-    return window.electronAPI.invokeMCP(
-      "update-mcp-tool-call-result",
-      id,
-      result,
-      status
-    );
-  }
-
-  /**
-   * 获取消息的工具调用记录
-   * @param {string} messageId 消息ID
-   * @returns {Promise<Array>} 工具调用记录
-   */
-  async getToolCallsByMessage(messageId) {
-    return window.electronAPI.invokeMCP(
-      "get-mcp-tool-calls-by-message",
-      messageId
-    );
-  }
-
-  /**
    * 执行MCP工具
    * @param {string} serverId 服务器ID
    * @param {string} toolId 工具ID

@@ -134,9 +134,10 @@ const formatToolsForProvider = (mcpTools, providerId) => {
  * 处理工具调用
  * @param {Object} toolCall 工具调用对象
  * @param {Array} mcpTools MCP工具列表
+ * @param {Function} onProgress 进度回调函数
  * @returns {Promise<Object>} 工具调用结果
  */
-const handleToolCall = async (toolCall, mcpTools) => {
+const handleToolCall = async (toolCall, mcpTools, onProgress) => {
   try {
     // 从MCP工具列表中找到对应的工具
     const tool = mcpTools.find((t) => t.id === toolCall.function.name);
@@ -147,9 +148,54 @@ const handleToolCall = async (toolCall, mcpTools) => {
     // 解析参数
     let args;
     try {
-      args = JSON.parse(toolCall.function.arguments);
+      console.log("toolCall", toolCall);
+      // 检查并清理工具调用参数字符串
+      let argsStr = toolCall.function.arguments || "{}";
+
+      // 尝试清理Anthropic特殊token或其他非法JSON字符
+      if (argsStr.includes("<｜tool") || argsStr.includes("<|tool")) {
+        console.warn("工具参数中包含特殊token，尝试清理:", argsStr);
+        // 移除特殊token前缀部分
+        const tokenMatch = argsStr.match(/<[｜|]tool[^>]*>/);
+        if (tokenMatch) {
+          argsStr = argsStr.substring(tokenMatch[0].length);
+        }
+      }
+
+      // 确保参数是有效的JSON格式
+      if (!argsStr.trim().startsWith("{") && !argsStr.trim().startsWith("[")) {
+        console.warn("参数格式不正确，尝试添加花括号:", argsStr);
+        argsStr = `{${argsStr}}`;
+      }
+
+      // 尝试解析JSON
+      try {
+        args = JSON.parse(argsStr);
+      } catch (innerError) {
+        // 如果解析失败，尝试通过eval方式解析 (仅作为后备方案)
+        console.warn("JSON.parse失败，尝试替代方法:", innerError.message);
+        args = {};
+      }
     } catch (error) {
+      console.error(
+        "工具参数解析失败:",
+        error,
+        "原始参数:",
+        toolCall.function.arguments
+      );
       throw new Error(`工具参数解析失败: ${error.message}`);
+    }
+
+    // 通知正在调用工具
+    if (onProgress) {
+      onProgress({
+        toolCallStatus: {
+          id: toolCall.id,
+          name: tool.name,
+          status: "running",
+          message: `正在调用工具: ${tool.name}`,
+        },
+      });
     }
 
     // 导入MCP服务
@@ -163,6 +209,18 @@ const handleToolCall = async (toolCall, mcpTools) => {
       throw new Error(`工具调用失败: ${result.message}`);
     }
 
+    // 通知工具调用成功
+    if (onProgress) {
+      onProgress({
+        toolCallStatus: {
+          id: toolCall.id,
+          name: tool.name,
+          status: "success",
+          message: `工具调用成功: ${tool.name}`,
+        },
+      });
+    }
+
     return {
       success: true,
       toolName: tool.name,
@@ -170,6 +228,22 @@ const handleToolCall = async (toolCall, mcpTools) => {
     };
   } catch (error) {
     console.error("工具调用失败:", error);
+
+    // 通知工具调用失败
+    if (onProgress) {
+      onProgress({
+        toolCallStatus: {
+          id: toolCall?.id,
+          name:
+            mcpTools.find((t) => t.id === toolCall?.function?.name)?.name ||
+            toolCall?.function?.name ||
+            "未知工具",
+          status: "error",
+          message: `工具调用失败: ${error.message}`,
+        },
+      });
+    }
+
     return {
       success: false,
       error: error.message,
@@ -252,6 +326,7 @@ const baseOpenAICompatibleAdapter = async (
     temperature: requestBody.temperature,
     hasSignal: !!options.signal,
     hasTools: Boolean(requestBody.tools),
+    tools: requestBody.tools,
   });
 
   try {
@@ -335,6 +410,11 @@ const baseOpenAICompatibleAdapter = async (
 
                   // 如果有内容更新，调用进度回调
                   if (result.hasUpdate) {
+                    console.log("onProgress", {
+                      content,
+                      reasoning_content,
+                      toolCalls: currentToolCalls,
+                    });
                     onProgress({
                       content,
                       reasoning_content,
@@ -398,8 +478,23 @@ const baseOpenAICompatibleAdapter = async (
                           existingToolCall.function.name = functionData.name;
                         }
                         if (functionData.arguments) {
-                          existingToolCall.function.arguments +=
-                            functionData.arguments;
+                          // 处理可能包含特殊token的参数
+                          let argsStr = functionData.arguments;
+                          if (
+                            argsStr.includes("<｜tool") ||
+                            argsStr.includes("<|tool")
+                          ) {
+                            console.warn(
+                              "OpenAI工具参数包含特殊token:",
+                              argsStr
+                            );
+                            const tokenMatch =
+                              argsStr.match(/<[｜|]tool[^>]*>/);
+                            if (tokenMatch) {
+                              argsStr = argsStr.substring(tokenMatch[0].length);
+                            }
+                          }
+                          existingToolCall.function.arguments += argsStr;
                         }
                       }
                     }
@@ -426,6 +521,11 @@ const baseOpenAICompatibleAdapter = async (
 
       // 流结束，调用完成回调
       if (onComplete) {
+        console.log("onComplete", {
+          content,
+          reasoning_content,
+          toolCalls: currentToolCalls,
+        });
         onComplete({
           content,
           reasoning_content,
@@ -481,11 +581,7 @@ const baseOpenAICompatibleAdapter = async (
 
       // 调用完成回调
       if (onComplete) {
-        onComplete({
-          content: result.content,
-          reasoning_content: result.reasoning_content,
-          toolCalls: result.toolCalls,
-        });
+        onComplete(result);
       }
 
       return result;
@@ -658,11 +754,35 @@ const anthropicAdapter = async (
         if (deltaToolCall.name) {
           existingToolCall.function.name = deltaToolCall.name;
         }
-        if (deltaToolCall.input && typeof deltaToolCall.input === "object") {
-          // Anthropic可能直接提供结构化的输入
-          existingToolCall.function.arguments = JSON.stringify(
-            deltaToolCall.input
-          );
+
+        // 处理不同形式的输入参数
+        if (deltaToolCall.input) {
+          // 如果是对象，直接序列化
+          if (typeof deltaToolCall.input === "object") {
+            try {
+              existingToolCall.function.arguments = JSON.stringify(
+                deltaToolCall.input
+              );
+            } catch (e) {
+              console.warn("序列化Anthropic工具输入失败:", e);
+              existingToolCall.function.arguments = "{}";
+            }
+          }
+          // 如果是字符串，可能已经是JSON或需要附加到现有参数
+          else if (typeof deltaToolCall.input === "string") {
+            // 清理可能包含的特殊token
+            let inputStr = deltaToolCall.input;
+            if (inputStr.includes("<｜tool") || inputStr.includes("<|tool")) {
+              console.warn("Anthropic工具输入包含特殊token:", inputStr);
+              const tokenMatch = inputStr.match(/<[｜|]tool[^>]*>/);
+              if (tokenMatch) {
+                inputStr = inputStr.substring(tokenMatch[0].length);
+              }
+            }
+
+            // 追加到现有参数
+            existingToolCall.function.arguments += inputStr;
+          }
         }
 
         hasUpdate = true;
@@ -912,6 +1032,10 @@ const sendMessageToAI = async (
         // 创建一个新的消息队列
         const updatedMessages = [...messages];
 
+        // 获取或初始化累积的工具调用结果
+        const prevToolCallResults = completeData.toolCallResults || [];
+        let toolCallResults = [...prevToolCallResults];
+
         // 添加AI的响应消息（包含工具调用）
         updatedMessages.push({
           role: "assistant",
@@ -919,42 +1043,169 @@ const sendMessageToAI = async (
           tool_calls: completeData.toolCalls,
         });
 
+        // 通知前端开始处理工具调用
+        if (onProgress) {
+          onProgress({
+            content: completeData.content || "",
+            reasoning_content: completeData.reasoning_content || "",
+            toolCalls: completeData.toolCalls,
+            toolCallsProcessing: true,
+            message: "正在调用工具...",
+          });
+        }
+
         // 处理每个工具调用
         for (const toolCall of completeData.toolCalls) {
           if (toolCall.type === "function" && toolCall.function) {
-            // 调用工具
-            const toolResult = await handleToolCall(toolCall, options.mcpTools);
+            try {
+              // 调用工具
+              const toolResult = await handleToolCall(
+                toolCall,
+                options.mcpTools,
+                onProgress
+              );
 
-            // 添加工具响应到消息队列
-            updatedMessages.push({
-              role: "tool",
-              tool_call_id: toolCall.id,
-              content: JSON.stringify(
-                toolResult.success
-                  ? toolResult.result
-                  : { error: toolResult.error }
-              ),
-            });
+              // 记录工具调用结果
+              toolCallResults.push({
+                id: toolCall.id,
+                tool_id: toolCall.function.name,
+                tool_name:
+                  options.mcpTools?.find((t) => t.id === toolCall.function.name)
+                    ?.name || toolCall.function.name,
+                parameters:
+                  typeof toolCall.function.arguments === "string"
+                    ? safeJsonParse(toolCall.function.arguments, {})
+                    : toolCall.function.arguments,
+                result: toolResult,
+                status: "success",
+              });
+
+              // 添加工具响应消息
+              updatedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content:
+                  typeof toolResult === "string"
+                    ? toolResult
+                    : JSON.stringify(toolResult, null, 2),
+              });
+            } catch (error) {
+              console.error(`工具调用失败:`, error);
+
+              // 记录失败的工具调用
+              toolCallResults.push({
+                id: toolCall.id,
+                tool_id: toolCall.function.name,
+                tool_name:
+                  options.mcpTools?.find((t) => t.id === toolCall.function.name)
+                    ?.name || toolCall.function.name,
+                parameters:
+                  typeof toolCall.function.arguments === "string"
+                    ? safeJsonParse(toolCall.function.arguments, {})
+                    : toolCall.function.arguments,
+                result: error.message,
+                status: "error",
+              });
+
+              // 添加工具错误响应消息
+              updatedMessages.push({
+                role: "tool",
+                tool_call_id: toolCall.id,
+                content: `Error: ${error.message}`,
+              });
+            }
           }
         }
 
-        // 使用更新后的消息队列再次调用AI（不传递工具）
-        const followupOptions = { ...options };
-        delete followupOptions.mcpTools;
+        // 获取当前递归深度或初始化为1
+        const recursionDepth = options._recursionDepth || 1;
 
-        // 调用AI获取最终响应
+        // 检查是否超过最大递归深度(5轮)，防止无限循环
+        const maxRecursionDepth = 5;
+        const hasReachedMaxDepth = recursionDepth >= maxRecursionDepth;
+
+        // 在完成数据中添加工具调用结果
+        completeData.toolCallResults = toolCallResults;
+
+        // 通知前端工具调用完成，准备继续对话
+        if (onProgress) {
+          onProgress({
+            content: completeData.content || "",
+            reasoning_content: completeData.reasoning_content || "",
+            toolCalls: completeData.toolCalls,
+            toolCallResults: toolCallResults,
+            toolCallsProcessing: false,
+            message: hasReachedMaxDepth
+              ? "已达到最大工具调用次数"
+              : "工具调用完成，等待AI响应...",
+          });
+        }
+
+        // 如果达到最大调用深度，不再继续递归调用
+        if (hasReachedMaxDepth) {
+          console.log(`已达到最大工具调用次数(${maxRecursionDepth})，停止递归`);
+
+          // 调用原始完成回调
+          if (onComplete) {
+            // 构建最终结果
+            const finalResult = {
+              ...completeData,
+              content: completeData.content + "\n\n[已达到最大工具调用次数]",
+              toolCallResults: toolCallResults,
+            };
+            onComplete(finalResult);
+          }
+
+          return {
+            ...completeData,
+            content: completeData.content + "\n\n[已达到最大工具调用次数]",
+            toolCallResults: toolCallResults,
+          };
+        }
+
+        // 创建一个新的递归跟踪标志，用于防止内部onComplete被调用
+        const followupOptions = {
+          ...options,
+          // 增加递归深度计数
+          _recursionDepth: recursionDepth + 1,
+          // 添加一个递归标记，用于内部逻辑判断
+          _isFollowupCall: true,
+        };
+
+        // 不要删除mcpTools，保留工具列表以便AI可以继续使用其他工具
+
+        // 创建一个包装的完成回调，处理最终结果
+        const wrappedComplete = (finalData) => {
+          // 合并前面所有工具调用结果到最终数据
+          finalData.toolCallResults = toolCallResults.concat(
+            finalData.toolCallResults || []
+          );
+
+          // 调用原始的onComplete，不论是否有更多工具调用
+          if (onComplete) {
+            console.log("调用最终的onComplete回调", finalData);
+            onComplete(finalData);
+          }
+
+          return finalData;
+        };
+
+        // 使用更新后的消息队列再次调用AI
+        console.log(`开始第${recursionDepth + 1}轮工具调用递归`);
         return sendMessageToAI(
           updatedMessages,
           provider,
           model,
           onProgress,
-          onComplete,
+          wrappedComplete,
           followupOptions
         );
       }
 
       // 如果没有工具调用，直接调用原始完成回调
+      // 确保最终的响应一定会触发onComplete
       if (onComplete) {
+        console.log("没有工具调用，直接调用onComplete回调", completeData);
         onComplete(completeData);
       }
 
@@ -984,6 +1235,35 @@ const sendMessageToAI = async (
 
     console.error("调用 AI API 失败:", error);
     throw error;
+  }
+};
+
+// 添加安全的JSON解析辅助函数
+/**
+ * 安全地解析JSON字符串，如果解析失败则返回默认值
+ * @param {string} jsonStr JSON字符串
+ * @param {*} defaultValue 解析失败时返回的默认值
+ * @returns {*} 解析结果或默认值
+ */
+const safeJsonParse = (jsonStr, defaultValue = {}) => {
+  if (!jsonStr || typeof jsonStr !== "string") {
+    return defaultValue;
+  }
+
+  try {
+    // 清理可能的特殊token
+    let cleanStr = jsonStr;
+    if (cleanStr.includes("<｜tool") || cleanStr.includes("<|tool")) {
+      const tokenMatch = cleanStr.match(/<[｜|]tool[^>]*>/);
+      if (tokenMatch) {
+        cleanStr = cleanStr.substring(tokenMatch[0].length);
+      }
+    }
+
+    return JSON.parse(cleanStr);
+  } catch (e) {
+    console.warn("JSON解析失败:", e, "原始字符串:", jsonStr);
+    return defaultValue;
   }
 };
 

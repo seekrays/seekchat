@@ -158,45 +158,6 @@ function registerMCPHandlers() {
       }
     })
   );
-
-  // 添加工具调用记录
-  ipcMain.handle(
-    "add-mcp-tool-call",
-    wrapDbHandler(async (database, toolCallData) => {
-      try {
-        return await database.addMCPToolCall(toolCallData);
-      } catch (error) {
-        console.error("IPC: 添加工具调用记录失败", error);
-        throw error;
-      }
-    })
-  );
-
-  // 更新工具调用结果
-  ipcMain.handle(
-    "update-mcp-tool-call-result",
-    wrapDbHandler(async (database, id, result, status) => {
-      try {
-        return await database.updateMCPToolCallResult(id, result, status);
-      } catch (error) {
-        console.error("IPC: 更新工具调用结果失败", error);
-        throw error;
-      }
-    })
-  );
-
-  // 获取消息的工具调用记录
-  ipcMain.handle(
-    "get-mcp-tool-calls-by-message",
-    wrapDbHandler(async (database, messageId) => {
-      try {
-        return await database.getMCPToolCallsByMessageId(messageId);
-      } catch (error) {
-        console.error("IPC: 获取消息工具调用记录失败", error);
-        throw error;
-      }
-    })
-  );
 }
 
 // 注册会话和消息相关的IPC处理程序

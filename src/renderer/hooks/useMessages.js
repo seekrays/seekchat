@@ -498,9 +498,16 @@ export const useMessages = (session, sessionSettings) => {
    * @param {String} content 消息内容
    * @param {String} reasoning_content 推理内容
    * @param {String} status 消息状态
+   * @param {Array} toolCallResults 工具调用结果
    */
   const updateAIMessage = useCallback(
-    async (messageId, content, reasoning_content, status) => {
+    async (
+      messageId,
+      content,
+      reasoning_content,
+      status,
+      toolCallResults = []
+    ) => {
       const messageContent = [
         createMessageContent("content", content, status),
         ...(reasoning_content
@@ -513,6 +520,16 @@ export const useMessages = (session, sessionSettings) => {
             ]
           : []),
       ];
+
+      // 如果存在工具调用结果，添加到消息内容中
+      if (toolCallResults && toolCallResults.length > 0) {
+        messageContent.push(
+          createMessageContent("tool_calls", toolCallResults, status)
+        );
+
+        // 不再单独保存工具调用到数据库，而是直接包含在消息内容中
+        // saveToolCalls(messageId, toolCallResults);
+      }
 
       const updatedContent = JSON.stringify(messageContent);
 
@@ -756,12 +773,15 @@ export const useMessages = (session, sessionSettings) => {
           (response) => {
             const content = response.content || "";
             const reasoning_content = response.reasoning_content || "";
+            // 获取工具调用状态
+            const toolCallResults = response.toolCallResults || [];
             // receiving 表示会显示在ui上，但不会立即更新到db中
             updateAIMessage(
               aiMessageId,
               content,
               reasoning_content,
-              "receiving"
+              "receiving",
+              toolCallResults
             );
           },
           // 错误回调
@@ -783,9 +803,17 @@ export const useMessages = (session, sessionSettings) => {
           },
           // 完成回调
           async (response) => {
+            console.log("sendMessageToAI complete", response);
             const content = response.content || "";
             const reasoning_content = response.reasoning_content || "";
-            updateAIMessage(aiMessageId, content, reasoning_content, "success");
+            const toolCallResults = response.toolCallResults || [];
+            updateAIMessage(
+              aiMessageId,
+              content,
+              reasoning_content,
+              "success",
+              toolCallResults
+            );
 
             // 清除当前AI消息ID
             setCurrentAIMessageId(null);

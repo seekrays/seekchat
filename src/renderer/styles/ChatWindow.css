@@ -777,3 +777,68 @@
   line-height: 1.45;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
+
+/* MCP工具调用组件样式 */
+.mcp-tool-call {
+  margin: 10px 0;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+.mcp-tool-call-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #e6e6e6;
+  gap: 8px;
+}
+
+.mcp-tool-name {
+  flex: 1;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.mcp-tool-call-details {
+  padding: 12px;
+}
+
+.mcp-tool-parameters,
+.mcp-tool-result {
+  margin-bottom: 12px;
+}
+
+.mcp-tool-parameters pre,
+.mcp-tool-result pre {
+  background-color: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.tool-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: #1890ff;
+}
+
+/* 工具调用中状态信息 */
+.tool-calling-status {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1890ff;
+}

@@ -1,4 +1,4 @@
-import React, { useRef, memo, useState, useEffect } from "react";
+import React, { useRef, memo, useState, useEffect, lazy } from "react";
 import {
   Input,
   Button,
@@ -170,11 +170,17 @@ const MessageContent = ({ content }) => {
   if (Array.isArray(parsedContent)) {
     // 找到主要内容（类型为 content）
     const mainContent = parsedContent.find((item) => item.type === "content");
-    // console.log('mainContent', mainContent);
     // 找到思考内容（类型为 reasoning_content）
     const reasoningContent = parsedContent.find(
       (item) => item.type === "reasoning_content"
     );
+    // 找到工具调用内容（类型为 tool_calls）
+    const toolCallsContent = parsedContent.find(
+      (item) => item.type === "tool_calls"
+    );
+
+    // 导入MCP工具调用组件
+    const MCPToolCall = lazy(() => import("./MCPToolCall"));
 
     return (
       <div className="message-content-blocks">
@@ -210,7 +216,27 @@ const MessageContent = ({ content }) => {
               </Panel>
             </Collapse>
           )}
-
+        {/* 工具调用内容 */}
+        {toolCallsContent &&
+          toolCallsContent.content &&
+          Array.isArray(toolCallsContent.content) && (
+            <div className="tool-calls-container">
+              {toolCallsContent.status === "receiving" && (
+                <div className="tool-calling-status">
+                  <Spin size="small" />
+                  <span>{t("chat.mcpTools.executingTools")}</span>
+                </div>
+              )}
+              {toolCallsContent.content.map((toolCall, index) => (
+                <React.Suspense
+                  key={toolCall.id || index}
+                  fallback={<Spin size="small" />}
+                >
+                  <MCPToolCall toolCall={toolCall} isCollapsed={false} />
+                </React.Suspense>
+              ))}
+            </div>
+          )}
         {/* 主要内容 - 移到思考内容之后 */}
         {mainContent && mainContent.status !== "error" && (
           <div className="message-main-content">
@@ -231,7 +257,9 @@ const MessageContent = ({ content }) => {
         )}
 
         {/* 如果没有内容，显示加载中 */}
-        {!mainContent && !reasoningContent && <Spin size="small" />}
+        {!mainContent && !reasoningContent && !toolCallsContent && (
+          <Spin size="small" />
+        )}
       </div>
     );
   }
