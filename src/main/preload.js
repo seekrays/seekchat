@@ -46,4 +46,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.on("db-error", (_, message) => callback(message));
     return () => ipcRenderer.removeListener("db-error", callback);
   },
+
+  // 在系统默认浏览器中打开链接
+  openExternalURL: (url) => safeIpcCall("open-external-url", url),
 });

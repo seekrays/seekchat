@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, shell } = require("electron");
 const path = require("path");
 const ChatDatabase = require("./database");
 const { registerIpcHandlers } = require("./ipc");
@@ -77,6 +77,17 @@ function createWindow() {
 // 当Electron完成初始化并准备创建浏览器窗口时调用此方法
 app.whenReady().then(() => {
   createWindow();
+
+  // 处理打开外部链接的请求
+  ipcMain.handle("open-external-url", async (event, url) => {
+    try {
+      await shell.openExternal(url);
+      return { success: true };
+    } catch (error) {
+      console.error("打开外部链接失败:", error);
+      return { success: false, error: error.message };
+    }
+  });
 
   // 确保数据库已初始化
   const database = ensureDatabase();
