@@ -34,7 +34,7 @@
     "modelServices": "Model Services",
     "providerSettings": "Provider Settings",
     "apiKey": "API Key",
-    "apiKeyRequired": "API Key is required",
+    "apiKeyRequired": "Please set the API key first",
     "baseUrl": "Base URL (Optional)",
     "enabled": "Enabled",
     "disabled": "Disabled",
@@ -104,7 +104,20 @@
     "saveFailed": "Failed to save server",
     "deleteFailed": "Failed to delete server",
     "toggleActiveFailed": "Failed to toggle server status",
-    "testFailed": "Test connection failed"
+    "testFailed": "Test connection failed",
+    "toolsAvailable": "Tools available",
+    "noToolsAvailable": "No tools available",
+    "testingConnectionMsg": "Testing connection...",
+    "connectionTestFailedMsg": "Connection test failed, cannot enable the tool",
+    "refreshingToolsMsg": "Refreshing tool list...",
+    "toolsFoundSuccessMsg": "Successfully retrieved {{count}} tools",
+    "refreshToolsFailedMsg": "Failed to refresh tool list: {{message}}",
+    "loadMessagesFailed": "Failed to load messages",
+    "sendMessageFailed": "Failed to send message",
+    "missingProviderOrModel": "Please select a service provider and model first",
+    "providerDisabled": "Service provider {{name}} is disabled, please enable it in settings first",
+    "unsupportedProvider": "Unsupported provider: {{name}}",
+    "unknownModel": "Unknown Model"
   },
   "chat": {
     "newChat": "New Chat",
@@ -133,6 +146,8 @@
     "enterChatName": "Enter chat name",
     "startNewChat": "Start a new chat",
     "clearChatConfirm": "Are you sure you want to delete chat '{sessionName}'?",
+    "modelChanged": "Model changed to:",
+    "copiedToClipboard": "Copied to clipboard",
     "mcpTools": {
       "useTool": "Use MCP Tool",
       "loading": "Loading tools...",
@@ -152,7 +167,21 @@
       "failed": "Execution Failed",
       "invalidJson": "Invalid JSON parameters",
       "sendFailed": "Failed to send",
-      "callMCPTool": "Call MCP Tool"
+      "refreshTools": "Refresh Tools",
+      "callMCPTool": "Call MCP Tool",
+      "parameterRequired": "This parameter is required",
+      "selectOption": "Select an option",
+      "useMCPTools": "Use MCP Tools",
+      "mcpTools": "MCP Tools",
+      "executeTool": "Execute Tool",
+      "loadingTools": "Loading tools...",
+      "noToolsAvailable": "No tools available",
+      "noToolsDescription": "No tools are available. Please activate an MCP server in settings.",
+      "resultData": "Result Data",
+      "addToPrompt": "Add result to message",
+      "addToPromptTooltip": "Add the execution result to the current message",
+      "maxToolCallsReached": "Maximum number of tool calls reached",
+      "toolCallCompleted": "Tool call completed, waiting for AI response..."
     }
   },
   "about": {

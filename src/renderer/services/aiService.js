@@ -6,6 +6,7 @@
 // 导入模型配置
 import { providers, getModelName, getProviderModels } from "./models.js";
 import { getProvidersConfig } from "../hooks/useUserConfig";
+import i18n from "../i18n";
 
 /**
  * 获取启用的提供商列表
@@ -967,7 +968,7 @@ const sendMessageToAI = async (
 ) => {
   if (!provider || !model) {
     console.error("缺少提供商或模型:", { provider, model });
-    throw new Error("请先选择服务提供商和模型");
+    throw new Error(i18n.t("chat.missingProviderOrModel"));
   }
 
   // 处理选项，设置默认值
@@ -988,7 +989,7 @@ const sendMessageToAI = async (
   // 如果不是模拟响应，则需要 API 密钥
   if (!useMockResponse && !provider.apiKey) {
     console.error("缺少 API 密钥:", provider.name);
-    throw new Error("请先设置 API 密钥");
+    throw new Error(i18n.t("settings.apiKeyRequired"));
   }
 
   // 检查提供商是否被禁用
@@ -996,7 +997,9 @@ const sendMessageToAI = async (
   const savedProvider = providersConfig[provider.id];
   if (savedProvider && savedProvider.enabled === false) {
     console.error("提供商已禁用:", provider.name);
-    throw new Error(`服务提供商 ${provider.name} 已被禁用，请先在设置中启用`);
+    throw new Error(
+      i18n.t("settings.providerDisabled", { name: provider.name })
+    );
   }
 
   try {
@@ -1014,7 +1017,9 @@ const sendMessageToAI = async (
     const adapter = getProviderAdapter(provider.id);
     if (!adapter) {
       console.error("找不到适配器:", provider.id);
-      throw new Error(`不支持的提供商: ${provider.name}`);
+      throw new Error(
+        i18n.t("settings.unsupportedProvider", { name: provider.name })
+      );
     }
 
     // 自定义处理工具调用的进度回调
@@ -1136,8 +1141,8 @@ const sendMessageToAI = async (
             toolCallResults: toolCallResults,
             toolCallsProcessing: false,
             message: hasReachedMaxDepth
-              ? "已达到最大工具调用次数"
-              : "工具调用完成，等待AI响应...",
+              ? i18n.t("chat.mcpTools.maxToolCallsReached")
+              : i18n.t("chat.mcpTools.toolCallCompleted"),
           });
         }
 

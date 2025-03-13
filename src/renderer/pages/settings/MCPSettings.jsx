@@ -194,7 +194,7 @@ const MCPSettings = () => {
     try {
       // 如果要启用，先测试连接
       if (!server.active) {
-        message.loading("正在测试连接...", 0);
+        message.loading(t("settings.testingConnectionMsg"), 0);
 
         const testResult = await testConnection(
           {
@@ -210,7 +210,7 @@ const MCPSettings = () => {
         message.destroy();
 
         if (!testResult.success) {
-          message.error("连接测试失败，无法启用工具");
+          message.error(t("settings.connectionTestFailedMsg"));
           // 连接失败时，确保工具处于关闭状态（虽然本来就是关闭的）
           await mcpService.setServerActive(server.id, false);
           loadServers();
@@ -242,7 +242,7 @@ const MCPSettings = () => {
       apiKey: server.api_key,
     });
     setEditingServer(server);
-    message.loading("正在刷新工具列表...", 0);
+    message.loading(t("settings.refreshingToolsMsg"), 0);
 
     const result = await testConnection(
       {
@@ -258,10 +258,14 @@ const MCPSettings = () => {
     message.destroy();
 
     if (result.success) {
-      message.success(`成功获取到 ${result.tools.length} 个工具`);
+      message.success(
+        t("settings.toolsFoundSuccessMsg", { count: result.tools.length })
+      );
       loadServers(); // 重新加载列表以显示更新的工具
     } else {
-      message.error("刷新工具列表失败：" + result.message);
+      message.error(
+        t("settings.refreshToolsFailedMsg", { message: result.message })
+      );
     }
   };
 
@@ -404,7 +408,7 @@ const MCPSettings = () => {
                     onChange={() => toggleServerActive(server)}
                   />
                 </Tooltip>,
-                <Tooltip title="刷新工具列表">
+                <Tooltip title={t("chat.mcpTools.refreshTools")}>
                   <Button
                     icon={<SyncOutlined />}
                     onClick={() => refreshTools(server)}

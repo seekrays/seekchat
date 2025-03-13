@@ -76,12 +76,12 @@ export const useMessages = (session, sessionSettings) => {
         setMessages(processedMessages);
       } catch (error) {
         console.error("加载消息失败:", error);
-        antMessage.error("加载消息失败");
+        antMessage.error(t("chat.loadMessagesFailed"));
       } finally {
         setLoading(false);
       }
     },
-    [electronAPI]
+    [electronAPI, t]
   );
 
   // when session changes, load messages
@@ -922,7 +922,7 @@ export const useMessages = (session, sessionSettings) => {
       } catch (error) {
         // handle error directly, not call handleSendError
         console.error("send message failed:", error);
-        antMessage.error("send message failed: " + error.message);
+        antMessage.error(t("chat.sendMessageFailed") + ": " + error.message);
       }
     },
     [

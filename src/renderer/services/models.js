@@ -3,6 +3,10 @@
  * 包含各种AI服务提供商的模型信息
  */
 
+// 添加i18next导入
+import { v4 as uuidv4 } from "uuid";
+import i18n from "../i18n";
+
 // 模型分类正则表达式
 const VISION_REGEX =
   /\b(llava|moondream|minicpm|gemini-1\.5|gemini-2\.0|gemini-exp|claude-3|vision|glm-4v|qwen-vl|qwen2-vl|qwen2.5-vl|internvl2|grok-vision-beta|pixtral|gpt-4(?:-[\w-]+)|gpt-4o(?:-[\w-]+)?|chatgpt-4o(?:-[\w-]+)?|o1(?:-[\w-]+)?|deepseek-vl(?:[\w-]+)?|kimi-latest)\b/i;
@@ -145,10 +149,10 @@ export function isReasoningModel(model) {
  */
 export function getModelName(providerId, modelId) {
   const provider = providers.find((p) => p.id === providerId);
-  if (!provider) return "未知模型";
+  if (!provider) return i18n.t("settings.unknownModel");
 
   const model = provider.models.find((m) => m.id === modelId);
-  return model ? model.name : "未知模型";
+  return model ? model.name : i18n.t("settings.unknownModel");
 }
 
 /**

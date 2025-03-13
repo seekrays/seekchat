@@ -104,7 +104,20 @@
     "saveFailed": "保存服务器失败",
     "deleteFailed": "删除服务器失败",
     "toggleActiveFailed": "切换服务器状态失败",
-    "testFailed": "测试连接失败"
+    "testFailed": "测试连接失败",
+    "toolsAvailable": "工具可用",
+    "noToolsAvailable": "没有可用的工具",
+    "testingConnectionMsg": "正在测试连接...",
+    "connectionTestFailedMsg": "连接测试失败，无法启用工具",
+    "refreshingToolsMsg": "正在刷新工具列表...",
+    "toolsFoundSuccessMsg": "成功获取到 {{count}} 个工具",
+    "refreshToolsFailedMsg": "刷新工具列表失败：{{message}}",
+    "loadMessagesFailed": "加载消息失败",
+    "sendMessageFailed": "发送消息失败",
+    "missingProviderOrModel": "请先选择服务提供商和模型",
+    "providerDisabled": "服务提供商 {{name}} 已被禁用，请先在设置中启用",
+    "unsupportedProvider": "不支持的提供商: {{name}}",
+    "unknownModel": "未知模型"
   },
   "chat": {
     "newChat": "新建会话",
@@ -133,6 +146,8 @@
     "enterChatName": "输入会话名称",
     "startNewChat": "开始新会话",
     "clearChatConfirm": "确定要删除会话 '{sessionName}'？",
+    "modelChanged": "模型已更改为：",
+    "copiedToClipboard": "已复制到剪贴板",
     "mcpTools": {
       "useTool": "使用MCP工具",
       "loading": "加载工具中...",
@@ -152,7 +167,21 @@
       "failed": "执行失败",
       "invalidJson": "无效的JSON参数",
       "sendFailed": "发送失败",
-      "callMCPTool": "调用MCP工具"
+      "refreshTools": "刷新工具",
+      "callMCPTool": "调用MCP工具",
+      "parameterRequired": "此参数为必填项",
+      "selectOption": "请选择一个选项",
+      "useMCPTools": "使用MCP工具",
+      "mcpTools": "MCP工具",
+      "executeTool": "执行工具",
+      "loadingTools": "正在加载工具...",
+      "noToolsAvailable": "没有可用的工具",
+      "noToolsDescription": "没有可用的工具，请在设置中激活MCP服务器。",
+      "resultData": "结果数据",
+      "addToPrompt": "将结果添加到消息",
+      "addToPromptTooltip": "将执行结果添加到当前消息",
+      "maxToolCallsReached": "已达到最大工具调用次数",
+      "toolCallCompleted": "工具调用完成，等待AI响应..."
     }
   },
   "about": {
