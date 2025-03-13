@@ -2,9 +2,7 @@ const {
   StdioClientTransport,
 } = require("@modelcontextprotocol/sdk/client/stdio.js");
 const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
-// const {
-//   SSEClientTransport,
-// } = require("@modelcontextprotocol/sdk/client/sse.js");
+// SSEClientTransport 无法使用require，否则摆错”ERR_REQUIRE_ASYNC_MODULE “，改为动态import的方式
 
 // 数据库实例将通过全局引用获取
 let _db;
@@ -46,6 +44,10 @@ const createMCPClient = async (serverData) => {
         env: serverData.apiKey ? { MCP_API_KEY: serverData.apiKey } : undefined,
       });
     } else if (serverData.type === "sse") {
+      // 动态导入SSEClientTransport ,
+      const { SSEClientTransport } = await import(
+        "@modelcontextprotocol/sdk/client/sse.js"
+      );
       // 创建SSE传输
       transport = new SSEClientTransport({
         baseUrl: serverData.url,
