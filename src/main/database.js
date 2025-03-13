@@ -69,7 +69,7 @@ class ChatDatabase {
     // 创建MCP服务器表
     this.db.run(`
       CREATE TABLE IF NOT EXISTS mcp_servers (
-        id TEXT PRIMARY KEY NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         url TEXT NOT NULL,
         type TEXT NOT NULL,
@@ -85,7 +85,7 @@ class ChatDatabase {
     // 创建MCP工具调用表
     this.db.run(`
       CREATE TABLE IF NOT EXISTS mcp_tool_calls (
-        id TEXT PRIMARY KEY NOT NULL,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         message_id TEXT NOT NULL,
         session_id TEXT NOT NULL,
         server_id TEXT NOT NULL,
@@ -750,15 +750,12 @@ class ChatDatabase {
   // 添加MCP服务器
   addMCPServer(serverData) {
     return new Promise((resolve, reject) => {
-      const { v4: uuidv4 } = require("uuid");
       const timestamp = Date.now();
-      const id = uuidv4();
 
       this.db.run(
         `INSERT INTO mcp_servers (id, name, url, type, api_key, active, tools, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
-          id,
           serverData.name,
           serverData.url,
           serverData.type,

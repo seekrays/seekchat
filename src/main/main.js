@@ -1,8 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
-const isDev = process.env.NODE_ENV === "development";
 const ChatDatabase = require("./database");
 const { registerIpcHandlers } = require("./ipc");
+
+const isDev = process.env.NODE_ENV === "development";
 
 let db;
 let mainWindow;
@@ -74,30 +75,32 @@ function createWindow() {
 }
 
 // 当Electron完成初始化并准备创建浏览器窗口时调用此方法
-app.whenReady().then(async () => {
+app.whenReady().then(() => {
   createWindow();
 
   // 确保数据库已初始化
-  ensureDatabase();
+  const database = ensureDatabase();
 
   // 更新所有pending状态的消息为error状态
-  const database = ensureDatabase();
   if (database) {
-    try {
-      const result = await database.updateAllPendingMessagesToError();
-      console.log(`应用启动时处理了 ${result.updatedCount} 条中断的消息`);
-    } catch (err) {
-      console.error("更新中断消息状态失败:", err);
-    }
+    database
+      .updateAllPendingMessagesToError()
+      .then((result) => {
+        console.log(`应用启动时处理了 ${result.updatedCount} 条中断的消息`);
+      })
+      .catch((err) => {
+        console.error("更新中断消息状态失败:", err);
+      });
   }
 
   // 注册所有IPC处理程序
-  try {
-    await registerIpcHandlers(database);
-    console.log("IPC处理程序注册成功");
-  } catch (error) {
-    console.error("注册IPC处理程序失败:", error);
-  }
+  registerIpcHandlers(database)
+    .then(() => {
+      console.log("IPC处理程序注册成功");
+    })
+    .catch((error) => {
+      console.error("注册IPC处理程序失败:", error);
+    });
 
   app.on("activate", function () {
     // 在macOS上，当点击dock图标并且没有其他窗口打开时，

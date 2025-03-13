@@ -1,16 +1,21 @@
 const { ipcMain } = require("electron");
-let mcpService = null; // 将通过动态导入加载
+const {
+  createMCPClient,
+  testMCPConnection,
+  executeTool,
+  initMCP,
+} = require("./services/mcpService");
+
+let _db = null;
 
 // 包装 IPC 处理器，确保数据库已初始化
 function wrapDbHandler(handler) {
   return async (event, ...args) => {
     try {
-      // database实例会通过registerIpcHandlers传入
-      const database = this.db;
-      if (!database) {
+      if (!_db) {
         throw new Error("数据库未初始化");
       }
-      return await handler(database, ...args);
+      return await handler(_db, ...args);
     } catch (err) {
       console.error("IPC 处理器错误:", err);
       throw err;
@@ -21,32 +26,20 @@ function wrapDbHandler(handler) {
 // 注册所有IPC处理程序
 async function registerIpcHandlers(db) {
   // 保存数据库引用
-  this.db = db;
+  _db = db;
 
-  // 动态导入 mcpService
-  try {
-    mcpService = await import("./services/mcpService.js");
+  // 初始化MCP模块
+  initMCP(db);
 
-    // 初始化MCP模块
-    mcpService.initMCP(db);
+  // 注册会话和消息相关的IPC处理程序
+  registerSessionMessageHandlers();
 
-    // 注册会话和消息相关的IPC处理程序
-    registerSessionMessageHandlers();
-
-    // 注册MCP相关的IPC处理程序
-    registerMCPHandlers();
-  } catch (error) {
-    console.error("动态导入 mcpService 失败:", error);
-  }
+  // 注册MCP相关的IPC处理程序
+  registerMCPHandlers();
 }
 
 // 注册MCP相关的IPC处理程序
 function registerMCPHandlers() {
-  if (!mcpService) {
-    console.error("MCP服务未初始化，无法注册IPC处理程序");
-    return;
-  }
-
   // 获取所有MCP服务器
   ipcMain.handle(
     "get-all-mcp-servers",
@@ -130,7 +123,7 @@ function registerMCPHandlers() {
     "test-mcp-connection",
     wrapDbHandler(async (database, serverData) => {
       try {
-        return await mcpService.testMCPConnection(serverData);
+        return await testMCPConnection(serverData);
       } catch (error) {
         console.error("IPC: 测试MCP连接失败", error);
         return {
@@ -147,7 +140,7 @@ function registerMCPHandlers() {
     "execute-mcp-tool",
     wrapDbHandler(async (database, serverId, toolId, parameters) => {
       try {
-        return await mcpService.executeTool(serverId, toolId, parameters);
+        return await executeTool(serverId, toolId, parameters);
       } catch (error) {
         console.error("IPC: 执行MCP工具失败", error);
         return {
@@ -279,6 +272,4 @@ function registerSessionMessageHandlers() {
   );
 }
 
-module.exports = {
-  registerIpcHandlers,
-};
+module.exports = { registerIpcHandlers };

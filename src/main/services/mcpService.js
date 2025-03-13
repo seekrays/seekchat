@@ -1,7 +1,10 @@
-import { v4 as uuidv4 } from "uuid";
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { SSEClientTransport } from "@modelcontextprotocol/sdk/client/sse.js";
+const {
+  StdioClientTransport,
+} = require("@modelcontextprotocol/sdk/client/stdio.js");
+const { Client } = require("@modelcontextprotocol/sdk/client/index.js");
+// const {
+//   SSEClientTransport,
+// } = require("@modelcontextprotocol/sdk/client/sse.js");
 
 // 数据库实例将通过全局引用获取
 let _db;
@@ -220,4 +223,4 @@ const initMCP = (db) => {
   _db = db;
 };
 
-export { createMCPClient, testMCPConnection, executeTool, initMCP };
+module.exports = { createMCPClient, testMCPConnection, executeTool, initMCP };
