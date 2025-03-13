@@ -128,6 +128,11 @@
     "userTerminatedGeneration": "User terminated generation",
     "uploadImage": "Upload Image",
     "sendingExceedMaxSize": "Failed to send: Image size cannot exceed 4MB",
+    "renameChat": "Rename Chat",
+    "deleteChat": "Delete Chat",
+    "enterChatName": "Enter chat name",
+    "startNewChat": "Start a new chat",
+    "clearChatConfirm": "Are you sure you want to delete chat '{sessionName}'?",
     "mcpTools": {
       "useTool": "Use MCP Tool",
       "loading": "Loading tools...",

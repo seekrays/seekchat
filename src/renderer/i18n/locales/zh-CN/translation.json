@@ -128,6 +128,11 @@
     "userTerminatedGeneration": "用户主动终止生成",
     "uploadImage": "上传图片",
     "sendingExceedMaxSize": "发送失败：图片大小不能超过4MB",
+    "renameChat": "重命名会话",
+    "deleteChat": "删除会话",
+    "enterChatName": "输入会话名称",
+    "startNewChat": "开始新会话",
+    "clearChatConfirm": "确定要删除会话 '{sessionName}'？",
     "mcpTools": {
       "useTool": "使用MCP工具",
       "loading": "加载工具中...",
