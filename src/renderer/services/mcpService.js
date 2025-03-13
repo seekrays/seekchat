@@ -114,6 +114,68 @@ class MCPService {
       messageId
     );
   }
+
+  /**
+   * 执行MCP工具
+   * @param {string} serverId 服务器ID
+   * @param {string} toolId 工具ID
+   * @param {Object} parameters 参数
+   * @returns {Promise<Object>} 执行结果
+   */
+  async executeTool(serverId, toolId, parameters) {
+    return window.electronAPI.invokeMCP(
+      "execute-mcp-tool",
+      serverId,
+      toolId,
+      parameters
+    );
+  }
+
+  /**
+   * 获取所有激活服务器的工具
+   * @returns {Promise<Array>} 工具列表，包含服务器信息
+   */
+  async getAllActiveTools() {
+    try {
+      const servers = await this.getActiveServers();
+      const tools = [];
+
+      // 收集所有激活服务器的工具
+      for (const server of servers) {
+        if (server.tools && server.tools.length > 0) {
+          server.tools.forEach((tool) => {
+            tools.push({
+              ...tool,
+              serverId: server.id,
+              serverName: server.name,
+              serverType: server.type,
+            });
+          });
+        }
+      }
+
+      return tools;
+    } catch (error) {
+      console.error("获取所有激活工具失败:", error);
+      return [];
+    }
+  }
+
+  /**
+   * 调用MCP工具
+   * @param {string} serverId 服务器ID
+   * @param {string} toolId 工具ID
+   * @param {Object} parameters 执行参数
+   * @returns {Promise<Object>} 执行结果
+   */
+  async callTool(serverId, toolId, parameters) {
+    return window.electronAPI.invokeMCP(
+      "execute-mcp-tool",
+      serverId,
+      toolId,
+      parameters
+    );
+  }
 }
 
 export default new MCPService();

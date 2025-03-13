@@ -7,7 +7,7 @@
 - 聊天界面中可以引入 mcp 工具的调用
   - 可以通过https://github.com/modelcontextprotocol/typescript-sdk?tab=readme-ov-file#writing-mcp-clients包来进行获取mcp的工具
   - 如果是已开启的都传入
-  - 通过 llm 的 function call 进行交付；比如 这个 llm 的 function call 的 api：https://docs.siliconflow.cn/cn/userguide/guides/function-calling
+  - 通过 llm 的 function call 进行交互；比如 这个 llm 的 function call 的 api：https://docs.siliconflow.cn/cn/userguide/guides/function-calling
   - 这里可以需要根据不同的 llm 的 function call 来进行不同的处理，可能存在多轮对话调用
 - 聊天界面中可以显示出工具的调用状态；另外调用的结果可以存储在 db 中
 

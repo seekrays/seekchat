@@ -5,7 +5,6 @@
 
 // 导入模型配置
 import { providers, getModelName, getProviderModels } from "./models.js";
-
 import { getProvidersConfig } from "../hooks/useUserConfig";
 
 /**
@@ -52,6 +51,130 @@ export const getEnabledProviders = () => {
     // 默认启用
     return true;
   });
+};
+
+/**
+ * 将MCP工具转换为OpenAI functions格式
+ * @param {Array} mcpTools MCP工具列表
+ * @returns {Array} OpenAI functions格式的工具列表
+ */
+const formatMCPToolsForOpenAI = (mcpTools) => {
+  if (!mcpTools || !Array.isArray(mcpTools) || mcpTools.length === 0) {
+    return [];
+  }
+
+  return mcpTools.map((tool) => {
+    // 获取参数定义
+    const parameters = tool.parameters || {};
+
+    return {
+      type: "function",
+      function: {
+        name: tool.id,
+        description: tool.description || `${tool.name} from ${tool.serverName}`,
+        parameters: {
+          type: "object",
+          properties: parameters.properties || {},
+          required: parameters.required || [],
+        },
+      },
+    };
+  });
+};
+
+/**
+ * 将MCP工具转换为Anthropic tools格式
+ * @param {Array} mcpTools MCP工具列表
+ * @returns {Array} Anthropic tools格式的工具列表
+ */
+const formatMCPToolsForAnthropic = (mcpTools) => {
+  if (!mcpTools || !Array.isArray(mcpTools) || mcpTools.length === 0) {
+    return [];
+  }
+
+  return mcpTools.map((tool) => {
+    // 获取参数定义
+    const parameters = tool.parameters || {};
+
+    return {
+      name: tool.id,
+      description: tool.description || `${tool.name} from ${tool.serverName}`,
+      input_schema: {
+        type: "object",
+        properties: parameters.properties || {},
+        required: parameters.required || [],
+      },
+    };
+  });
+};
+
+/**
+ * 根据提供商格式化MCP工具
+ * @param {Array} mcpTools MCP工具列表
+ * @param {string} providerId 提供商ID
+ * @returns {Array} 格式化后的工具列表
+ */
+const formatToolsForProvider = (mcpTools, providerId) => {
+  if (!mcpTools || !Array.isArray(mcpTools) || mcpTools.length === 0) {
+    return [];
+  }
+
+  switch (providerId) {
+    case "openai":
+      return formatMCPToolsForOpenAI(mcpTools);
+    case "anthropic":
+      return formatMCPToolsForAnthropic(mcpTools);
+    default:
+      // 默认使用OpenAI格式
+      return formatMCPToolsForOpenAI(mcpTools);
+  }
+};
+
+/**
+ * 处理工具调用
+ * @param {Object} toolCall 工具调用对象
+ * @param {Array} mcpTools MCP工具列表
+ * @returns {Promise<Object>} 工具调用结果
+ */
+const handleToolCall = async (toolCall, mcpTools) => {
+  try {
+    // 从MCP工具列表中找到对应的工具
+    const tool = mcpTools.find((t) => t.id === toolCall.function.name);
+    if (!tool) {
+      throw new Error(`找不到ID为${toolCall.function.name}的工具`);
+    }
+
+    // 解析参数
+    let args;
+    try {
+      args = JSON.parse(toolCall.function.arguments);
+    } catch (error) {
+      throw new Error(`工具参数解析失败: ${error.message}`);
+    }
+
+    // 导入MCP服务
+    const mcpService = (await import("./mcpService.js")).default;
+
+    // 调用MCP工具
+    console.log(`调用MCP工具: ${tool.id}，参数:`, args);
+    const result = await mcpService.callTool(tool.serverId, tool.id, args);
+
+    if (!result.success) {
+      throw new Error(`工具调用失败: ${result.message}`);
+    }
+
+    return {
+      success: true,
+      toolName: tool.name,
+      result: result.result,
+    };
+  } catch (error) {
+    console.error("工具调用失败:", error);
+    return {
+      success: false,
+      error: error.message,
+    };
+  }
 };
 
 /**
@@ -108,6 +231,16 @@ const baseOpenAICompatibleAdapter = async (
     stream: !!onProgress, // 如果有onProgress回调，启用流式传输
   };
 
+  // 处理工具/函数
+  if (
+    options.tools &&
+    Array.isArray(options.tools) &&
+    options.tools.length > 0
+  ) {
+    requestBody.tools = options.tools;
+    requestBody.tool_choice = "auto"; // 默认让模型自动选择是否使用工具
+  }
+
   // 如果有请求转换器，使用转换器修改请求体
   if (requestTransformer) {
     requestBody = requestTransformer(requestBody, model, options, provider);
@@ -118,6 +251,7 @@ const baseOpenAICompatibleAdapter = async (
     messagesCount: messages.length,
     temperature: requestBody.temperature,
     hasSignal: !!options.signal,
+    hasTools: Boolean(requestBody.tools),
   });
 
   try {
@@ -159,6 +293,7 @@ const baseOpenAICompatibleAdapter = async (
       const decoder = new TextDecoder("utf-8");
       let content = "";
       let reasoning_content = "";
+      let currentToolCalls = [];
 
       // 读取流式响应
       while (true) {
@@ -183,7 +318,8 @@ const baseOpenAICompatibleAdapter = async (
                 const result = streamProcessor(
                   data,
                   content,
-                  reasoning_content
+                  reasoning_content,
+                  currentToolCalls
                 );
                 if (result) {
                   content =
@@ -192,12 +328,17 @@ const baseOpenAICompatibleAdapter = async (
                     result.reasoning_content !== undefined
                       ? result.reasoning_content
                       : reasoning_content;
+                  currentToolCalls =
+                    result.toolCalls !== undefined
+                      ? result.toolCalls
+                      : currentToolCalls;
 
                   // 如果有内容更新，调用进度回调
                   if (result.hasUpdate) {
                     onProgress({
                       content,
                       reasoning_content,
+                      toolCalls: currentToolCalls,
                     });
                   }
                 }
@@ -218,6 +359,53 @@ const baseOpenAICompatibleAdapter = async (
                       data.choices[0].delta.reasoning_content;
                     hasUpdate = true;
                   }
+
+                  // 处理工具调用更新
+                  if (data.choices[0].delta.tool_calls) {
+                    // 合并工具调用信息
+                    const deltaToolCalls = data.choices[0].delta.tool_calls;
+
+                    for (const deltaToolCall of deltaToolCalls) {
+                      const {
+                        index,
+                        id,
+                        type,
+                        function: functionData,
+                      } = deltaToolCall;
+
+                      // 查找现有工具调用或创建新的
+                      let existingToolCall = currentToolCalls.find(
+                        (tc) => tc.index === index
+                      );
+
+                      if (!existingToolCall) {
+                        existingToolCall = {
+                          index,
+                          id: id || "",
+                          type: type || "",
+                          function: { name: "", arguments: "" },
+                        };
+                        currentToolCalls.push(existingToolCall);
+                      }
+
+                      // 更新ID和类型
+                      if (id) existingToolCall.id = id;
+                      if (type) existingToolCall.type = type;
+
+                      // 更新函数信息
+                      if (functionData) {
+                        if (functionData.name) {
+                          existingToolCall.function.name = functionData.name;
+                        }
+                        if (functionData.arguments) {
+                          existingToolCall.function.arguments +=
+                            functionData.arguments;
+                        }
+                      }
+                    }
+
+                    hasUpdate = true;
+                  }
                 }
 
                 // 如果有更新，调用进度回调
@@ -225,6 +413,7 @@ const baseOpenAICompatibleAdapter = async (
                   onProgress({
                     content,
                     reasoning_content,
+                    toolCalls: currentToolCalls,
                   });
                 }
               }
@@ -240,6 +429,7 @@ const baseOpenAICompatibleAdapter = async (
         onComplete({
           content,
           reasoning_content,
+          toolCalls: currentToolCalls,
         });
       }
 
@@ -248,6 +438,7 @@ const baseOpenAICompatibleAdapter = async (
         content,
         reasoning_content,
         model: model.id,
+        toolCalls: currentToolCalls,
       };
     } else {
       // 处理非流式响应
@@ -271,11 +462,20 @@ const baseOpenAICompatibleAdapter = async (
             ? data.choices[0].message.reasoning_content
             : "";
 
+        // 提取工具调用
+        const toolCalls =
+          data.choices &&
+          data.choices[0].message &&
+          data.choices[0].message.tool_calls
+            ? data.choices[0].message.tool_calls
+            : [];
+
         result = {
           content,
           reasoning_content,
           model: data.model || model.id,
           usage: data.usage,
+          toolCalls,
         };
       }
 
@@ -284,6 +484,7 @@ const baseOpenAICompatibleAdapter = async (
         onComplete({
           content: result.content,
           reasoning_content: result.reasoning_content,
+          toolCalls: result.toolCalls,
         });
       }
 
@@ -354,6 +555,136 @@ const deepseekAdapter = async (
     onProgress,
     onComplete,
     options
+  );
+};
+
+/**
+ * Anthropic 提供商适配器
+ * @param {Array} messages 消息列表
+ * @param {Object} provider 提供商配置
+ * @param {Object} model 模型配置
+ * @param {Function} onProgress 进度回调函数
+ * @param {Function} onComplete 完成回调函数
+ * @param {Object} options 选项参数
+ * @returns {Promise} 响应
+ */
+const anthropicAdapter = async (
+  messages,
+  provider,
+  model,
+  onProgress,
+  onComplete,
+  options = {}
+) => {
+  // Anthropic使用不同的端点和请求格式
+  const adapterConfig = {
+    endpoint: "/v1/messages",
+
+    // 请求体转换器
+    requestTransformer: (requestBody, model, options) => {
+      // 转换格式为Anthropic兼容
+      const formattedMessages = messages.map((msg) => ({
+        role: msg.role === "user" ? "user" : "assistant",
+        content: msg.content,
+      }));
+
+      const result = {
+        model: model.id,
+        messages: formattedMessages,
+        temperature: requestBody.temperature,
+        max_tokens: options.max_tokens || 2000,
+        stream: !!onProgress,
+      };
+
+      // 添加工具支持
+      if (
+        options.tools &&
+        Array.isArray(options.tools) &&
+        options.tools.length > 0
+      ) {
+        result.tools = options.tools;
+      }
+
+      return result;
+    },
+
+    // 响应解析器
+    responseParser: (data, model) => {
+      const content =
+        data.content && data.content.length > 0
+          ? data.content.map((item) => item.text).join("")
+          : "";
+
+      return {
+        content,
+        reasoning_content: "",
+        model: model.id,
+        toolCalls: data.tool_calls || [],
+      };
+    },
+
+    // 流处理器
+    streamProcessor: (data, content, reasoning_content, toolCalls) => {
+      let hasUpdate = false;
+
+      if (
+        data.type === "content_block_delta" &&
+        data.delta &&
+        data.delta.text
+      ) {
+        content += data.delta.text;
+        hasUpdate = true;
+      } else if (data.type === "message_stop") {
+        // 消息结束
+      } else if (data.type === "tool_call_delta") {
+        // 处理工具调用更新
+        const deltaToolCall = data.delta;
+
+        // 找到现有工具调用或创建新的
+        let existingToolCall = toolCalls.find(
+          (tc) => tc.id === data.tool_call_id
+        );
+
+        if (!existingToolCall) {
+          existingToolCall = {
+            id: data.tool_call_id,
+            type: "function",
+            function: { name: "", arguments: "" },
+          };
+          toolCalls.push(existingToolCall);
+        }
+
+        // 更新函数信息
+        if (deltaToolCall.name) {
+          existingToolCall.function.name = deltaToolCall.name;
+        }
+        if (deltaToolCall.input && typeof deltaToolCall.input === "object") {
+          // Anthropic可能直接提供结构化的输入
+          existingToolCall.function.arguments = JSON.stringify(
+            deltaToolCall.input
+          );
+        }
+
+        hasUpdate = true;
+      }
+
+      return {
+        content,
+        reasoning_content,
+        toolCalls,
+        hasUpdate,
+      };
+    },
+  };
+
+  return baseOpenAICompatibleAdapter(
+    messages,
+    provider,
+    model,
+    onProgress,
+    onComplete,
+    options,
+    adapterConfig
   );
 };
 
@@ -486,6 +817,8 @@ const getProviderAdapter = (providerId) => {
       return openAIAdapter;
     case "deepseek":
       return deepseekAdapter;
+    case "anthropic":
+      return anthropicAdapter;
     case "gemini":
       return geminiAdapter;
     default:
@@ -521,6 +854,11 @@ const sendMessageToAI = async (
   const temperature =
     options.temperature !== undefined ? options.temperature : 0.7;
 
+  // 处理MCP工具选项
+  const tools = options.mcpTools
+    ? formatToolsForProvider(options.mcpTools, provider.id)
+    : [];
+
   // 检查是否需要使用模拟响应
   const useMockResponse =
     process.env.NODE_ENV === "development" ||
@@ -549,6 +887,7 @@ const sendMessageToAI = async (
       useMockResponse,
       temperature,
       hasSignal: !!options.signal,
+      hasTools: tools.length > 0,
     });
 
     // 获取适配器
@@ -558,12 +897,84 @@ const sendMessageToAI = async (
       throw new Error(`不支持的提供商: ${provider.name}`);
     }
 
+    // 自定义处理工具调用的进度回调
+    const progressHandler = (progressData) => {
+      // 调用原始进度回调
+      if (onProgress) {
+        onProgress(progressData);
+      }
+    };
+
+    // 自定义处理工具调用的完成回调
+    const completeHandler = async (completeData) => {
+      // 检查是否有工具调用
+      if (completeData.toolCalls && completeData.toolCalls.length > 0) {
+        // 创建一个新的消息队列
+        const updatedMessages = [...messages];
+
+        // 添加AI的响应消息（包含工具调用）
+        updatedMessages.push({
+          role: "assistant",
+          content: completeData.content || "",
+          tool_calls: completeData.toolCalls,
+        });
+
+        // 处理每个工具调用
+        for (const toolCall of completeData.toolCalls) {
+          if (toolCall.type === "function" && toolCall.function) {
+            // 调用工具
+            const toolResult = await handleToolCall(toolCall, options.mcpTools);
+
+            // 添加工具响应到消息队列
+            updatedMessages.push({
+              role: "tool",
+              tool_call_id: toolCall.id,
+              content: JSON.stringify(
+                toolResult.success
+                  ? toolResult.result
+                  : { error: toolResult.error }
+              ),
+            });
+          }
+        }
+
+        // 使用更新后的消息队列再次调用AI（不传递工具）
+        const followupOptions = { ...options };
+        delete followupOptions.mcpTools;
+
+        // 调用AI获取最终响应
+        return sendMessageToAI(
+          updatedMessages,
+          provider,
+          model,
+          onProgress,
+          onComplete,
+          followupOptions
+        );
+      }
+
+      // 如果没有工具调用，直接调用原始完成回调
+      if (onComplete) {
+        onComplete(completeData);
+      }
+
+      return completeData;
+    };
+
     // 调用适配器，传递温度参数和取消信号
-    return await adapter(messages, provider, model, onProgress, onComplete, {
-      temperature,
-      signal: options.signal,
-      ...options,
-    });
+    return await adapter(
+      messages,
+      provider,
+      model,
+      progressHandler,
+      completeHandler,
+      {
+        temperature,
+        signal: options.signal,
+        tools,
+        ...options,
+      }
+    );
   } catch (error) {
     // 如果是AbortError，直接传递
     if (error.name === "AbortError") {
@@ -576,4 +987,10 @@ const sendMessageToAI = async (
   }
 };
 
-export { sendMessageToAI, getModelName, getProviderModels };
+export {
+  sendMessageToAI,
+  getModelName,
+  getProviderModels,
+  formatToolsForProvider,
+  handleToolCall,
+};

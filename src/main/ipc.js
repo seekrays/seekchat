@@ -142,6 +142,23 @@ function registerMCPHandlers() {
     })
   );
 
+  // 执行MCP工具
+  ipcMain.handle(
+    "execute-mcp-tool",
+    wrapDbHandler(async (database, serverId, toolId, parameters) => {
+      try {
+        return await mcpService.executeTool(serverId, toolId, parameters);
+      } catch (error) {
+        console.error("IPC: 执行MCP工具失败", error);
+        return {
+          success: false,
+          message: `执行工具失败: ${error.message}`,
+          result: null,
+        };
+      }
+    })
+  );
+
   // 添加工具调用记录
   ipcMain.handle(
     "add-mcp-tool-call",

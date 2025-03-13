@@ -130,7 +130,25 @@
     "pleaseSelectAProvider": "请选择一个提供商",
     "userTerminatedGeneration": "用户终止生成",
     "copyMessage": "复制消息内容",
-    "modelChanged": "模型已更改为"
+    "modelChanged": "模型已更改为",
+    "mcpTools": {
+      "useMCPTools": "使用MCP工具",
+      "mcpTools": "MCP工具",
+      "loadingTools": "加载工具中...",
+      "noToolsAvailable": "无可用工具",
+      "noToolsDescription": "没有找到已激活的MCP工具，请先在设置中添加并激活MCP工具。",
+      "useTool": "使用",
+      "parameters": "参数",
+      "result": "结果",
+      "executeTool": "执行工具",
+      "executionSuccess": "执行成功",
+      "executionFailed": "执行失败",
+      "resultData": "结果数据",
+      "addToPrompt": "添加到输入框",
+      "addToPromptTooltip": "将工具执行结果添加到输入框中",
+      "parameterRequired": "此参数是必填的",
+      "selectOption": "请选择"
+    }
   },
   "about": {
     "version": "版本",

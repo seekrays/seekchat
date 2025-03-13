@@ -130,7 +130,25 @@
     "pleaseSelectAProvider": "Please select a provider",
     "userTerminatedGeneration": "User terminated generation",
     "copyMessage": "Copy message content",
-    "modelChanged": "Model changed to"
+    "modelChanged": "Model changed to",
+    "mcpTools": {
+      "useMCPTools": "Use MCP Tools",
+      "mcpTools": "MCP Tools",
+      "loadingTools": "Loading tools...",
+      "noToolsAvailable": "No tools available",
+      "noToolsDescription": "No activated MCP tools found. Please add and activate MCP tools in settings.",
+      "useTool": "Use",
+      "parameters": "Parameters",
+      "result": "Result",
+      "executeTool": "Execute Tool",
+      "executionSuccess": "Execution Successful",
+      "executionFailed": "Execution Failed",
+      "resultData": "Result Data",
+      "addToPrompt": "Add to input",
+      "addToPromptTooltip": "Add tool execution result to input field",
+      "parameterRequired": "This parameter is required",
+      "selectOption": "Please select"
+    }
   },
   "about": {
     "version": "Version",

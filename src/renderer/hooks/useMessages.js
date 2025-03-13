@@ -14,6 +14,8 @@ import {
   isAIConfigured,
 } from "../hooks/useUserConfig";
 import { useTranslation } from "react-i18next";
+import mcpService from "../services/mcpService";
+import { sendMessageToAI } from "../services/aiService";
 
 /**
  * message management hook, for handling message sending, receiving and status management
@@ -702,6 +704,16 @@ export const useMessages = (session, sessionSettings) => {
           `After context limiting, sending ${messagesToSend.length} messages to AI service`
         );
 
+        // 获取激活的MCP工具
+        let mcpTools = [];
+        try {
+          mcpTools = await mcpService.getAllActiveTools();
+          console.log(`获取到${mcpTools.length}个激活的MCP工具`);
+        } catch (error) {
+          console.error("获取MCP工具失败:", error);
+          // 获取工具失败不影响正常聊天
+        }
+
         // 记录前两条和最后一条消息，帮助调试
         if (messagesToSend.length > 0) {
           console.log("First message:", {
@@ -784,6 +796,7 @@ export const useMessages = (session, sessionSettings) => {
           {
             temperature,
             signal: abortController.signal,
+            mcpTools, // 传递MCP工具
           }
         );
 

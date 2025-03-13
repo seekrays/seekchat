@@ -138,6 +138,7 @@ export const sendMessage = async (
       model: model.id,
       temperature: options.temperature,
       hasSignal: !!options.signal,
+      mcpToolsCount: options.mcpTools ? options.mcpTools.length : 0,
     }
   );
 
@@ -171,6 +172,7 @@ export const sendMessage = async (
       {
         temperature: options.temperature,
         signal: options.signal,
+        mcpTools: options.mcpTools,
       }
     );
   } catch (error) {

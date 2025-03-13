@@ -35,6 +35,7 @@ import {
 } from "../services/messageService";
 import "../styles/ChatWindow.css";
 import { useTranslation } from "react-i18next";
+import MCPToolsButton from "./MCPToolsButton";
 
 const { TextArea } = Input;
 const { Option, OptGroup } = Select;
@@ -51,6 +52,18 @@ const ChatInput = memo(
     handleStopGeneration,
   }) => {
     const { t } = useTranslation();
+
+    // 处理MCP工具使用结果
+    const handleToolUse = (toolResult) => {
+      setInputValue((prev) => {
+        // 如果当前输入为空，直接设置工具结果
+        if (!prev.trim()) {
+          return toolResult;
+        }
+        // 否则将工具结果添加到当前输入后
+        return `${prev}\n\n${toolResult}`;
+      });
+    };
 
     return (
       <div className="chat-input-container">
@@ -75,15 +88,18 @@ const ChatInput = memo(
                 {t("chat.stop")}
               </Button>
             ) : (
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
-                className="send-button"
-              >
-                {t("chat.send")}
-              </Button>
+              <>
+                <MCPToolsButton onToolUse={handleToolUse} />
+                <Button
+                  type="primary"
+                  icon={<SendOutlined />}
+                  onClick={handleSendMessage}
+                  disabled={!inputValue.trim()}
+                  className="send-button"
+                >
+                  {t("chat.send")}
+                </Button>
+              </>
             )}
           </div>
         </div>
