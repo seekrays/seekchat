@@ -21,6 +21,7 @@ import {
   SettingOutlined,
   CopyOutlined,
   StopOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -35,78 +36,12 @@ import {
 } from "../services/messageService";
 import "../styles/ChatWindow.css";
 import { useTranslation } from "react-i18next";
+import ChatInputContainer from "./ChatInputContainer";
 import MCPToolsButton from "./MCPToolsButton";
 
 const { TextArea } = Input;
 const { Option, OptGroup } = Select;
 const { Panel } = Collapse;
-
-// 创建一个单独的 ChatInput 组件
-const ChatInput = memo(
-  ({
-    inputValue,
-    setInputValue,
-    handleKeyPress,
-    handleSendMessage,
-    isSending,
-    handleStopGeneration,
-  }) => {
-    const { t } = useTranslation();
-
-    // 处理MCP工具使用结果
-    const handleToolUse = (toolResult) => {
-      setInputValue((prev) => {
-        // 如果当前输入为空，直接设置工具结果
-        if (!prev.trim()) {
-          return toolResult;
-        }
-        // 否则将工具结果添加到当前输入后
-        return `${prev}\n\n${toolResult}`;
-      });
-    };
-
-    return (
-      <div className="chat-input-container">
-        <div className="input-wrapper">
-          <TextArea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={t("chat.typing")}
-            autoSize={{ minRows: 1, maxRows: 5 }}
-            disabled={isSending}
-          />
-          <div className="input-actions">
-            {isSending ? (
-              <Button
-                type="primary"
-                danger
-                icon={<StopOutlined />}
-                onClick={handleStopGeneration}
-                className="stop-button"
-              >
-                {t("chat.stop")}
-              </Button>
-            ) : (
-              <>
-                <MCPToolsButton onToolUse={handleToolUse} />
-                <Button
-                  type="primary"
-                  icon={<SendOutlined />}
-                  onClick={handleSendMessage}
-                  disabled={!inputValue.trim()}
-                  className="send-button"
-                >
-                  {t("chat.send")}
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-);
 
 // 消息内容组件
 const MessageContent = ({ content }) => {
@@ -191,7 +126,7 @@ const MessageContent = ({ content }) => {
             <Collapse
               ghost
               className="reasoning-collapse"
-              defaultActiveKey={["1"]}
+              defaultActiveKey={[]}
             >
               <Panel
                 header={
@@ -232,7 +167,7 @@ const MessageContent = ({ content }) => {
                   key={toolCall.id || index}
                   fallback={<Spin size="small" />}
                 >
-                  <MCPToolCall toolCall={toolCall} isCollapsed={false} />
+                  <MCPToolCall toolCall={toolCall} isCollapsed={true} />
                 </React.Suspense>
               ))}
             </div>
@@ -480,14 +415,11 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
 
   const {
     messages,
-    inputValue,
-    setInputValue,
     isSending,
     loading,
     messagesEndRef,
     chatContainerRef,
     handleSendMessage,
-    handleKeyPress,
     loadMessages,
     handleStopGeneration,
   } = useMessages(session, sessionSettings);
@@ -801,7 +733,7 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
                 <p>{t("chat.noMessages")}</p>
               </div>
             )}
-            {/* 用于自动滚动的参考元素 */}
+            {/* 仍需保留引用元素但不使其可见 */}
             <div
               ref={messagesEndRef}
               style={{ height: "1px", marginBottom: "20px" }}
@@ -810,13 +742,11 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         )}
       </div>
 
-      <ChatInput
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        handleKeyPress={handleKeyPress}
-        handleSendMessage={handleSendMessage}
+      {/* 使用新的ChatInputContainer组件 */}
+      <ChatInputContainer
+        onSendMessage={handleSendMessage}
         isSending={isSending}
-        handleStopGeneration={handleStopGeneration}
+        onStopGeneration={handleStopGeneration}
       />
 
       {/* 设置弹窗 */}
