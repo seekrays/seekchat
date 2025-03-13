@@ -1077,7 +1077,7 @@ const sendMessageToAI = async (
                     ? safeJsonParse(toolCall.function.arguments, {})
                     : toolCall.function.arguments,
                 result: toolResult,
-                status: "success",
+                status: toolResult.success ? "success" : "error",
               });
 
               // 添加工具响应消息
