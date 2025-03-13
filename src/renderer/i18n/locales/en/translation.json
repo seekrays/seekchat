@@ -146,7 +146,8 @@
       "result": "Result",
       "failed": "Execution Failed",
       "invalidJson": "Invalid JSON parameters",
-      "sendFailed": "Failed to send"
+      "sendFailed": "Failed to send",
+      "callMCPTool": "Call MCP Tool"
     }
   },
   "about": {

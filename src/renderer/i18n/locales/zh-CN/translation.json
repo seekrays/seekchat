@@ -146,7 +146,8 @@
       "result": "结果",
       "failed": "执行失败",
       "invalidJson": "无效的JSON参数",
-      "sendFailed": "发送失败"
+      "sendFailed": "发送失败",
+      "callMCPTool": "调用MCP工具"
     }
   },
   "about": {

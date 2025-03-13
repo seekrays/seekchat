@@ -113,6 +113,7 @@ const MessageContent = ({ content }) => {
     const toolCallsContent = parsedContent.find(
       (item) => item.type === "tool_calls"
     );
+    console.log("toolCallsContent:", toolCallsContent);
 
     // 导入MCP工具调用组件
     const MCPToolCall = lazy(() => import("./MCPToolCall"));
