@@ -6,6 +6,10 @@
 // 添加i18next导入
 import { v4 as uuidv4 } from "uuid";
 import i18n from "../i18n";
+import {
+  getProvidersConfig,
+  saveProviderConfigById,
+} from "../hooks/useUserConfig";
 
 // 模型分类正则表达式
 const VISION_REGEX =
@@ -146,9 +150,17 @@ export function isReasoningModel(model) {
 
 /**
  * 获取当前配置对应的模型名称
+ * @param {string} providerId 提供商ID
+ * @param {string} modelId 模型ID
+ * @param {boolean} useAllProviders 是否使用所有提供商（包括自定义提供商）
+ * @returns {string} 模型名称
  */
-export function getModelName(providerId, modelId) {
-  const provider = providers.find((p) => p.id === providerId);
+export function getModelName(providerId, modelId, useAllProviders = true) {
+  // 如果 useAllProviders 为 true，则使用 getAllProviders 获取所有提供商
+  // 否则只使用系统提供商
+  const providerList = useAllProviders ? getAllProviders() : providers;
+  const provider = providerList.find((p) => p.id === providerId);
+
   if (!provider) return i18n.t("settings.unknownModel");
 
   const model = provider.models.find((m) => m.id === modelId);
@@ -161,6 +173,134 @@ export function getModelName(providerId, modelId) {
  * @returns {Array} 模型列表
  */
 export function getProviderModels(providerId) {
-  const provider = providers.find((p) => p.id === providerId);
+  const allProviders = getAllProviders();
+  const provider = allProviders.find((p) => p.id === providerId);
   return provider ? provider.models : [];
+}
+
+/**
+ * 获取所有提供商（包括系统和自定义提供商）
+ * @returns {Array} 所有提供商列表
+ */
+export const getAllProviders = () => {
+  // 获取保存的提供商配置
+  const savedProviderConfigs = getProvidersConfig();
+
+  // 创建系统提供商的副本
+  const allProviders = JSON.parse(JSON.stringify(providers));
+
+  // 更新系统提供商的配置
+  allProviders.forEach((provider) => {
+    const savedConfig = savedProviderConfigs[provider.id];
+    if (savedConfig) {
+      // 如果有保存的配置，则使用保存的配置
+      provider.apiKey = savedConfig.apiKey || "";
+      provider.baseUrl = savedConfig.baseUrl || "";
+      provider.enabled =
+        savedConfig.enabled !== undefined ? savedConfig.enabled : false;
+
+      // 更新模型的启用状态
+      if (savedConfig.models) {
+        provider.models.forEach((model) => {
+          const savedModel = savedConfig.models.find((m) => m.id === model.id);
+          if (savedModel) {
+            model.enabled =
+              savedModel.enabled !== undefined ? savedModel.enabled : true;
+          } else {
+            // 如果没有保存的模型配置，默认启用
+            model.enabled = true;
+          }
+        });
+      } else {
+        // 如果没有保存的模型配置，默认所有模型都启用
+        provider.models.forEach((model) => {
+          model.enabled = true;
+        });
+      }
+    } else {
+      // 如果没有保存的配置，默认禁用提供商，但所有模型都启用
+      provider.enabled = false;
+      provider.models.forEach((model) => {
+        model.enabled = true;
+      });
+    }
+  });
+
+  // 添加自定义提供商
+  Object.keys(savedProviderConfigs).forEach((providerId) => {
+    const providerConfig = savedProviderConfigs[providerId];
+    if (providerConfig.isCustom) {
+      const customProvider = {
+        id: providerId,
+        name: providerConfig.name,
+        baseUrl: providerConfig.baseUrl,
+        apiKey: providerConfig.apiKey,
+        models: providerConfig.models || [],
+        enabled:
+          providerConfig.enabled !== undefined ? providerConfig.enabled : false,
+        isCustom: true,
+      };
+      allProviders.push(customProvider);
+    }
+  });
+
+  return allProviders;
+};
+
+/**
+ * 保存提供商配置
+ * @param {string} providerId 提供商ID
+ * @param {Object} config 配置对象
+ */
+export function saveProviderConfig(providerId, config) {
+  return saveProviderConfigById(providerId, config);
+}
+
+// 初始化系统提供商配置
+// 这段代码会在应用启动时执行，确保系统提供商被正确保存到配置中
+if (typeof window !== "undefined") {
+  // 获取当前保存的提供商配置
+  const savedConfig = getProvidersConfig();
+  let needsUpdate = false;
+
+  // 检查每个系统提供商是否已经在配置中
+  providers.forEach((provider) => {
+    if (!savedConfig[provider.id]) {
+      // 如果系统提供商不在配置中，添加它
+      savedConfig[provider.id] = {
+        ...provider,
+        enabled: false, // 默认禁用
+        models: provider.models.map((model) => ({
+          ...model,
+          enabled: true, // 默认启用所有模型
+        })),
+      };
+      needsUpdate = true;
+    } else {
+      // 如果系统提供商已经在配置中，检查是否有新的模型需要添加
+      const savedModels = savedConfig[provider.id].models || [];
+      const savedModelIds = savedModels.map((m) => m.id);
+
+      provider.models.forEach((model) => {
+        if (!savedModelIds.includes(model.id)) {
+          // 如果模型不在配置中，添加它
+          savedModels.push({
+            ...model,
+            enabled: true, // 默认启用
+          });
+          needsUpdate = true;
+        }
+      });
+
+      // 更新模型列表
+      savedConfig[provider.id].models = savedModels;
+    }
+  });
+
+  // 如果有更新，保存配置
+  if (needsUpdate) {
+    const configJson = JSON.stringify(savedConfig);
+    localStorage.setItem("providersConfig", configJson);
+    console.log("已初始化系统提供商配置");
+  }
 }

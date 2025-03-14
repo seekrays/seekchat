@@ -22,7 +22,9 @@
     "disabled": "已禁用",
     "user": "用户",
     "seekChat": "SeekChat",
-    "unknownTool": "未知工具"
+    "unknownTool": "未知工具",
+    "yes": "是",
+    "no": "否"
   },
   "settings": {
     "title": "设置",
@@ -37,6 +39,7 @@
     "apiKey": "API密钥",
     "apiKeyRequired": "API Key是必填的",
     "baseUrl": "Base URL (可选)",
+    "baseUrlRequired": "Base URL是必填的",
     "enabled": "启用",
     "disabled": "禁用",
     "saveSuccess": "设置保存成功",
@@ -118,7 +121,26 @@
     "missingProviderOrModel": "请先选择服务提供商和模型",
     "providerDisabled": "服务提供商 {{name}} 已被禁用，请先在设置中启用",
     "unsupportedProvider": "不支持的提供商: {{name}}",
-    "unknownModel": "未知模型"
+    "unknownModel": "未知模型",
+    "addCustomProvider": "添加自定义供应商",
+    "providerName": "供应商名称",
+    "providerNameRequired": "供应商名称是必填的",
+    "providerNamePlaceholder": "输入供应商名称",
+    "addProviderSuccess": "添加供应商成功",
+    "addModel": "添加模型",
+    "editModel": "编辑模型",
+    "modelId": "模型ID",
+    "modelIdRequired": "模型ID是必填的",
+    "modelName": "模型名称",
+    "modelNamePlaceholder": "输入模型名称（可选）",
+    "addModelSuccess": "添加模型成功",
+    "editModelSuccess": "编辑模型成功",
+    "deleteModelSuccess": "删除模型成功",
+    "confirmDeleteModel": "确定要删除此模型吗？",
+    "deleteProvider": "删除供应商",
+    "confirmDeleteProvider": "确定要删除此供应商吗？",
+    "deleteProviderSuccess": "删除供应商成功",
+    "addProvider": "添加供应商"
   },
   "chat": {
     "newChat": "新建会话",

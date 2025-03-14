@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { providers } from "../services/models";
+// 移除对 models.js 的导入，避免循环依赖
+// import { providers } from "../services/models";
 
 // 配置名称常量
 const userConfigName = "user_config";
@@ -54,7 +55,7 @@ export const useUserConfig = () => {
     getProvidersConfig,
     saveProviderConfig,
     clearAllConfig: () => {
-      const success = clearAllConfig();
+      const success = clearAllConfigInternal();
       if (success) {
         setConfig(defaultUserConfig);
       }
@@ -140,10 +141,9 @@ export const saveProviderConfig = (providersConfig) => {
       providersConfig = configObj;
     }
 
-    // 检查providersConfig是否为空对象
-    if (!providersConfig || Object.keys(providersConfig).length === 0) {
-      console.error("providersConfig为空，无法保存");
-      return false;
+    // 确保providersConfig是一个对象
+    if (!providersConfig) {
+      providersConfig = {};
     }
 
     // 确保每个provider都有models属性
@@ -178,11 +178,32 @@ export const saveProviderConfig = (providersConfig) => {
   }
 };
 
-// 清除所有配置
-export const clearAllConfig = () => {
+/**
+ * 保存单个提供商的配置
+ * @param {string} providerId 提供商ID
+ * @param {Object} config 提供商配置
+ * @returns {boolean} 是否保存成功
+ */
+export const saveProviderConfigById = (providerId, config) => {
   try {
+    const savedConfig = getProvidersConfig();
+    savedConfig[providerId] = config;
+    return saveProviderConfig(savedConfig);
+  } catch (error) {
+    console.error("保存提供商配置失败:", error);
+    return false;
+  }
+};
+
+// 清除所有配置
+export const clearAllConfigInternal = () => {
+  try {
+    // 清除用户配置
     localStorage.removeItem(userConfigName);
+
+    // 清除提供商配置
     localStorage.removeItem(providersConfigName);
+
     console.log("已清除所有配置");
     return true;
   } catch (error) {
@@ -199,15 +220,9 @@ if (typeof window !== "undefined") {
 
   // 初始化提供商配置
   if (!localStorage.getItem(providersConfigName)) {
-    // 为每个提供商添加enabled字段，默认为false（禁用状态）
-    const providersWithEnabled = providers.map((provider) => ({
-      ...provider,
-      enabled: false,
-    }));
-    localStorage.setItem(
-      providersConfigName,
-      JSON.stringify(providersWithEnabled)
-    );
+    // 不再依赖 models.js 中的 providers
+    // 初始化为空对象，providers 将在应用启动时通过其他方式加载
+    localStorage.setItem(providersConfigName, "{}");
   } else {
     // 检查现有配置中是否有enabled字段，如果没有则添加
     const existingConfig = JSON.parse(

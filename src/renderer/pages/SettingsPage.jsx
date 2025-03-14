@@ -15,7 +15,10 @@ import {
   getProvidersConfig,
   saveProviderConfig,
 } from "../hooks/useUserConfig";
-import { providers as modelProviders } from "../services/models";
+import {
+  providers as modelProviders,
+  getAllProviders,
+} from "../services/models";
 import "../styles/SettingsPage.css";
 import { useTranslation } from "react-i18next";
 
@@ -40,60 +43,14 @@ const SettingsPage = () => {
   const [providersConfig, setProvidersConfig] = useState(getProvidersConfig());
   const [currentMenuKey, setCurrentMenuKey] = useState("model-services");
   const [selectedProvider, setSelectedProvider] = useState(null);
-  const [providers, setProviders] = useState(modelProviders); // 直接使用modelProviders
+  const [providers, setProviders] = useState([]); // 初始化为空数组，稍后通过 getAllProviders 获取
 
   // 初始化时加载提供商配置
   useEffect(() => {
-    console.log("初始化时的modelProviders:", modelProviders);
-
-    // 获取保存的提供商配置
-    const savedProvidersConfig = getProvidersConfig();
-
-    // 将保存的配置应用到providers上
-    const updatedProviders = modelProviders.map((provider) => {
-      const savedProvider = savedProvidersConfig[provider.id];
-
-      if (savedProvider) {
-        // 复制provider对象，避免直接修改原始对象
-        const updatedProvider = { ...provider };
-
-        // 更新apiKey和baseUrl
-        if (savedProvider.apiKey) {
-          updatedProvider.apiKey = savedProvider.apiKey;
-        }
-
-        if (savedProvider.baseUrl) {
-          updatedProvider.baseUrl = savedProvider.baseUrl;
-        }
-
-        // 更新enabled状态
-        if (savedProvider.enabled !== undefined) {
-          updatedProvider.enabled = savedProvider.enabled;
-        } else {
-          updatedProvider.enabled = false; // 默认禁用
-        }
-
-        // 更新模型的enabled状态
-        if (savedProvider.models) {
-          updatedProvider.models = updatedProvider.models.map((model) => {
-            const savedModel = savedProvider.models.find(
-              (m) => m.id === model.id
-            );
-            if (savedModel && savedModel.enabled !== undefined) {
-              return { ...model, enabled: savedModel.enabled };
-            }
-            return model;
-          });
-        }
-
-        return updatedProvider;
-      }
-
-      // 如果没有保存的配置，确保有默认的enabled状态
-      return { ...provider, enabled: false };
-    });
-
-    setProviders(updatedProviders);
+    // 使用 getAllProviders 获取所有提供商（包括自定义提供商）
+    const allProviders = getAllProviders();
+    setProviders(allProviders);
+    console.log("加载所有提供商:", allProviders);
   }, []);
 
   // 处理返回按钮点击
@@ -117,6 +74,14 @@ const SettingsPage = () => {
 
   // 处理提供商数据更新
   const handleProviderUpdate = (updatedProvider) => {
+    // 如果 updatedProvider 为 null，表示提供商已被删除
+    if (!updatedProvider) {
+      // 重新加载所有提供商
+      const allProviders = getAllProviders();
+      setProviders(allProviders);
+      return;
+    }
+
     // 更新providers列表中的对应提供商
     const updatedProviders = providers.map((provider) =>
       provider.id === updatedProvider.id ? updatedProvider : provider
@@ -132,16 +97,22 @@ const SettingsPage = () => {
       content: "这将清除所有用户配置和提供商配置，恢复到默认状态。",
       onOk() {
         // 清除所有配置
-        clearAllConfig();
+        const success = clearAllConfig();
 
-        // 显示成功消息
-        message.success(t("settings.clearSuccess"));
+        if (success) {
+          // 显示成功消息
+          message.success(t("settings.clearSuccess"));
 
-        // 重新加载页面
-        window.location.reload();
+          // 延迟500毫秒后刷新页面，确保配置完全清除
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        } else {
+          message.error("清除配置失败，请重试");
+        }
       },
       onCancel() {
-        // 取消操作
+        // 用户取消操作
       },
     });
   };

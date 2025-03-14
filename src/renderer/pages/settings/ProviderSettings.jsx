@@ -10,14 +10,20 @@ import {
   Switch,
   Tag,
   message,
+  Modal,
+  Popconfirm,
 } from "antd";
 import {
   ArrowLeftOutlined,
   MessageOutlined,
   CodeOutlined,
   SaveOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
+import { v4 as uuidv4 } from "uuid";
 
 const { Title, Text } = Typography;
 
@@ -30,13 +36,17 @@ const ProviderSettings = ({
 }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
+  const [modelForm] = Form.useForm();
   const [selectedProvider, setSelectedProvider] = useState(initialProvider);
-  
+  const [isAddModelModalVisible, setIsAddModelModalVisible] = useState(false);
+  const [isEditModelModalVisible, setIsEditModelModalVisible] = useState(false);
+  const [currentEditModel, setCurrentEditModel] = useState(null);
+
   // 初始化表单和状态
   useEffect(() => {
     if (initialProvider) {
       setSelectedProvider(initialProvider);
-      
+
       // 设置表单初始值
       form.setFieldsValue({
         apiKey: initialProvider.apiKey || "",
@@ -49,60 +59,287 @@ const ProviderSettings = ({
     return <div>{t("settings.selectProvider")}</div>;
   }
 
-  // 处理模型启用/禁用状态变更（移到组件内部）
   const handleModelChange = (modelId, enabled) => {
-    if (!selectedProvider) {
-      console.error("无法更新模型状态：selectedProvider为空");
-      return;
-    }
+    if (!selectedProvider) return;
 
-    // 创建提供商的副本
-    const updatedProvider = { ...selectedProvider };
-
-    // 更新模型的enabled状态
-    updatedProvider.models = updatedProvider.models.map((model) => {
+    // 更新模型状态
+    const updatedModels = selectedProvider.models.map((model) => {
       if (model.id === modelId) {
         return { ...model, enabled };
       }
       return model;
     });
 
-    // 更新状态
+    // 更新提供商状态
+    const updatedProvider = {
+      ...selectedProvider,
+      models: updatedModels,
+    };
     setSelectedProvider(updatedProvider);
 
-    // 保存到localStorage
+    // 保存到配置
     const providersConfig = getProvidersConfig();
     const providerConfig = providersConfig[selectedProvider.id] || {
       id: selectedProvider.id,
-      apiKey: selectedProvider.apiKey || "",
-      baseUrl: selectedProvider.baseUrl || "",
       models: [],
     };
 
     // 更新模型状态
-    providerConfig.models = updatedProvider.models.map((model) => ({
+    providerConfig.models = updatedModels.map((model) => ({
       id: model.id,
-      enabled: model.enabled,
+      enabled: model.enabled !== false,
+      name: model.name,
     }));
 
-    // 保存更新后的配置
+    // 如果是自定义提供商，保存isCustom标志
+    if (selectedProvider.isCustom) {
+      providerConfig.isCustom = true;
+      providerConfig.name = selectedProvider.name;
+    }
+
+    // 保存配置
     providersConfig[selectedProvider.id] = providerConfig;
     saveProviderConfig(providersConfig);
 
-    // 通知父组件更新providers列表
+    // 通知父组件更新
+    if (onProviderUpdate) {
+      onProviderUpdate(updatedProvider);
+    }
+  };
+
+  // 显示添加模型对话框
+  const showAddModelModal = () => {
+    setIsAddModelModalVisible(true);
+    modelForm.resetFields();
+  };
+
+  // 显示编辑模型对话框
+  const showEditModelModal = (model) => {
+    setCurrentEditModel(model);
+    setIsEditModelModalVisible(true);
+    modelForm.setFieldsValue({
+      modelId: model.id,
+      modelName: model.name,
+    });
+  };
+
+  // 处理添加模型
+  const handleAddModel = async () => {
+    try {
+      const values = await modelForm.validateFields();
+
+      // 创建新模型
+      const newModel = {
+        id: values.modelId,
+        name: values.modelName || values.modelId,
+        provider: selectedProvider.id,
+        enabled: true,
+      };
+
+      // 更新提供商状态
+      const updatedProvider = {
+        ...selectedProvider,
+        models: [...selectedProvider.models, newModel],
+      };
+      setSelectedProvider(updatedProvider);
+
+      // 保存到配置
+      const providersConfig = getProvidersConfig();
+      const providerConfig = providersConfig[selectedProvider.id] || {
+        id: selectedProvider.id,
+        models: [],
+      };
+
+      // 更新模型列表
+      providerConfig.models = updatedProvider.models.map((model) => ({
+        id: model.id,
+        enabled: model.enabled !== false,
+        name: model.name,
+      }));
+
+      // 如果是自定义提供商，保存isCustom标志
+      if (selectedProvider.isCustom) {
+        providerConfig.isCustom = true;
+        providerConfig.name = selectedProvider.name;
+      }
+
+      // 保存配置
+      providersConfig[selectedProvider.id] = providerConfig;
+      saveProviderConfig(providersConfig);
+
+      // 通知父组件更新
+      if (onProviderUpdate) {
+        onProviderUpdate(updatedProvider);
+      }
+
+      message.success(t("settings.addModelSuccess"));
+      setIsAddModelModalVisible(false);
+    } catch (error) {
+      console.error("添加模型失败:", error);
+    }
+  };
+
+  // 处理编辑模型
+  const handleEditModel = async () => {
+    if (!currentEditModel) return;
+
+    try {
+      const values = await modelForm.validateFields();
+
+      // 更新模型
+      const updatedModels = selectedProvider.models.map((model) => {
+        if (model.id === currentEditModel.id) {
+          return {
+            ...model,
+            id: values.modelId,
+            name: values.modelName || values.modelId,
+          };
+        }
+        return model;
+      });
+
+      // 更新提供商状态
+      const updatedProvider = {
+        ...selectedProvider,
+        models: updatedModels,
+      };
+      setSelectedProvider(updatedProvider);
+
+      // 保存到配置
+      const providersConfig = getProvidersConfig();
+      const providerConfig = providersConfig[selectedProvider.id] || {
+        id: selectedProvider.id,
+        models: [],
+      };
+
+      // 更新模型列表
+      providerConfig.models = updatedModels.map((model) => ({
+        id: model.id,
+        enabled: model.enabled !== false,
+        name: model.name,
+      }));
+
+      // 如果是自定义提供商，保存isCustom标志
+      if (selectedProvider.isCustom) {
+        providerConfig.isCustom = true;
+        providerConfig.name = selectedProvider.name;
+      }
+
+      // 保存配置
+      providersConfig[selectedProvider.id] = providerConfig;
+      saveProviderConfig(providersConfig);
+
+      // 通知父组件更新
+      if (onProviderUpdate) {
+        onProviderUpdate(updatedProvider);
+      }
+
+      message.success(t("settings.editModelSuccess"));
+      setIsEditModelModalVisible(false);
+      setCurrentEditModel(null);
+    } catch (error) {
+      console.error("编辑模型失败:", error);
+    }
+  };
+
+  // 处理删除模型
+  const handleDeleteModel = (modelId) => {
+    if (!selectedProvider) return;
+
+    // 过滤掉要删除的模型
+    const updatedModels = selectedProvider.models.filter(
+      (model) => model.id !== modelId
+    );
+
+    // 更新提供商状态
+    const updatedProvider = {
+      ...selectedProvider,
+      models: updatedModels,
+    };
+    setSelectedProvider(updatedProvider);
+
+    // 保存到配置
+    const providersConfig = getProvidersConfig();
+    const providerConfig = providersConfig[selectedProvider.id] || {
+      id: selectedProvider.id,
+      models: [],
+    };
+
+    // 更新模型列表
+    providerConfig.models = updatedModels.map((model) => ({
+      id: model.id,
+      enabled: model.enabled !== false,
+      name: model.name,
+    }));
+
+    // 如果是自定义提供商，保存isCustom标志
+    if (selectedProvider.isCustom) {
+      providerConfig.isCustom = true;
+      providerConfig.name = selectedProvider.name;
+    }
+
+    // 保存配置
+    providersConfig[selectedProvider.id] = providerConfig;
+    saveProviderConfig(providersConfig);
+
+    // 通知父组件更新
     if (onProviderUpdate) {
       onProviderUpdate(updatedProvider);
     }
 
-    // 显示提示
-    message.success(
-      `${enabled ? t("common.enable") : t("common.disable")} ${modelId} ${t(
-        "common.success"
-      )}`
-    );
+    message.success(t("settings.deleteModelSuccess"));
   };
-  
-  // 保存提供商配置（移到组件内部）
+
+  // 处理删除供应商
+  const handleDeleteProvider = () => {
+    if (!selectedProvider || !selectedProvider.isCustom) {
+      console.error("无法删除：selectedProvider为空或不是自定义供应商");
+      return;
+    }
+
+    console.log("开始删除供应商:", selectedProvider.id);
+
+    try {
+      // 从配置中删除供应商
+      const providersConfig = getProvidersConfig();
+      console.log("当前配置:", providersConfig);
+
+      // 确保提供商存在于配置中
+      if (providersConfig[selectedProvider.id]) {
+        console.log("删除供应商:", selectedProvider.id);
+        delete providersConfig[selectedProvider.id];
+        console.log("删除后的配置:", providersConfig);
+
+        // 保存更新后的配置
+        const success = saveProviderConfig(providersConfig);
+        console.log("保存结果:", success);
+
+        if (success) {
+          // 通知父组件更新
+          if (onProviderUpdate) {
+            console.log("通知父组件更新");
+            onProviderUpdate(null);
+          }
+
+          message.success(t("settings.deleteProviderSuccess"));
+
+          // 返回列表页面
+          handleMenuSelect({ key: "model-services" });
+        } else {
+          console.error("删除供应商失败：保存配置返回false");
+          message.error("删除供应商失败，请重试");
+        }
+      } else {
+        console.warn("供应商不存在或已被删除:", selectedProvider.id);
+        message.warning("供应商不存在或已被删除");
+        handleMenuSelect({ key: "model-services" });
+      }
+    } catch (error) {
+      console.error("删除供应商时发生错误:", error);
+      message.error("删除供应商失败: " + error.message);
+    }
+  };
+
   const handleSaveProvider = () => {
     if (!selectedProvider) {
       console.error("无法保存：selectedProvider为空");
@@ -123,10 +360,17 @@ const ProviderSettings = ({
         providerConfig.apiKey = values.apiKey || "";
         providerConfig.baseUrl = values.baseUrl || "";
 
+        // 如果是自定义提供商，保存isCustom标志和名称
+        if (selectedProvider.isCustom) {
+          providerConfig.isCustom = true;
+          providerConfig.name = selectedProvider.name;
+        }
+
         // 确保保存模型状态
         providerConfig.models = selectedProvider.models.map((model) => ({
           id: model.id,
           enabled: model.enabled !== false, // 确保undefined或null被视为true
+          name: model.name,
         }));
 
         // 保存配置
@@ -147,7 +391,7 @@ const ProviderSettings = ({
         }
 
         message.success(t("settings.saveSuccess"));
-        
+
         // 返回列表页面
         handleMenuSelect({ key: "model-services" });
       })
@@ -171,14 +415,39 @@ const ProviderSettings = ({
         size="small"
         variant={true}
         extra={
-          <Switch
-            size="small"
-            checked={isEnabled}
-            onChange={(checked) => {
-              console.log(`Switch onChange: ${model.id}, checked=${checked}`);
-              handleModelChange(model.id, checked);
-            }}
-          />
+          <div className="model-card-actions">
+            <Switch
+              size="small"
+              checked={isEnabled}
+              onChange={(checked) => {
+                console.log(`Switch onChange: ${model.id}, checked=${checked}`);
+                handleModelChange(model.id, checked);
+              }}
+            />
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              size="small"
+              className="model-edit-button"
+              onClick={(e) => {
+                e.stopPropagation();
+                showEditModelModal(model);
+              }}
+            />
+            <Popconfirm
+              title={t("settings.confirmDeleteModel")}
+              onConfirm={() => handleDeleteModel(model.id)}
+              okText={t("common.yes")}
+              cancelText={t("common.no")}
+            >
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                size="small"
+              />
+            </Popconfirm>
+          </div>
         }
         title={
           <div className="model-card-title">
@@ -219,16 +488,30 @@ const ProviderSettings = ({
   return (
     <div className="provider-settings">
       <div className="provider-header">
-        <Button
-          type="link"
-          icon={<ArrowLeftOutlined />}
-          onClick={() => handleMenuSelect({ key: "model-services" })}
-        >
-          {t("common.back")}
-        </Button>
-        <h2>
-          {selectedProvider.name} {t("common.settings")}
-        </h2>
+        <div className="provider-header-left">
+          <Button
+            type="link"
+            icon={<ArrowLeftOutlined />}
+            onClick={() => handleMenuSelect({ key: "model-services" })}
+          >
+            {t("common.back")}
+          </Button>
+          <h2>
+            {selectedProvider.name} {t("common.settings")}
+          </h2>
+        </div>
+        {selectedProvider.isCustom && (
+          <Popconfirm
+            title={t("settings.confirmDeleteProvider")}
+            onConfirm={handleDeleteProvider}
+            okText={t("common.yes")}
+            cancelText={t("common.no")}
+          >
+            <Button danger icon={<DeleteOutlined />}>
+              {t("settings.deleteProvider")}
+            </Button>
+          </Popconfirm>
+        )}
       </div>
 
       <Form
@@ -264,7 +547,19 @@ const ProviderSettings = ({
         </Form.Item>
       </Form>
 
-      <Divider orientation="left">{t("settings.modelSettings")}</Divider>
+      <Divider orientation="left">
+        <Space>
+          {t("settings.modelSettings")}
+          <Button
+            type="primary"
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={showAddModelModal}
+          >
+            {t("settings.addModel")}
+          </Button>
+        </Space>
+      </Divider>
 
       <div className="models-container">
         {selectedProvider.models.map((model) => renderModelCard(model))}
@@ -276,6 +571,51 @@ const ProviderSettings = ({
           {t("settings.modelSettingsHint")}
         </Typography.Text>
       </div>
+
+      {/* 添加模型对话框 */}
+      <Modal
+        title={t("settings.addModel")}
+        open={isAddModelModalVisible}
+        onOk={handleAddModel}
+        onCancel={() => setIsAddModelModalVisible(false)}
+      >
+        <Form form={modelForm} layout="vertical">
+          <Form.Item
+            name="modelId"
+            label={t("settings.modelId")}
+            rules={[{ required: true, message: t("settings.modelIdRequired") }]}
+          >
+            <Input placeholder="gpt-3.5-turbo" />
+          </Form.Item>
+          <Form.Item name="modelName" label={t("settings.modelName")}>
+            <Input placeholder={t("settings.modelNamePlaceholder")} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* 编辑模型对话框 */}
+      <Modal
+        title={t("settings.editModel")}
+        open={isEditModelModalVisible}
+        onOk={handleEditModel}
+        onCancel={() => {
+          setIsEditModelModalVisible(false);
+          setCurrentEditModel(null);
+        }}
+      >
+        <Form form={modelForm} layout="vertical">
+          <Form.Item
+            name="modelId"
+            label={t("settings.modelId")}
+            rules={[{ required: true, message: t("settings.modelIdRequired") }]}
+          >
+            <Input placeholder="gpt-3.5-turbo" />
+          </Form.Item>
+          <Form.Item name="modelName" label={t("settings.modelName")}>
+            <Input placeholder={t("settings.modelNamePlaceholder")} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };

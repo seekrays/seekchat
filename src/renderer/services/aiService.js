@@ -4,7 +4,7 @@
  */
 
 // 导入模型配置
-import { providers } from "./models.js";
+import { providers, getAllProviders } from "./models.js";
 import { getProvidersConfig } from "../hooks/useUserConfig";
 import i18n from "../i18n";
 
@@ -20,43 +20,15 @@ import { safeJsonParse, getProviderAdapter } from "./llm/utils/common.js";
  * @returns {Array} 启用的提供商列表
  */
 export const getEnabledProviders = () => {
-  const providersConfig = getProvidersConfig();
-  return providers.filter((provider) => {
-    // 获取保存的供应商配置
-    const savedProvider = providersConfig[provider.id];
+  // 使用 getAllProviders 获取所有提供商（包括自定义提供商）
+  const allProviders = getAllProviders();
 
-    // 如果配置中明确设置为false，则禁用
-    if (savedProvider && savedProvider.enabled === false) {
+  // 过滤出启用的提供商
+  return allProviders.filter((provider) => {
+    // 如果提供商明确设置为禁用，则过滤掉
+    if (provider.enabled === false) {
       return false;
     }
-
-    // 将models中enabled的值也附加上去
-    if (provider.models) {
-      provider.models = provider.models.map((model) => {
-        // 检查savedProvider是否存在且有models属性
-        if (
-          savedProvider &&
-          savedProvider.models &&
-          Array.isArray(savedProvider.models)
-        ) {
-          // 在savedProvider中找到对应的模型，如果存在，则将enabled的值附加上去
-          const savedModel = savedProvider.models.find(
-            (m) => m.id === model.id
-          );
-          return { ...model, enabled: savedModel?.enabled ?? true };
-        }
-        // 如果savedProvider不存在或没有models属性，默认启用所有模型
-        return { ...model, enabled: true };
-      });
-    } else {
-      // 如果provider没有models属性，初始化为空数组
-      provider.models = [];
-      console.warn(
-        `Provider ${provider.name} (${provider.id}) 没有models属性，已初始化为空数组`
-      );
-    }
-
-    // 默认启用
     return true;
   });
 };

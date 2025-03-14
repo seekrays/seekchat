@@ -22,7 +22,9 @@
     "disabled": "Disabled",
     "user": "User",
     "seekChat": "SeekChat",
-    "unknownTool": "Unknown Tool"
+    "unknownTool": "Unknown Tool",
+    "yes": "Yes",
+    "no": "No"
   },
   "settings": {
     "title": "Settings",
@@ -37,6 +39,7 @@
     "apiKey": "API Key",
     "apiKeyRequired": "Please set the API key first",
     "baseUrl": "Base URL (Optional)",
+    "baseUrlRequired": "Base URL is required",
     "enabled": "Enabled",
     "disabled": "Disabled",
     "saveSuccess": "Settings saved successfully",
@@ -118,7 +121,26 @@
     "missingProviderOrModel": "Please select a service provider and model first",
     "providerDisabled": "Service provider {{name}} is disabled, please enable it in settings first",
     "unsupportedProvider": "Unsupported provider: {{name}}",
-    "unknownModel": "Unknown Model"
+    "unknownModel": "Unknown Model",
+    "addCustomProvider": "Add Custom Provider",
+    "providerName": "Provider Name",
+    "providerNameRequired": "Provider name is required",
+    "providerNamePlaceholder": "Enter provider name",
+    "addProviderSuccess": "Provider added successfully",
+    "addModel": "Add Model",
+    "editModel": "Edit Model",
+    "modelId": "Model ID",
+    "modelIdRequired": "Model ID is required",
+    "modelName": "Model Name",
+    "modelNamePlaceholder": "Enter model name (optional)",
+    "addModelSuccess": "Model added successfully",
+    "editModelSuccess": "Model edited successfully",
+    "deleteModelSuccess": "Model deleted successfully",
+    "confirmDeleteModel": "Are you sure you want to delete this model?",
+    "deleteProvider": "Delete Provider",
+    "confirmDeleteProvider": "Are you sure you want to delete this provider?",
+    "deleteProviderSuccess": "Provider deleted successfully",
+    "addProvider": "Add Provider"
   },
   "chat": {
     "newChat": "New Chat",

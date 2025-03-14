@@ -492,6 +492,7 @@
 
 .provider-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
 }
@@ -499,4 +500,97 @@
 .provider-header h2 {
   margin: 0;
   margin-left: 10px;
+}
+
+.provider-logo-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #1677ff;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+}
+
+.model-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 添加模型对话框 */
+.add-model-form .ant-form-item {
+  margin-bottom: 16px;
+}
+
+/* 自定义供应商按钮 */
+.provider-header button {
+  margin-left: 16px;
+}
+
+/* 添加供应商按钮样式 */
+.add-provider-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  border: 1px dashed #d9d9d9;
+  background-color: #fafafa;
+  transition: all 0.3s;
+}
+
+.add-provider-item:hover {
+  border-color: #1677ff;
+  background-color: #f0f7ff;
+}
+
+.add-provider-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: #666;
+}
+
+.add-provider-content .add-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  color: #1677ff;
+}
+
+.add-provider-content .add-text {
+  font-size: 14px;
+}
+
+/* 模型卡片操作按钮 */
+.model-edit-button {
+  margin-left: 8px;
+}
+
+/* 供应商设置页面样式 */
+.provider-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.provider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.model-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.model-edit-button {
+  margin-left: 8px;
 }

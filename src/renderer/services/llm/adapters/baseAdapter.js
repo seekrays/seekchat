@@ -6,6 +6,9 @@
 import i18n from "../../../i18n";
 import { safeJsonParse } from "../utils/common.js";
 
+// 添加 CORS 代理服务器 URL
+const CORS_PROXY = "https://corsproxy.io/?";
+
 /**
  * 基础OpenAI兼容适配器
  * 为所有OpenAI兼容的提供商提供统一的接口实现
@@ -50,6 +53,8 @@ export const baseOpenAICompatibleAdapter = async (
   const headers = {
     "Content-Type": "application/json",
     Authorization: `Bearer ${apiKey}`,
+    // 添加额外的 CORS 头
+    "X-Requested-With": "XMLHttpRequest",
   };
 
   // 默认请求体
@@ -86,7 +91,18 @@ export const baseOpenAICompatibleAdapter = async (
 
   try {
     // 构建请求URL
-    const requestUrl = `${baseUrl}${endpoint}`;
+    let requestUrl = `${baseUrl}${endpoint}`;
+
+    // 检查是否是本地地址或自定义供应商，如果是则添加 CORS 代理
+    if (
+      requestUrl.includes("127.0.0.1") ||
+      requestUrl.includes("localhost") ||
+      provider.isCustom
+    ) {
+      // 使用 CORS 代理
+      console.log("检测到本地地址或自定义供应商，使用 CORS 代理");
+      requestUrl = CORS_PROXY + encodeURIComponent(requestUrl);
+    }
 
     // 发送API请求
     const response = await fetch(requestUrl, {
@@ -94,6 +110,9 @@ export const baseOpenAICompatibleAdapter = async (
       headers: headers,
       body: JSON.stringify(requestBody),
       signal: options.signal, // 添加信号用于取消请求
+      // 添加 CORS 模式
+      mode: "cors",
+      credentials: "omit", // 对于跨域请求，通常不需要发送凭证
     });
 
     // 处理错误响应
