@@ -145,8 +145,8 @@
     "deleteChat": "删除会话",
     "enterChatName": "输入会话名称",
     "startNewChat": "开始新会话",
-    "clearChatConfirm": "确定要删除会话 '{sessionName}'？",
-    "modelChanged": "模型已更改为：",
+    "clearChatConfirm": "确定要删除会话 '{{sessionName}}'？",
+    "modelChanged": "模型已更改为：{{model}}",
     "copiedToClipboard": "已复制到剪贴板",
     "mcpTools": {
       "useTool": "使用MCP工具",

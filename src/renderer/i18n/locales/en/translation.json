@@ -145,8 +145,8 @@
     "deleteChat": "Delete Chat",
     "enterChatName": "Enter chat name",
     "startNewChat": "Start a new chat",
-    "clearChatConfirm": "Are you sure you want to delete chat '{sessionName}'?",
-    "modelChanged": "Model changed to:",
+    "clearChatConfirm": "Are you sure you want to delete chat '{{sessionName}}'?",
+    "modelChanged": "Model changed to: {{model}}",
     "copiedToClipboard": "Copied to clipboard",
     "mcpTools": {
       "useTool": "Use MCP Tool",
