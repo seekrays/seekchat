@@ -100,11 +100,11 @@ export const useMessages = (session, sessionSettings) => {
   // 当消息加载完成后，滚动到底部
   useEffect(() => {
     if (messages.length > 0 && !loading) {
-      console.log("消息加载完成，准备滚动到底部");
+      // console.log("消息加载完成，准备滚动到底部");
       // 使用requestAnimationFrame确保DOM已更新后再滚动
       requestAnimationFrame(() => {
         scrollToBottom();
-        console.log("已执行滚动到底部");
+        // console.log("已执行滚动到底部");
       });
     }
   }, [messages, loading, scrollToBottom]);

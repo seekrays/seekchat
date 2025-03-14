@@ -26,7 +26,8 @@ import {
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { getModelName, getEnabledProviders } from "../services/aiService";
+import { getEnabledProviders } from "../services/aiService";
+import { getModelName } from "../services/models";
 import { providers } from "../services/models";
 import { useUserConfig } from "../hooks/useUserConfig";
 import { useMessages } from "../hooks/useMessages";
