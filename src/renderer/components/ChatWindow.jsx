@@ -568,7 +568,9 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
 
     // 显示提示
     message.success(
-      `${t("chat.modelChanged")} ${getModelName(providerId, modelId)}`
+      `${t("chat.modelChanged", {
+        model: getModelName(providerId, modelId),
+      })}`
     );
   };
 

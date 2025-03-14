@@ -1,46 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import {
-  Layout,
-  Menu,
-  Button,
-  Form,
-  Input,
-  Select,
-  Slider,
-  InputNumber,
-  Switch,
-  Space,
-  Typography,
-  Card,
-  message,
-  Divider,
-  List,
-  Avatar,
-  Badge,
-  Tag,
-  Row,
-  Col,
-  Statistic,
-  Tooltip,
-  Radio,
-  Modal,
-  Alert,
-} from "antd";
+import { useNavigate } from "react-router-dom";
+import { Layout, Menu, Button, Form, message, Typography, Modal } from "antd";
 import {
   ArrowLeftOutlined,
   ApiOutlined,
   SettingOutlined,
-  GlobalOutlined,
-  RobotOutlined,
-  ThunderboltOutlined,
-  DatabaseOutlined,
   InfoCircleOutlined,
-  MessageOutlined,
-  CodeOutlined,
-  CheckCircleOutlined,
-  SaveOutlined,
-  ClearOutlined,
+  ThunderboltOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
@@ -52,11 +18,16 @@ import {
 import { providers as modelProviders } from "../services/models";
 import "../styles/SettingsPage.css";
 import { useTranslation } from "react-i18next";
+
+// 导入拆分后的组件
+import ModelServices from "./settings/ModelServices";
+import ProviderSettings from "./settings/ProviderSettings";
+import GeneralSettings from "./settings/GeneralSettings";
+import AboutSection from "./settings/AboutSection";
 import MCPSettings from "./settings/MCPSettings";
 
 const { Content, Header, Sider } = Layout;
-const { Option } = Select;
-const { Title, Text, Paragraph } = Typography;
+const { Title } = Typography;
 
 // 配置名称常量
 const userConfigName = "user_config";
@@ -304,138 +275,6 @@ const SettingsPage = () => {
     );
   };
 
-  // 渲染服务提供商列表
-  const renderProviderList = () => {
-    return (
-      <div className="provider-list-container">
-        <Title level={4}>{t("settings.selectProvider")}</Title>
-        <Paragraph>{t("settings.selectProviderHint")}</Paragraph>
-
-        <div className="provider-grid">
-          {providers && providers.length > 0 ? (
-            providers.map((provider) => (
-              <div
-                key={provider.id}
-                className={`provider-grid-item ${
-                  !provider.enabled ? "provider-disabled" : ""
-                }`}
-              >
-                <div
-                  className="provider-content"
-                  onClick={() => handleSelectProvider(provider)}
-                >
-                  <div className="provider-logo-container">
-                    <img
-                      src={provider.logo || "assets/providers/openai.png"}
-                      alt={provider.name}
-                      className="provider-logo"
-                      onError={(e) => {
-                        e.target.src = "";
-                      }}
-                    />
-                  </div>
-                  <div className="provider-info">
-                    <div className="provider-name">{provider.name}</div>
-                    <div className="provider-model-count">
-                      {provider.models.length} {t("common.models")}
-                    </div>
-                  </div>
-                </div>
-                <div
-                  className="provider-actions"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Switch
-                    checked={provider.enabled !== false}
-                    onChange={(checked) =>
-                      handleProviderEnabledChange(provider.id, checked)
-                    }
-                    checkedChildren={t("common.enable")}
-                    unCheckedChildren={t("common.disable")}
-                  />
-                </div>
-              </div>
-            ))
-          ) : (
-            <div>{t("settings.noProvidersAvailable")}</div>
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  // 渲染服务提供商设置
-  const renderProviderSettings = () => {
-    if (!selectedProvider) {
-      return <div>{t("settings.selectProvider")}</div>;
-    }
-
-    return (
-      <div className="provider-settings">
-        <div className="provider-header">
-          <Button
-            type="link"
-            icon={<ArrowLeftOutlined />}
-            onClick={() => handleMenuSelect({ key: "model-services" })}
-          >
-            {t("common.back")}
-          </Button>
-          <h2>
-            {selectedProvider.name} {t("common.settings")}
-          </h2>
-        </div>
-
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{
-            apiKey: selectedProvider.apiKey || "",
-            baseUrl: selectedProvider.baseUrl || "",
-          }}
-        >
-          <Form.Item
-            name="apiKey"
-            label={t("settings.apiKey")}
-            rules={[{ required: true, message: "API Key是必须的" }]}
-          >
-            <Input.Password placeholder={t("settings.apiKey")} />
-          </Form.Item>
-
-          <Form.Item name="baseUrl" label={t("settings.baseUrl")}>
-            <Input placeholder={t("settings.baseUrl")} />
-          </Form.Item>
-
-          <Form.Item>
-            <Space>
-              <Button
-                type="primary"
-                icon={<SaveOutlined />}
-                onClick={handleSaveProvider}
-              >
-                {t("common.save")}
-              </Button>
-            </Space>
-          </Form.Item>
-        </Form>
-
-        <Divider orientation="left">{t("settings.modelSettings")}</Divider>
-
-        <div className="models-container">
-          {selectedProvider.models.map((model) =>
-            renderModelCard(model, selectedProvider)
-          )}
-        </div>
-
-        <div style={{ marginTop: "20px" }}>
-          <Typography.Text type="secondary">
-            <InfoCircleOutlined style={{ marginRight: "8px" }} />
-            {t("settings.modelSettingsHint")}
-          </Typography.Text>
-        </div>
-      </div>
-    );
-  };
-
   // 处理重置所有配置
   const handleResetAllConfig = () => {
     Modal.confirm({
@@ -456,65 +295,6 @@ const SettingsPage = () => {
         // 取消操作
       },
     });
-  };
-
-  // 渲染模型卡片
-  const renderModelCard = (model, provider) => {
-    // 确保模型的enabled属性有一个明确的布尔值
-    const isEnabled = model.enabled !== false; // 如果undefined或null，默认为true
-
-    // console.log(`渲染模型卡片: ${model.id}, enabled=${model.enabled}, isEnabled=${isEnabled}`);
-
-    return (
-      <Card
-        key={model.id}
-        className="model-card"
-        size="small"
-        variant={true}
-        extra={
-          <Switch
-            size="small"
-            checked={isEnabled}
-            onChange={(checked) => {
-              console.log(`Switch onChange: ${model.id}, checked=${checked}`);
-              handleModelChange(model.id, checked);
-            }}
-          />
-        }
-        title={
-          <div className="model-card-title">
-            {model.name.toLowerCase().includes("chat") ? (
-              <MessageOutlined
-                style={{
-                  fontSize: "14px",
-                  color: "#1677ff",
-                  marginRight: "8px",
-                }}
-              />
-            ) : (
-              <CodeOutlined
-                style={{
-                  fontSize: "14px",
-                  color: "#1677ff",
-                  marginRight: "8px",
-                }}
-              />
-            )}
-            <span>{model.name}</span>
-          </div>
-        }
-      >
-        <div className="model-card-content">
-          <div>{model.description || t("settings.modelDescription")}</div>
-          <div className="model-status">
-            {t("common.status")}:{" "}
-            <Tag color={isEnabled ? "green" : "red"}>
-              {isEnabled ? t("common.enabled") : t("common.disabled")}
-            </Tag>
-          </div>
-        </div>
-      </Card>
-    );
   };
 
   // 保存提供商配置
@@ -584,126 +364,39 @@ const SettingsPage = () => {
       });
   };
 
-  // 渲染通用设置内容
-  const renderGeneralSettings = () => {
-    return (
-      <div className="settings-content">
-        <Card title={t("settings.general")} bordered={false}>
-          <Form
-            form={generalForm}
-            layout="vertical"
-            onValuesChange={handleFormValueChange}
-            initialValues={{ language: config.language || "en" }}
-          >
-            <Form.Item
-              name="language"
-              label={t("settings.language")}
-              tooltip={t("settings.language")}
-            >
-              <Select
-                onChange={handleLanguageChange}
-                options={[
-                  { value: "en", label: t("language.en") },
-                  { value: "zh-CN", label: t("language.zh-CN") },
-                ]}
-              />
-            </Form.Item>
-          </Form>
-        </Card>
-
-        <Card className="settings-card" style={{ marginTop: 16 }}>
-          <div className="settings-section">
-            <Title level={5}>{t("settings.clearConfig")}</Title>
-            <Paragraph>{t("settings.clearConfigHint")}</Paragraph>
-            <Button
-              type="primary"
-              danger
-              icon={<ClearOutlined />}
-              onClick={handleResetAllConfig}
-            >
-              {t("settings.clearConfig")}
-            </Button>
-          </div>
-        </Card>
-      </div>
-    );
-  };
-
-  // 渲染关于页面
-  const renderAbout = () => {
-    // 根据当前语言选择不同的URL
-    const currentLanguage = i18n.language || "en";
-    const aboutUrl =
-      currentLanguage === "zh-CN"
-        ? "http://chat.seekrays.com/about_zh-CN/?version=0.0.1"
-        : "http://chat.seekrays.com/about/?version=0.0.1";
-
-    return (
-      <div className="about-section settings-content">
-        <Card>
-          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-            <div style={{ textAlign: "center", marginBottom: 24 }}>
-              <Title level={3} style={{ marginTop: 16, marginBottom: 0 }}>
-                SeekChat
-              </Title>
-              <Text type="secondary">{t("about.version")}: 0.0.1</Text>
-              <div style={{ marginTop: 8 }}>
-                <Text>
-                  {t("about.officialWebsite")}：{" "}
-                  <div
-                    onClick={(e) => {
-                      e.preventDefault();
-                      window.electronAPI
-                        .openExternalURL("http://chat.seekrays.com")
-                        .catch((err) => {
-                          console.error("打开链接失败:", err);
-                        });
-                    }}
-                    style={{ cursor: "pointer", color: "#1890ff" }}
-                  >
-                    http://chat.seekrays.com
-                  </div>
-                </Text>
-              </div>
-            </div>
-
-            <Divider />
-
-            {/* 嵌入外部关于页面 */}
-            <div
-              style={{ width: "100%", overflow: "hidden", borderRadius: "8px" }}
-            >
-              <iframe
-                src={aboutUrl}
-                title="About SeekChat"
-                style={{
-                  width: "100%",
-                  height: "580px",
-                  border: "none",
-                  overflow: "auto",
-                  maxWidth: "100%",
-                }}
-                allowFullScreen={true}
-                loading="lazy"
-              />
-            </div>
-          </Space>
-        </Card>
-      </div>
-    );
-  };
-
   // 根据当前菜单渲染内容
   const renderContent = () => {
     switch (currentMenuKey) {
       case "model-services":
-        return renderProviderList();
+        return (
+          <ModelServices
+            providers={providers}
+            handleSelectProvider={handleSelectProvider}
+            handleProviderEnabledChange={handleProviderEnabledChange}
+          />
+        );
       case "provider-settings":
-        return renderProviderSettings();
+        return (
+          <ProviderSettings
+            form={form}
+            selectedProvider={selectedProvider}
+            handleMenuSelect={handleMenuSelect}
+            handleSaveProvider={handleSaveProvider}
+            handleModelChange={handleModelChange}
+          />
+        );
       case "general-settings":
-        return renderGeneralSettings();
+        return (
+          <GeneralSettings
+            form={generalForm}
+            config={config}
+            handleFormValueChange={handleFormValueChange}
+            handleLanguageChange={handleLanguageChange}
+            handleResetAllConfig={handleResetAllConfig}
+          />
+        );
       case "about":
-        return renderAbout();
+        return <AboutSection />;
       case "mcp-settings":
         return <MCPSettings />;
       default:
