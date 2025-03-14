@@ -94,8 +94,16 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           files: |
-            ./release/SeekChat-${{ needs.create_release.outputs.version }}-setup.exe
-            ./release/SeekChat-${{ needs.create_release.outputs.version }}.exe
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/latest*.yml
+            dist/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -133,8 +141,15 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           files: |
-            ./release/seekchat_${{ needs.create_release.outputs.version }}_amd64.deb
-            ./release/seekchat-${{ needs.create_release.outputs.version }}.x86_64.rpm
-            ./release/SeekChat-${{ needs.create_release.outputs.version }}.AppImage
+            dist/*.exe
+            dist/*.zip
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.snap
+            dist/*.deb
+            dist/*.rpm
+            dist/*.tar.gz
+            dist/latest*.yml
+            dist/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
