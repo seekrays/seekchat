@@ -43,8 +43,7 @@ export const useMessages = (session, sessionSettings) => {
   // ================== scroll control ==================
   /**
    * 滚动到聊天底部的函数
-   * 这个函数仍然存在，但不会自动调用
-   * 如果需要可以手动调用
+   * 已优化为立即滚动到底部，没有过渡动画或不必要的延迟
    */
   const scrollToBottom = useCallback(() => {
     if (messagesEndRef.current) {
@@ -102,13 +101,11 @@ export const useMessages = (session, sessionSettings) => {
   useEffect(() => {
     if (messages.length > 0 && !loading) {
       console.log("消息加载完成，准备滚动到底部");
-      // 使用延迟确保DOM已完全更新
-      const timer = setTimeout(() => {
+      // 使用requestAnimationFrame确保DOM已更新后再滚动
+      requestAnimationFrame(() => {
         scrollToBottom();
         console.log("已执行滚动到底部");
-      }, 200);
-
-      return () => clearTimeout(timer);
+      });
     }
   }, [messages, loading, scrollToBottom]);
 
@@ -543,14 +540,14 @@ export const useMessages = (session, sessionSettings) => {
           await updateMessageStatus(messageId, status, electronAPI);
 
           // 当消息状态为成功或错误时，也直接滚动到底部
-          // 但使用setTimeout确保DOM更新后再滚动
-          setTimeout(() => {
+          // 使用requestAnimationFrame确保DOM更新后再滚动
+          requestAnimationFrame(() => {
             scrollToBottom();
             console.log("AI消息完成，已滚动到底部");
-          }, 200);
+          });
         }
 
-        // 更新本地消息列表
+        // 更新本地消息列表 - 使用函数式更新以确保始终基于最新状态
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === messageId
@@ -903,11 +900,11 @@ export const useMessages = (session, sessionSettings) => {
         console.log("localAiMessage", localAiMessage);
 
         // 发送消息后直接滚动到底部
-        // 使用setTimeout确保DOM更新后再滚动
-        setTimeout(() => {
+        // 使用requestAnimationFrame确保DOM更新后再滚动
+        requestAnimationFrame(() => {
           scrollToBottom();
           console.log("发送消息后，已滚动到底部");
-        }, 200);
+        });
 
         // get temperature setting
         const temperature = getTemperatureSetting(currentSession);

@@ -1,4 +1,4 @@
-import React, { useRef, memo, useState, useEffect, lazy } from "react";
+import React, { useRef, memo, useState, useEffect, useCallback } from "react";
 import {
   Input,
   Button,
@@ -38,6 +38,7 @@ import "../styles/ChatWindow.css";
 import { useTranslation } from "react-i18next";
 import ChatInputContainer from "./ChatInputContainer";
 import MCPToolsButton from "./MCPToolsButton";
+import MessageItem from "./MessageItem";
 
 const { TextArea } = Input;
 const { Option, OptGroup } = Select;
@@ -414,6 +415,9 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
   const electronAPI = window.electronAPI;
   const sessionIdRef = useRef(null);
 
+  // 跟踪可见消息ID，用于优化滚动和渲染
+  const [visibleMessageIds, setVisibleMessageIds] = useState({});
+
   const {
     messages,
     isSending,
@@ -423,6 +427,7 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
     handleSendMessage,
     loadMessages,
     handleStopGeneration,
+    scrollToBottom,
   } = useMessages(session, sessionSettings);
 
   // 当会话变化时加载设置
@@ -483,6 +488,30 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
 
     loadSessionSettings();
   }, [session, electronAPI]);
+
+  // 监听消息列表变化，自动滚动到底部
+  useEffect(() => {
+    if (messages.length > 0 && !loading) {
+      // 使用requestAnimationFrame确保在下一次渲染周期执行滚动
+      requestAnimationFrame(() => {
+        scrollToBottom();
+        console.log("消息更新后自动滚动到底部");
+      });
+    }
+  }, [messages.length, loading, scrollToBottom]);
+
+  // 处理消息可见性变化
+  const handleMessageVisibilityChange = useCallback((messageId, isVisible) => {
+    if (isVisible) {
+      setVisibleMessageIds((prev) => ({ ...prev, [messageId]: true }));
+    } else {
+      setVisibleMessageIds((prev) => {
+        const newState = { ...prev };
+        delete newState[messageId];
+        return newState;
+      });
+    }
+  }, []);
 
   // 保存会话设置
   const saveSessionSettings = async (settings) => {
@@ -630,108 +659,22 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         ) : (
           <>
             {messages && messages.length > 0 ? (
-              messages.map((msg) => {
-                // 获取当前消息的AI模型信息
-                const modelInfo =
-                  msg.role === "assistant" && msg.providerId && msg.modelId
-                    ? getProviderAndModelInfo(msg.providerId, msg.modelId)
-                    : {
-                        providerName: t("settings.aiAssistant"),
-                        modelName: t("settings.aiAssistant"),
-                        logo: null,
-                        providerId: "",
-                      };
-
-                return (
-                  <div
+              <div className="message-list">
+                {messages.map((msg) => (
+                  <MessageItem
                     key={msg.id}
-                    className={`message-item ${
-                      msg.role === "user" ? "user-message" : "ai-message"
-                    }`}
-                  >
-                    <div className="message-avatar">
-                      {msg.role === "user" ? (
-                        <Avatar
-                          icon={<UserOutlined />}
-                          className="user-avatar"
-                        />
-                      ) : (
-                        <div className="ai-avatar">
-                          {modelInfo.logo ? (
-                            <img
-                              src={modelInfo.logo}
-                              alt={modelInfo.providerName}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.parentNode.querySelector(
-                                  ".anticon"
-                                ).style.display = "block";
-                              }}
-                            />
-                          ) : null}
-                          <RobotOutlined
-                            style={{
-                              display: modelInfo.logo ? "none" : "block",
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="message-content">
-                      <div className="message-header">
-                        <span className="message-sender">
-                          {msg.role === "user"
-                            ? t("common.user")
-                            : modelInfo.modelName}
-                        </span>
-                        {msg.role === "assistant" &&
-                          modelInfo.providerName !==
-                            t("common.aiAssistant") && (
-                            <span className="message-provider">
-                              {modelInfo.providerName}
-                            </span>
-                          )}
-                        <span className="message-time">
-                          {new Date(msg.createdAt).toLocaleString("zh-CN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })}
-                        </span>
-                      </div>
-                      <div className="message-text">
-                        {msg.status === "pending" &&
-                        (!msg.content ||
-                          (typeof msg.content === "string" &&
-                            JSON.parse(msg.content).find(
-                              (item) => item.type === "content"
-                            )?.content === "")) ? (
-                          <Spin size="small" />
-                        ) : msg.status === "error" ? (
-                          <MessageContent content={msg.content} />
-                        ) : (
-                          <MessageContent content={msg.content} />
-                        )}
-
-                        <div className="message-footer">
-                          <Tooltip title={t("chat.copyMessage")}>
-                            <Button
-                              type="text"
-                              icon={<CopyOutlined />}
-                              size="small"
-                              onClick={() => copyToClipboard(msg.content, t)}
-                              className="copy-button"
-                            />
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+                    message={msg}
+                    getProviderAndModelInfo={getProviderAndModelInfo}
+                    onVisibilityChange={handleMessageVisibilityChange}
+                  />
+                ))}
+              </div>
             ) : (
               <div className="empty-messages">
-                <p>{t("chat.noMessages")}</p>
+                <div className="empty-message-icon">
+                  <RobotOutlined style={{ fontSize: 48, opacity: 0.5 }} />
+                </div>
+                <div className="empty-message-text">{t("chat.noMessages")}</div>
               </div>
             )}
             {/* 仍需保留引用元素但不使其可见 */}
@@ -743,14 +686,12 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         )}
       </div>
 
-      {/* 使用新的ChatInputContainer组件 */}
       <ChatInputContainer
         onSendMessage={handleSendMessage}
         isSending={isSending}
         onStopGeneration={handleStopGeneration}
       />
 
-      {/* 设置弹窗 */}
       <ModelSettingsModal
         visible={settingsVisible}
         onCancel={() => setSettingsVisible(false)}

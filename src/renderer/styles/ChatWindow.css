@@ -821,3 +821,31 @@
   gap: 8px;
   color: #1890ff;
 }
+
+/* 消息渐入动画 */
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-item:last-child {
+  animation: messageAppear 0.3s ease-out;
+}
+
+/* 空消息状态样式优化 */
+.empty-message-icon {
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.empty-message-text {
+  font-size: 16px;
+  color: #888;
+  opacity: 0.8;
+}
