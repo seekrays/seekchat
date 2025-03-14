@@ -21,7 +21,8 @@
     "enabled": "已启用",
     "disabled": "已禁用",
     "user": "用户",
-    "seekChat": "SeekChat"
+    "seekChat": "SeekChat",
+    "unknownTool": "未知工具"
   },
   "settings": {
     "title": "设置",
@@ -149,6 +150,15 @@
     "clearChatConfirmContent": "此操作无法撤销。此会话中的所有消息将被永久删除。",
     "modelChanged": "模型已更改为：{{model}}",
     "copiedToClipboard": "已复制到剪贴板",
+    "missingProviderOrModel": "缺少提供商或模型",
+    "preparingApiCall": "准备调用 {{name}} 的 API",
+    "adapterNotFound": "找不到适配器",
+    "callingTool": "正在调用工具...",
+    "maxRecursionReached": "已达到最大工具调用次数({{depth}})",
+    "startingToolCallRecursion": "开始第{{depth}}轮工具调用递归",
+    "noToolCallsDirectComplete": "没有工具调用，直接调用onComplete回调",
+    "apiCallFailed": "调用 AI API 失败",
+    "requestCancelled": "请求被用户取消",
     "mcpTools": {
       "useTool": "使用MCP工具",
       "loading": "加载工具中...",
@@ -200,5 +210,24 @@
   "language": {
     "en": "English",
     "zh-CN": "简体中文"
+  },
+  "log": {
+    "jsonParseFailed": "JSON解析失败",
+    "streamParseFailed": "解析流数据失败",
+    "toolCallingProgress": "工具调用进度",
+    "toolCallCompleted": "工具调用完成",
+    "finalCallbackCalled": "调用最终的回调"
+  },
+  "error": {
+    "toolNotFound": "找不到ID为{{id}}的工具",
+    "specialTokenInToolParam": "工具参数中包含特殊token",
+    "incorrectParamFormat": "参数格式不正确",
+    "toolParamParseFailed": "工具参数解析失败",
+    "toolExecutionFailed": "工具调用失败",
+    "anthropicSerializationFailed": "序列化Anthropic工具输入失败"
+  },
+  "status": {
+    "callingTool": "正在调用工具: {{name}}",
+    "toolCallSuccess": "工具调用成功: {{name}}"
   }
 }

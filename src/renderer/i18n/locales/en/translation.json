@@ -21,7 +21,8 @@
     "enabled": "Enabled",
     "disabled": "Disabled",
     "user": "User",
-    "seekChat": "SeekChat"
+    "seekChat": "SeekChat",
+    "unknownTool": "Unknown Tool"
   },
   "settings": {
     "title": "Settings",
@@ -149,6 +150,15 @@
     "clearChatConfirmContent": "This action cannot be undone. All messages in this chat will be permanently deleted.",
     "modelChanged": "Model changed to: {{model}}",
     "copiedToClipboard": "Copied to clipboard",
+    "missingProviderOrModel": "Missing provider or model",
+    "preparingApiCall": "Preparing API call for {{name}}",
+    "adapterNotFound": "Adapter not found",
+    "callingTool": "Calling tools...",
+    "maxRecursionReached": "Maximum tool call recursion reached ({{depth}})",
+    "startingToolCallRecursion": "Starting tool call recursion round {{depth}}",
+    "noToolCallsDirectComplete": "No tool calls, direct complete callback",
+    "apiCallFailed": "AI API call failed",
+    "requestCancelled": "Request cancelled by user",
     "mcpTools": {
       "useTool": "Use MCP Tool",
       "loading": "Loading tools...",
@@ -200,5 +210,24 @@
   "language": {
     "en": "English",
     "zh-CN": "简体中文"
+  },
+  "log": {
+    "jsonParseFailed": "JSON parsing failed",
+    "streamParseFailed": "Stream data parsing failed",
+    "toolCallingProgress": "Tool calling progress",
+    "toolCallCompleted": "Tool call completed",
+    "finalCallbackCalled": "Final callback called"
+  },
+  "error": {
+    "toolNotFound": "Tool not found with ID {{id}}",
+    "specialTokenInToolParam": "Special token in tool parameter",
+    "incorrectParamFormat": "Incorrect parameter format",
+    "toolParamParseFailed": "Tool parameter parsing failed: {{message}}",
+    "toolExecutionFailed": "Tool execution failed: {{message}}",
+    "anthropicSerializationFailed": "Anthropic tool input serialization failed"
+  },
+  "status": {
+    "callingTool": "Calling tool: {{name}}",
+    "toolCallSuccess": "Tool call successful: {{name}}"
   }
 }

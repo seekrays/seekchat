@@ -4,6 +4,7 @@
  */
 
 import { safeJsonParse } from "../utils/common.js";
+import i18n from "../../../i18n";
 
 /**
  * 处理工具调用
@@ -17,7 +18,9 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
     // 从MCP工具列表中找到对应的工具
     const tool = mcpTools.find((t) => t.id === toolCall.function.name);
     if (!tool) {
-      throw new Error(`找不到ID为${toolCall.function.name}的工具`);
+      throw new Error(
+        i18n.t("error.toolNotFound", { id: toolCall.function.name })
+      );
     }
 
     // 解析参数
@@ -58,7 +61,9 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
         "原始参数:",
         toolCall.function.arguments
       );
-      throw new Error(`工具参数解析失败: ${error.message}`);
+      throw new Error(
+        i18n.t("error.toolParamParseFailed", { message: error.message })
+      );
     }
 
     // 通知正在调用工具
@@ -68,7 +73,7 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
           id: toolCall.id,
           name: tool.name,
           status: "running",
-          message: `正在调用工具: ${tool.name}`,
+          message: i18n.t("status.callingTool", { name: tool.name }),
         },
       });
     }
@@ -81,7 +86,9 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
     const result = await mcpService.callTool(tool.serverId, tool.id, args);
 
     if (!result.success) {
-      throw new Error(`工具调用失败: ${result.message}`);
+      throw new Error(
+        i18n.t("error.toolExecutionFailed", { message: result.message })
+      );
     }
 
     // 通知工具调用成功
@@ -91,7 +98,7 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
           id: toolCall.id,
           name: tool.name,
           status: "success",
-          message: `工具调用成功: ${tool.name}`,
+          message: i18n.t("status.toolCallSuccess", { name: tool.name }),
         },
       });
     }
@@ -112,9 +119,11 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
           name:
             mcpTools.find((t) => t.id === toolCall?.function?.name)?.name ||
             toolCall?.function?.name ||
-            "未知工具",
+            i18n.t("common.unknownTool"),
           status: "error",
-          message: `工具调用失败: ${error.message}`,
+          message: i18n.t("error.toolExecutionFailed", {
+            message: error.message,
+          }),
         },
       });
     }

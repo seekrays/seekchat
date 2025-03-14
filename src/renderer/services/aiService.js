@@ -168,7 +168,7 @@ const sendMessageToAI = async (
             reasoning_content: completeData.reasoning_content || "",
             toolCalls: completeData.toolCalls,
             toolCallsProcessing: true,
-            message: "正在调用工具...",
+            message: i18n.t("chat.callingTool"),
           });
         }
 
@@ -268,7 +268,11 @@ const sendMessageToAI = async (
             // 构建最终结果
             const finalResult = {
               ...completeData,
-              content: completeData.content + "\n\n[已达到最大工具调用次数]",
+              content:
+                completeData.content +
+                "\n\n[" +
+                i18n.t("chat.mcpTools.maxToolCallsReached") +
+                "]",
               toolCallResults: toolCallResults,
             };
             onComplete(finalResult);
@@ -276,7 +280,11 @@ const sendMessageToAI = async (
 
           return {
             ...completeData,
-            content: completeData.content + "\n\n[已达到最大工具调用次数]",
+            content:
+              completeData.content +
+              "\n\n[" +
+              i18n.t("chat.mcpTools.maxToolCallsReached") +
+              "]",
             toolCallResults: toolCallResults,
           };
         }

@@ -2,6 +2,8 @@
  * 通用工具函数
  */
 
+import i18n from "../../../i18n";
+
 /**
  * 安全地解析JSON字符串，如果解析失败则返回默认值
  * @param {string} jsonStr JSON字符串
