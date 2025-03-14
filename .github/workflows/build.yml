@@ -47,9 +47,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build icon
-        run: npm run build-icon
-
       - name: Build macOS app
         run: npm run electron:build:mac
         env:
@@ -60,8 +57,9 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           files: |
-            ./release/SeekChat-${{ needs.create_release.outputs.version }}.dmg
-            ./release/SeekChat-${{ needs.create_release.outputs.version }}-mac.zip
+            dist/*.zip
+            dist/*.dmg
+            dist/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -81,9 +79,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build icon
-        run: npm run build-icon
-
       - name: Build Windows app
         run: npm run electron:build:win
         env:
@@ -95,14 +90,6 @@ jobs:
           tag_name: ${{ github.ref }}
           files: |
             dist/*.exe
-            dist/*.zip
-            dist/*.dmg
-            dist/*.AppImage
-            dist/*.snap
-            dist/*.deb
-            dist/*.rpm
-            dist/*.tar.gz
-            dist/latest*.yml
             dist/*.blockmap
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -127,9 +114,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libxkbcommon-x11-0 libxss1 libgconf-2-4 libgtk-3-0 libnss3 libasound2
-
-      - name: Build icon
-        run: npm run build-icon
 
       - name: Build Linux app
         run: npm run electron:build:linux
