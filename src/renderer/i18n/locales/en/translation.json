@@ -146,6 +146,7 @@
     "enterChatName": "Enter chat name",
     "startNewChat": "Start a new chat",
     "clearChatConfirm": "Are you sure you want to delete chat '{{sessionName}}'?",
+    "clearChatConfirmContent": "This action cannot be undone. All messages in this chat will be permanently deleted.",
     "modelChanged": "Model changed to: {{model}}",
     "copiedToClipboard": "Copied to clipboard",
     "mcpTools": {

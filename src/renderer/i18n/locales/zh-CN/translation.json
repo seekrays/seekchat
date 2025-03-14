@@ -146,6 +146,7 @@
     "enterChatName": "输入会话名称",
     "startNewChat": "开始新会话",
     "clearChatConfirm": "确定要删除会话 '{{sessionName}}'？",
+    "clearChatConfirmContent": "此操作无法撤销。此会话中的所有消息将被永久删除。",
     "modelChanged": "模型已更改为：{{model}}",
     "copiedToClipboard": "已复制到剪贴板",
     "mcpTools": {
