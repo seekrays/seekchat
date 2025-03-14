@@ -1,15 +1,51 @@
-import React from "react";
-import { Switch, Typography } from "antd";
+import React, { useState, useEffect } from "react";
+import { Switch, Typography, message } from "antd";
 import { useTranslation } from "react-i18next";
 
 const { Title, Paragraph } = Typography;
 
 const ModelServices = ({
-  providers,
+  providers: initialProviders,
+  providersConfig,
+  saveProviderConfig,
   handleSelectProvider,
-  handleProviderEnabledChange,
+  onProvidersChange,
 }) => {
   const { t } = useTranslation();
+  const [providers, setProviders] = useState(initialProviders);
+
+  useEffect(() => {
+    setProviders(initialProviders);
+  }, [initialProviders]);
+
+  const handleProviderEnabledChange = (providerId, enabled) => {
+    const updatedProviders = providers.map((provider) => {
+      if (provider.id === providerId) {
+        return { ...provider, enabled };
+      }
+      return provider;
+    });
+
+    setProviders(updatedProviders);
+
+    if (onProvidersChange) {
+      onProvidersChange(updatedProviders);
+    }
+
+    const updatedConfig = { ...providersConfig };
+    if (!updatedConfig[providerId]) {
+      updatedConfig[providerId] = {};
+    }
+    updatedConfig[providerId].enabled = enabled;
+
+    saveProviderConfig(updatedConfig);
+
+    message.success(
+      `${enabled ? t("common.enable") : t("common.disable")} ${t(
+        "common.success"
+      )}`
+    );
+  };
 
   return (
     <div className="provider-list-container">

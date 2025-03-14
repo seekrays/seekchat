@@ -1,18 +1,39 @@
-import React from "react";
-import { Form, Select, Card, Button, Typography, Modal } from "antd";
+import React, { useEffect } from "react";
+import { Form, Select, Card, Button, Typography, Modal, message } from "antd";
 import { ClearOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 
 const { Title, Paragraph } = Typography;
 
 const GeneralSettings = ({
-  form,
   config,
-  handleFormValueChange,
-  handleLanguageChange,
+  saveConfig,
+  updateLanguage,
   handleResetAllConfig,
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const [form] = Form.useForm();
+
+  // 初始化表单值
+  useEffect(() => {
+    form.setFieldsValue({
+      language: config.language || "en",
+    });
+  }, [config, form]);
+
+  // 处理表单值变化（移到组件内部）
+  const handleFormValueChange = (changedValues, allValues) => {
+    // 更新配置
+    const newConfig = { ...config, ...allValues };
+    saveConfig(newConfig);
+  };
+
+  // 处理语言变更（移到组件内部）
+  const handleLanguageChange = (language) => {
+    updateLanguage(language);
+    i18n.changeLanguage(language);
+    message.success(t("settings.saveSuccess"));
+  };
 
   return (
     <div className="settings-content">
