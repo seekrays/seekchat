@@ -100,7 +100,7 @@ const MCPToolCall = ({ toolCall, isCollapsed = false }) => {
           {t("chat.mcpTools.callMCPTool")} {getStatusIcon()}{" "}
           {tool_name || tool_id}
         </span>
-        <div className="tool-calling-status">{getStatusText()}</div>
+        <div>{getStatusText()}</div>
       </div>
 
       {!collapsed && (

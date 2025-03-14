@@ -811,4 +811,13 @@
 
 /* 工具调用中状态信息 */
 .tool-calling-status {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1890ff;
 }

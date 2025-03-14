@@ -179,7 +179,7 @@ const ChatPage = () => {
               >
                 {t("chat.newChat")}
               </Button>
-              <Button
+              <Button  
                 icon={<SettingOutlined />}
                 onClick={() => navigate("/settings")}
                 className="settings-button-bottom"
