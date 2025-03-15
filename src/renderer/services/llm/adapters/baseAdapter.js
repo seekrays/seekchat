@@ -204,7 +204,6 @@ export const baseOpenAICompatibleAdapter = async (
                         type,
                         function: functionData,
                       } = deltaToolCall;
-
                       // 查找现有工具调用或创建新的
                       let existingToolCall = currentToolCalls.find(
                         (tc) => tc.index === index
@@ -232,20 +231,6 @@ export const baseOpenAICompatibleAdapter = async (
                         if (functionData.arguments) {
                           // 处理可能包含特殊token的参数
                           let argsStr = functionData.arguments;
-                          if (
-                            argsStr.includes("<｜tool") ||
-                            argsStr.includes("<|tool")
-                          ) {
-                            console.warn(
-                              "OpenAI工具参数包含特殊token:",
-                              argsStr
-                            );
-                            const tokenMatch =
-                              argsStr.match(/<[｜|]tool[^>]*>/);
-                            if (tokenMatch) {
-                              argsStr = argsStr.substring(tokenMatch[0].length);
-                            }
-                          }
                           existingToolCall.function.arguments += argsStr;
                         }
                       }

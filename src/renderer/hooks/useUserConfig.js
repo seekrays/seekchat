@@ -100,7 +100,6 @@ export const getProvidersConfig = () => {
     }
 
     const savedConfig = JSON.parse(providersJson);
-    console.log("savedConfig", savedConfig);
 
     // 检查savedConfig是否为数组，如果是则转换为对象
     if (Array.isArray(savedConfig)) {
