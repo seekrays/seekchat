@@ -627,8 +627,20 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
 
   // 检查当前选中的模型是否可用，如果不可用则选择第一个可用模型
   useEffect(() => {
-    if (!config.providerId || !config.modelId || providerModels.length === 0)
+    // 只有当没有可用模型时才返回
+    if (providerModels.length === 0) return;
+
+    // 如果用户没有选择模型或选择的模型/提供商不可用，自动选择一个默认模型
+    if (!config.providerId || !config.modelId) {
+      // 当用户初始化没有选择模型时，自动选择第一个可用模型
+      if (providerModels.length > 0 && providerModels[0].models.length > 0) {
+        const firstProvider = providerModels[0];
+        const firstModel = firstProvider.models[0];
+        handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
+        console.log(`初始化自动选择模型: ${firstModel.name}`);
+      }
       return;
+    }
 
     // 检查当前选择的提供商是否存在于可用提供商列表中
     const provider = providerModels.find(
@@ -643,7 +655,6 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         const firstModel = firstProvider.models[0];
         handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
         console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
-        // message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
       }
       return;
     }
@@ -659,7 +670,6 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         const firstModel = provider.models[0];
         handleModelChange(`${provider.provider.id}|${firstModel.id}`);
         console.log(`当前模型不可用，自动选择了: ${firstModel.name}`);
-        // message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
       } else if (
         providerModels.length > 0 &&
         providerModels[0].models.length > 0
@@ -669,7 +679,6 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         const firstModel = firstProvider.models[0];
         handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
         console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
-        // message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
       }
     }
   }, [config.providerId, config.modelId, providerModels, handleModelChange]);
