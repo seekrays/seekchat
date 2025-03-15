@@ -13,7 +13,11 @@ import { formatToolsForProvider } from "./llm/tools/toolFormatter.js";
 import { handleToolCall } from "./llm/tools/toolHandler.js";
 
 // 导入工具函数
-import { safeJsonParse, getProviderAdapter } from "./llm/utils/common.js";
+import {
+  getProviderAdapter,
+  safeJsonParse,
+  parseMCPToolParams,
+} from "./llm/utils/common.js";
 
 /**
  * 获取启用的提供商列表
@@ -65,18 +69,6 @@ const sendMessageToAI = async (
     ? formatToolsForProvider(options.mcpTools, provider.id)
     : [];
 
-  // 检查是否需要使用模拟响应
-  const useMockResponse =
-    process.env.NODE_ENV === "development" ||
-    provider.mockResponse ||
-    !provider.apiKey;
-
-  // 如果不是模拟响应，则需要 API 密钥
-  if (!useMockResponse && !provider.apiKey) {
-    console.error("缺少 API 密钥:", provider.name);
-    throw new Error(i18n.t("settings.apiKeyRequired"));
-  }
-
   // 检查提供商是否被禁用
   const providersConfig = getProvidersConfig();
   const savedProvider = providersConfig[provider.id];
@@ -92,7 +84,6 @@ const sendMessageToAI = async (
       modelId: model.id,
       messagesCount: messages.length,
       useStream: !!onProgress,
-      useMockResponse,
       temperature,
       hasSignal: !!options.signal,
       hasTools: tools.length > 0,
@@ -164,7 +155,7 @@ const sendMessageToAI = async (
                     ?.name || toolCall.function.name,
                 parameters:
                   typeof toolCall.function.arguments === "string"
-                    ? safeJsonParse(toolCall.function.arguments, {})
+                    ? parseMCPToolParams(toolCall.function.arguments)
                     : toolCall.function.arguments,
                 result: toolResult,
                 status: toolResult.success ? "success" : "error",
@@ -191,7 +182,7 @@ const sendMessageToAI = async (
                     ?.name || toolCall.function.name,
                 parameters:
                   typeof toolCall.function.arguments === "string"
-                    ? safeJsonParse(toolCall.function.arguments, {})
+                    ? parseMCPToolParams(toolCall.function.arguments)
                     : toolCall.function.arguments,
                 result: error.message,
                 status: "error",

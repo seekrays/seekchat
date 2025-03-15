@@ -137,9 +137,10 @@ const MCPSettings = () => {
     try {
       // 如果没有传入serverData，则从表单获取
       if (!serverData) {
-        const values = await form.validateFields(["url", "type", "apiKey"]);
+        const values = await form.validateFields(["url", "type"]);
         serverData = {
           ...values,
+          apiKey: "", // 设置为空字符串
           id: editingServer?.id,
         };
       }
@@ -202,7 +203,7 @@ const MCPSettings = () => {
             name: server.name,
             url: server.url,
             type: server.type,
-            apiKey: server.api_key,
+            apiKey: "", // 设置为空字符串
           },
           { silent: true, skipReload: true }
         );
@@ -239,7 +240,6 @@ const MCPSettings = () => {
       name: server.name,
       url: server.url,
       type: server.type,
-      apiKey: server.api_key,
     });
     setEditingServer(server);
     message.loading(t("settings.refreshingToolsMsg"), 0);
@@ -250,7 +250,7 @@ const MCPSettings = () => {
         name: server.name,
         url: server.url,
         type: server.type,
-        apiKey: server.api_key,
+        apiKey: "", // 设置为空字符串
       },
       { silent: true }
     );
@@ -280,7 +280,6 @@ const MCPSettings = () => {
         name: server.name,
         url: server.url,
         type: server.type,
-        apiKey: server.api_key,
         description: server.description,
       });
       // 更新服务器类型
@@ -534,15 +533,6 @@ const MCPSettings = () => {
             <Input placeholder={t("settings.toolNamePlaceholder")} />
           </Form.Item>
 
-          <Form.Item name="description" label={t("settings.toolDescription")}>
-            <TextArea
-              placeholder={t("settings.toolDescriptionPlaceholder")}
-              rows={3}
-              maxLength={200}
-              showCount
-            />
-          </Form.Item>
-
           <Form.Item
             name="type"
             label={t("settings.serverType")}
@@ -569,21 +559,22 @@ const MCPSettings = () => {
                 : t("settings.sseUrlTooltip")
             }
           >
-            <Input
+            <TextArea
               placeholder={
                 serverType === "stdio"
                   ? "npx mcp-search"
                   : "http://localhost:3000/mcp"
               }
+              rows={2}
             />
           </Form.Item>
-
-          <Form.Item
-            name="apiKey"
-            label={t("settings.apiKey")}
-            tooltip={t("settings.apiKeyTooltip")}
-          >
-            <Input.Password placeholder={t("settings.apiKeyPlaceholder")} />
+          <Form.Item name="description" label={t("settings.toolDescription")}>
+            <TextArea
+              placeholder={t("settings.toolDescriptionPlaceholder")}
+              rows={3}
+              maxLength={200}
+              showCount
+            />
           </Form.Item>
         </Form>
 

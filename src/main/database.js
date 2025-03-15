@@ -74,7 +74,6 @@ class ChatDatabase {
         name TEXT NOT NULL,
         url TEXT NOT NULL,
         type TEXT NOT NULL,
-        api_key TEXT,
         active BOOLEAN DEFAULT 0,
         tools TEXT,
         description TEXT,
@@ -738,13 +737,12 @@ class ChatDatabase {
       const timestamp = Date.now();
 
       this.db.run(
-        `INSERT INTO mcp_servers (name, url, type, api_key, active, tools, created_at, updated_at)
-         VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO mcp_servers (name, url, type, active, tools, created_at, updated_at)
+         VALUES ( ?, ?, ?, ?, ?, ?, ?)`,
         [
           serverData.name,
           serverData.url,
           serverData.type,
-          serverData.apiKey || null,
           serverData.active || 0,
           JSON.stringify(serverData.tools || []),
           timestamp,
@@ -762,7 +760,7 @@ class ChatDatabase {
     });
   }
 
-  // 更新MCP服务器
+  // 更新MCP服务器信息
   updateMCPServer(id, updates) {
     return new Promise((resolve, reject) => {
       const timestamp = Date.now();
@@ -786,6 +784,8 @@ class ChatDatabase {
 
       updateFields.push("updated_at = ?");
       updateValues.push(timestamp);
+
+      // 添加id到更新参数
       updateValues.push(id);
 
       const sql = `UPDATE mcp_servers SET ${updateFields.join(

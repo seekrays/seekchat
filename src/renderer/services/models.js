@@ -101,6 +101,46 @@ export const SYSTEM_MODELS = {
       group: "DeepSeek Reasoner",
     },
   ],
+  moonshot: [
+    {
+      id: "moonshot-v1-auto",
+      name: "moonshot-v1-auto",
+      provider: "moonshot",
+      group: "moonshot-v1",
+    },
+  ],
+  bailian: [
+    {
+      id: "qwen-vl-plus",
+      name: "qwen-vl-plus",
+      provider: "dashscope",
+      group: "qwen-vl",
+    },
+    {
+      id: "qwen-coder-plus",
+      name: "qwen-coder-plus",
+      provider: "dashscope",
+      group: "qwen-coder",
+    },
+    {
+      id: "qwen-turbo",
+      name: "qwen-turbo",
+      provider: "dashscope",
+      group: "qwen-turbo",
+    },
+    {
+      id: "qwen-plus",
+      name: "qwen-plus",
+      provider: "dashscope",
+      group: "qwen-plus",
+    },
+    {
+      id: "qwen-max",
+      name: "qwen-max",
+      provider: "dashscope",
+      group: "qwen-max",
+    },
+  ],
 };
 
 // 服务提供商定义
@@ -125,6 +165,41 @@ export const providers = [
     logo: "assets/providers/silicon.png",
     baseUrl: "https://api.siliconflow.cn/v1",
     models: SYSTEM_MODELS.silicon || [],
+  },
+  {
+    id: "lmstudio",
+    name: "lmstudio",
+    logo: "assets/providers/lmstudio.png",
+    baseUrl: "http://127.0.0.1:1234/v1",
+    models: [],
+  },
+  {
+    id: "ollama",
+    name: "ollama",
+    logo: "assets/providers/ollama.png",
+    baseUrl: "http://127.0.0.1:11434/v1",
+    models: [],
+  },
+  {
+    id: "moonshot",
+    name: "moonshot",
+    logo: "assets/providers/moonshot.png",
+    baseUrl: "https://api.moonshot.cn/v1",
+    models: SYSTEM_MODELS.moonshot || [],
+  },
+  {
+    id: "dashscope",
+    name: "阿里云百炼",
+    logo: "assets/providers/dashscope.png",
+    baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    models: SYSTEM_MODELS.dashscope || [],
+  },
+  {
+    id: "doubao",
+    name: "Doubao",
+    logo: "assets/providers/doubao.png",
+    baseUrl: "https://ark.cn-beijing.volces.com/api/v3",
+    models: SYSTEM_MODELS.doubao || [],
   },
 ];
 

@@ -3,8 +3,8 @@
  * 负责处理AI工具的调用和响应处理
  */
 
-import { safeJsonParse } from "../utils/common.js";
-import i18n from "../../../i18n";
+import { safeJsonParse, parseMCPToolParams } from "../utils/common.js";
+import i18n from "../../../i18n/index.js";
 
 /**
  * 处理工具调用
@@ -30,40 +30,15 @@ export const handleToolCall = async (toolCall, mcpTools, onProgress) => {
       // 检查并清理工具调用参数字符串
       let argsStr = toolCall.function.arguments || "{}";
 
-      // 尝试清理Anthropic特殊token或其他非法JSON字符
-      if (argsStr.includes("<｜tool") || argsStr.includes("<|tool")) {
-        console.warn("工具参数中包含特殊token，尝试清理:", argsStr);
-        // 移除特殊token前缀部分
-        const tokenMatch = argsStr.match(/<[｜|]tool[^>]*>/);
-        if (tokenMatch) {
-          argsStr = argsStr.substring(tokenMatch[0].length);
-        }
-      }
-
-      // 确保参数是有效的JSON格式
-      if (!argsStr.trim().startsWith("{") && !argsStr.trim().startsWith("[")) {
-        console.warn("参数格式不正确，尝试添加花括号:", argsStr);
-        argsStr = `{${argsStr}}`;
-      }
-
-      // 尝试解析JSON
-      try {
-        args = JSON.parse(argsStr);
-      } catch (innerError) {
-        // 如果解析失败，尝试通过eval方式解析 (仅作为后备方案)
-        console.warn("JSON.parse失败，尝试替代方法:", innerError.message);
-        args = {};
-      }
-    } catch (error) {
-      console.error(
-        "工具参数解析失败:",
-        error,
-        "原始参数:",
-        toolCall.function.arguments
-      );
-      throw new Error(
-        i18n.t("error.toolParamParseFailed", { message: error.message })
-      );
+      // 使用增强的MCP工具参数解析函数
+      args = parseMCPToolParams(argsStr);
+      console.log("工具参数解析成功:", args);
+    } catch (e) {
+      console.error("解析工具参数失败:", e);
+      return {
+        success: false,
+        message: i18n.t("error.toolParameterParseFailed"),
+      };
     }
 
     // 通知正在调用工具

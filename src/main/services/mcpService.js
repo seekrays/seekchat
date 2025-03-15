@@ -209,12 +209,9 @@ const createMCPClient = async (
           "@modelcontextprotocol/sdk/client/sse.js"
         );
 
-        // 创建SSE传输
+        // 创建SSE传输 - 不再使用apiKey
         transport = new SSEClientTransport({
           baseUrl: serverData.url,
-          headers: serverData.apiKey
-            ? { Authorization: `Bearer ${serverData.apiKey}` }
-            : undefined,
           timeout: connectionTimeout,
         });
       } else {

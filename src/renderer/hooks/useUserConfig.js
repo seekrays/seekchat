@@ -165,13 +165,6 @@ export const saveProviderConfig = (providersConfig) => {
     console.log("保存提供商配置成功，数据大小:", configJson.length, "字节");
     console.log("保存的数据:", providersConfig);
 
-    // 验证保存是否成功
-    const savedJson = localStorage.getItem(providersConfigName);
-    if (!savedJson) {
-      console.error("保存后无法读取数据");
-      return false;
-    }
-
     return true;
   } catch (error) {
     console.error("保存提供商配置失败:", error);
@@ -311,21 +304,10 @@ export function isAIConfigured() {
     // 后续会通过getAllProviders自动选择合适的模型
   }
 
-  // 如果是模拟响应模式(mock)或开发环境，不需要API密钥
-  if (provider.mockResponse || process.env.NODE_ENV === "development") {
-    return true;
-  }
-
   // API密钥检查变为可选，如果提供商有baseUrl且能正常工作，即使没有API密钥也可以接受
   // 对于某些提供商，如果baseUrl有效，可以不需要apiKey
   if (provider.baseUrl) {
     return true;
-  }
-
-  // 如果都不满足，检查是否有API密钥
-  if (!provider.apiKey) {
-    console.log("提供商没有API密钥:", config.providerId);
-    return false;
   }
 
   return true;
