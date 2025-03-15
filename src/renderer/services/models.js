@@ -199,29 +199,50 @@ export const getAllProviders = () => {
       provider.enabled =
         savedConfig.enabled !== undefined ? savedConfig.enabled : false;
 
-      // 更新模型的启用状态
+      // 更新模型的启用状态和删除状态
       if (savedConfig.models) {
         provider.models.forEach((model) => {
           const savedModel = savedConfig.models.find((m) => m.id === model.id);
           if (savedModel) {
             model.enabled =
               savedModel.enabled !== undefined ? savedModel.enabled : true;
+            // 添加删除标志支持
+            model.deleted = savedModel.deleted === true;
           } else {
-            // 如果没有保存的模型配置，默认启用
+            // 如果没有保存的模型配置，默认启用且未删除
             model.enabled = true;
+            model.deleted = false;
+          }
+        });
+
+        // 添加保存的模型中在系统模型中不存在的模型（可能是后来添加的）
+        savedConfig.models.forEach((savedModel) => {
+          const existingModel = provider.models.find(
+            (m) => m.id === savedModel.id
+          );
+          if (!existingModel) {
+            provider.models.push({
+              id: savedModel.id,
+              name: savedModel.name || savedModel.id,
+              enabled:
+                savedModel.enabled !== undefined ? savedModel.enabled : true,
+              deleted: savedModel.deleted === true,
+            });
           }
         });
       } else {
-        // 如果没有保存的模型配置，默认所有模型都启用
+        // 如果没有保存的模型配置，默认所有模型都启用且未删除
         provider.models.forEach((model) => {
           model.enabled = true;
+          model.deleted = false;
         });
       }
     } else {
-      // 如果没有保存的配置，默认禁用提供商，但所有模型都启用
+      // 如果没有保存的配置，默认禁用提供商，但所有模型都启用且未删除
       provider.enabled = false;
       provider.models.forEach((model) => {
         model.enabled = true;
+        model.deleted = false;
       });
     }
   });
@@ -235,13 +256,21 @@ export const getAllProviders = () => {
         name: providerConfig.name,
         baseUrl: providerConfig.baseUrl,
         apiKey: providerConfig.apiKey,
-        models: providerConfig.models || [],
+        models: (providerConfig.models || []).map((model) => ({
+          ...model,
+          deleted: model.deleted === true,
+        })),
         enabled:
           providerConfig.enabled !== undefined ? providerConfig.enabled : false,
         isCustom: true,
       };
       allProviders.push(customProvider);
     }
+  });
+
+  // 从结果中过滤掉标记为已删除的模型
+  allProviders.forEach((provider) => {
+    provider.models = provider.models.filter((model) => !model.deleted);
   });
 
   return allProviders;

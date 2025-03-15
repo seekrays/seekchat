@@ -27,7 +27,7 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { getEnabledProviders } from "../services/aiService";
-import { getModelName } from "../services/models";
+import { getModelName, getAllProviders } from "../services/models";
 import { providers } from "../services/models";
 import { useUserConfig } from "../hooks/useUserConfig";
 import { useMessages } from "../hooks/useMessages";
@@ -380,8 +380,11 @@ const ModelSettingsModal = ({ visible, onCancel, onSave, initialSettings }) => {
 
 // 获取服务提供商和模型信息
 const getProviderAndModelInfo = (providerId, modelId) => {
+  // 获取所有供应商（包括系统和自定义供应商）
+  const allProviders = getAllProviders();
+
   // 查找提供商
-  const provider = providers.find((p) => p.id === providerId);
+  const provider = allProviders.find((p) => p.id === providerId);
   if (!provider)
     return {
       providerName: "AI助手",
@@ -587,10 +590,10 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
           return { provider, models: [] };
         }
 
-        // 过滤出启用的模型
+        // 过滤出启用的且未删除的模型
         const enabledModels = provider.models.filter((model) => {
-          // 如果模型没有明确的enabled属性或者enabled为true，则认为是启用的
-          return model.enabled !== false;
+          // 如果模型没有明确的enabled属性或者enabled为true，并且未被删除，则认为是可用的
+          return model.enabled !== false && model.deleted !== true;
         });
 
         return {

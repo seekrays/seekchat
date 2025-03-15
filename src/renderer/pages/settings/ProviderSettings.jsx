@@ -45,7 +45,13 @@ const ProviderSettings = ({
   // 初始化表单和状态
   useEffect(() => {
     if (initialProvider) {
-      setSelectedProvider(initialProvider);
+      // 确保过滤掉已删除的模型
+      const filteredProvider = {
+        ...initialProvider,
+        models: initialProvider.models.filter((model) => !model.deleted),
+      };
+
+      setSelectedProvider(filteredProvider);
 
       // 设置表单初始值
       form.setFieldsValue({
@@ -246,10 +252,25 @@ const ProviderSettings = ({
   const handleDeleteModel = (modelId) => {
     if (!selectedProvider) return;
 
-    // 过滤掉要删除的模型
-    const updatedModels = selectedProvider.models.filter(
-      (model) => model.id !== modelId
-    );
+    // 检查是否是系统供应商
+    const isSystemProvider = !selectedProvider.isCustom;
+
+    let updatedModels;
+
+    if (isSystemProvider) {
+      // 对于系统供应商，标记模型为已删除而不是移除
+      updatedModels = selectedProvider.models.map((model) => {
+        if (model.id === modelId) {
+          return { ...model, deleted: true };
+        }
+        return model;
+      });
+    } else {
+      // 对于自定义供应商，继续使用过滤方法删除
+      updatedModels = selectedProvider.models.filter(
+        (model) => model.id !== modelId
+      );
+    }
 
     // 更新提供商状态
     const updatedProvider = {
@@ -266,11 +287,22 @@ const ProviderSettings = ({
     };
 
     // 更新模型列表
-    providerConfig.models = updatedModels.map((model) => ({
-      id: model.id,
-      enabled: model.enabled !== false,
-      name: model.name,
-    }));
+    if (isSystemProvider) {
+      // 对于系统供应商，保存所有模型，包括标记为删除的
+      providerConfig.models = updatedModels.map((model) => ({
+        id: model.id,
+        enabled: model.enabled !== false,
+        name: model.name,
+        deleted: model.deleted === true,
+      }));
+    } else {
+      // 对于自定义供应商，只保存未删除的模型
+      providerConfig.models = updatedModels.map((model) => ({
+        id: model.id,
+        enabled: model.enabled !== false,
+        name: model.name,
+      }));
+    }
 
     // 如果是自定义提供商，保存isCustom标志
     if (selectedProvider.isCustom) {
@@ -284,7 +316,12 @@ const ProviderSettings = ({
 
     // 通知父组件更新
     if (onProviderUpdate) {
-      onProviderUpdate(updatedProvider);
+      // 在UI中更新提供商，但过滤掉已删除的模型
+      const uiProvider = {
+        ...updatedProvider,
+        models: updatedModels.filter((model) => !model.deleted),
+      };
+      onProviderUpdate(uiProvider);
     }
 
     message.success(t("settings.deleteModelSuccess"));
@@ -562,7 +599,9 @@ const ProviderSettings = ({
       </Divider>
 
       <div className="models-container">
-        {selectedProvider.models.map((model) => renderModelCard(model))}
+        {selectedProvider.models
+          .filter((model) => !model.deleted)
+          .map((model) => renderModelCard(model))}
       </div>
 
       <div style={{ marginTop: "20px" }}>
