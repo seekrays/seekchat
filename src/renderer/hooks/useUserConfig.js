@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { getAllProviders } from "../services/models";
 // 移除对 models.js 的导入，避免循环依赖
 // import { providers } from "../services/models";
 
@@ -269,46 +270,28 @@ if (typeof window !== "undefined") {
  */
 export function isAIConfigured() {
   const config = getUserConfig();
-  const providersConfig = getProvidersConfig();
-  console.log("检查AI配置:", { userConfig: config, providersConfig });
-
+  const allProviders = getAllProviders();
+  console.log("检查AI配置:", { userConfig: config, allProviders });
   // 检查是否选择了提供商和模型
   if (!config.providerId || !config.modelId) {
     console.log("未选择提供商或模型");
     return false;
   }
 
-  // 检查提供商是否存在且已启用
-  const provider = providersConfig[config.providerId];
+  // 从allProviders 中检查服务商没有被禁用以及模型没有被禁用货真删除
+  const provider = allProviders.find(
+    (p) => p.id === config.providerId && p.enabled !== false
+  );
+  console.log("检查AI配置:", { provider });
   if (!provider) {
-    console.log("提供商不存在:", config.providerId);
     return false;
   }
-
-  // 如果提供商被明确禁用，则返回false
-  if (provider.enabled === false) {
-    console.log("提供商被禁用:", config.providerId);
-    return false;
-  }
-
-  // 检查模型是否存在于配置中
-  const savedModels = provider.models || [];
-  const modelExists = savedModels.some(
+  const model = provider.models.find(
     (m) => m.id === config.modelId && m.enabled !== false && m.deleted !== true
   );
-
-  if (!modelExists) {
-    console.log("模型不存在或被禁用:", config.modelId);
-
-    // 在这里不返回false，因为模型可能在系统定义但不在用户配置中
-    // 后续会通过getAllProviders自动选择合适的模型
+  console.log("检查AI配置:", { model });
+  if (!model) {
+    return false;
   }
-
-  // API密钥检查变为可选，如果提供商有baseUrl且能正常工作，即使没有API密钥也可以接受
-  // 对于某些提供商，如果baseUrl有效，可以不需要apiKey
-  if (provider.baseUrl) {
-    return true;
-  }
-
   return true;
 }
