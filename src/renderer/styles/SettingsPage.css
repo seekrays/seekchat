@@ -505,6 +505,13 @@
   margin-top: 8px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.model-id {
+  font-size: 11px;
+  color: #888;
+  font-family: monospace;
 }
 
 .provider-settings {

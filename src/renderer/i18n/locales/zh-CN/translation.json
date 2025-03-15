@@ -131,6 +131,7 @@
     "editModel": "编辑模型",
     "modelId": "模型ID",
     "modelIdRequired": "模型ID是必填的",
+    "modelIdNotEditable": "模型ID创建后不可编辑，您只能修改模型名称。",
     "modelName": "模型名称",
     "modelNamePlaceholder": "输入模型名称（可选）",
     "addModelSuccess": "添加模型成功",

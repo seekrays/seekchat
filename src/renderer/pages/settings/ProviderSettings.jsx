@@ -467,7 +467,7 @@ const ProviderSettings = ({
         title={
           <div className="model-card-title">
             {modelIcon}
-            <span>{model.name}</span>
+            <span>{model.id}</span>
           </div>
         }
         extra={
@@ -507,9 +507,8 @@ const ProviderSettings = ({
         }
       >
         <div className="model-card-content">
-          <div>{model.description || t("settings.modelDescription")}</div>
           <div className="model-status">
-            {t("common.status")}:{" "}
+            <span className="model-name">{model.name}</span>
             <Tag color={isEnabled ? "success" : "error"}>
               {isEnabled ? t("common.enabled") : t("common.disabled")}
             </Tag>
@@ -586,7 +585,7 @@ const ProviderSettings = ({
               label={t("settings.apiKey")}
               rules={[
                 {
-                  required: true,
+                  required: false,
                   message: t("settings.apiKeyRequired"),
                 },
               ]}
@@ -687,14 +686,11 @@ const ProviderSettings = ({
             label={t("settings.modelId")}
             rules={[{ required: true, message: t("settings.modelIdRequired") }]}
           >
-            <Input placeholder="gpt-3.5-turbo" />
+            <Input placeholder="gpt-3.5-turbo" disabled />
           </Form.Item>
           <Form.Item name="modelName" label={t("settings.modelName")}>
             <Input placeholder={t("settings.modelNamePlaceholder")} />
           </Form.Item>
-          <div className="model-form-tips">
-            {t("settings.modelDescription")}
-          </div>
         </Form>
       </Modal>
     </div>

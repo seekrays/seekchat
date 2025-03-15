@@ -131,6 +131,7 @@
     "editModel": "Edit Model",
     "modelId": "Model ID",
     "modelIdRequired": "Model ID is required",
+    "modelIdNotEditable": "Model ID cannot be edited after creation. You can only modify the model name.",
     "modelName": "Model Name",
     "modelNamePlaceholder": "Enter model name (optional)",
     "addModelSuccess": "Model added successfully",

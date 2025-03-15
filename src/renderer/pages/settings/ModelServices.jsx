@@ -83,7 +83,7 @@ const ModelServices = ({
         id: providerId,
         name: values.name,
         baseUrl: values.baseUrl,
-        apiKey: values.apiKey,
+        apiKey: values.apiKey || "",
         models: [
           {
             id: values.modelId,
@@ -167,16 +167,6 @@ const ModelServices = ({
                       <div className="provider-name">{provider.name}</div>
                       <div className="provider-model-count">
                         {provider.models.length} {t("common.models")}
-                        <Tag
-                          color={
-                            provider.enabled !== false ? "success" : "error"
-                          }
-                          style={{ marginLeft: 8 }}
-                        >
-                          {provider.enabled !== false
-                            ? t("common.enabled")
-                            : t("common.disabled")}
-                        </Tag>
                       </div>
                     </div>
                   </div>
@@ -248,7 +238,7 @@ const ModelServices = ({
           <Form.Item
             name="apiKey"
             label={t("settings.apiKey")}
-            rules={[{ required: true, message: t("settings.apiKeyRequired") }]}
+            rules={[{ required: false, message: t("settings.apiKeyRequired") }]}
           >
             <Input.Password placeholder={t("settings.enterApiKey")} />
           </Form.Item>
@@ -268,7 +258,7 @@ const ModelServices = ({
             <Input placeholder={t("settings.modelNamePlaceholder")} />
           </Form.Item>
           <div className="provider-form-tips">
-            {t("settings.modelDescription")}
+            {t("settings.modelIdNotEditable")}
           </div>
         </Form>
       </Modal>
