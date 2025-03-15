@@ -117,7 +117,6 @@
     "toolsFoundSuccessMsg": "Successfully retrieved {{count}} tools",
     "refreshToolsFailedMsg": "Failed to refresh tool list: {{message}}",
     "loadMessagesFailed": "Failed to load messages",
-    "sendMessageFailed": "Failed to send message",
     "missingProviderOrModel": "Please select a service provider and model first",
     "providerDisabled": "Service provider {{name}} is disabled, please enable it in settings first",
     "unsupportedProvider": "Unsupported provider: {{name}}",
@@ -144,7 +143,7 @@
     "addProvider": "Add Provider",
     "apiSettings": "API Settings",
     "apiSettingsInfo": "Provider API Configuration",
-    "apiSettingsDescription": "Configure the API authentication and endpoint for this service provider. You need to set the API key to use this provider's models.",
+    "apiSettingsDescription": "Configure the API authentication and endpoint for this service provider.",
     "apiBaseUrl": "API Base URL",
     "enterApiBaseUrl": "Enter API Base URL",
     "enterApiKey": "Enter API Key"
@@ -188,6 +187,8 @@
     "noToolCallsDirectComplete": "No tool calls, direct complete callback",
     "apiCallFailed": "AI API call failed",
     "requestCancelled": "Request cancelled by user",
+    "autoSelectedModel": "Auto-selected model: {{model}}",
+    "sendMessageFailed": "Failed to send message",
     "mcpTools": {
       "useTool": "Use MCP Tool",
       "loading": "Loading tools...",

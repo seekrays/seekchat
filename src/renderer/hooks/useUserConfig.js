@@ -277,24 +277,54 @@ if (typeof window !== "undefined") {
 export function isAIConfigured() {
   const config = getUserConfig();
   const providersConfig = getProvidersConfig();
-  console.log("providersConfig", providersConfig);
-  console.log("config", config);
+  console.log("检查AI配置:", { userConfig: config, providersConfig });
+
   // 检查是否选择了提供商和模型
   if (!config.providerId || !config.modelId) {
+    console.log("未选择提供商或模型");
     return false;
   }
 
   // 检查提供商是否存在且已启用
   const provider = providersConfig[config.providerId];
-  if (!provider || provider.enabled === false) {
+  if (!provider) {
+    console.log("提供商不存在:", config.providerId);
     return false;
   }
 
-  // 检查模型是否存在
-  const providerConfig = provider || {};
+  // 如果提供商被明确禁用，则返回false
+  if (provider.enabled === false) {
+    console.log("提供商被禁用:", config.providerId);
+    return false;
+  }
 
-  // 检查 API 密钥是否已设置
-  if (!providerConfig.apiKey && !providerConfig.mockResponse) {
+  // 检查模型是否存在于配置中
+  const savedModels = provider.models || [];
+  const modelExists = savedModels.some(
+    (m) => m.id === config.modelId && m.enabled !== false && m.deleted !== true
+  );
+
+  if (!modelExists) {
+    console.log("模型不存在或被禁用:", config.modelId);
+
+    // 在这里不返回false，因为模型可能在系统定义但不在用户配置中
+    // 后续会通过getAllProviders自动选择合适的模型
+  }
+
+  // 如果是模拟响应模式(mock)或开发环境，不需要API密钥
+  if (provider.mockResponse || process.env.NODE_ENV === "development") {
+    return true;
+  }
+
+  // API密钥检查变为可选，如果提供商有baseUrl且能正常工作，即使没有API密钥也可以接受
+  // 对于某些提供商，如果baseUrl有效，可以不需要apiKey
+  if (provider.baseUrl) {
+    return true;
+  }
+
+  // 如果都不满足，检查是否有API密钥
+  if (!provider.apiKey) {
+    console.log("提供商没有API密钥:", config.providerId);
     return false;
   }
 

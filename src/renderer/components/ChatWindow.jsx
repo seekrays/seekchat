@@ -603,14 +603,76 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
       })
       .filter((item) => item.models.length > 0); // 只返回有启用模型的提供商
   };
+  const providerModels = getProviderModels();
 
   // 获取当前选择的模型
   const getCurrentModel = () => {
+    // 首先检查配置中是否有providerId和modelId
     if (!config.providerId || !config.modelId) return null;
+    // 检查当前选择的提供商是否存在于可用提供商列表中
+    const provider = providerModels.find(
+      (item) => item.provider.id === config.providerId
+    );
+    if (!provider) return null;
+
+    // 检查当前选择的模型是否存在于可用模型列表中
+    const modelExists = provider.models.some(
+      (model) => model.id === config.modelId
+    );
+    if (!modelExists) return null;
+
+    // 只有当提供商和模型都存在且启用时，才返回完整的选择值
     return `${config.providerId}|${config.modelId}`;
   };
 
-  const providerModels = getProviderModels();
+  // 检查当前选中的模型是否可用，如果不可用则选择第一个可用模型
+  useEffect(() => {
+    if (!config.providerId || !config.modelId || providerModels.length === 0)
+      return;
+
+    // 检查当前选择的提供商是否存在于可用提供商列表中
+    const provider = providerModels.find(
+      (item) => item.provider.id === config.providerId
+    );
+
+    // 如果提供商不存在或没有模型，选择第一个可用模型
+    if (!provider) {
+      // 如果有可用的提供商和模型，选择第一个
+      if (providerModels.length > 0 && providerModels[0].models.length > 0) {
+        const firstProvider = providerModels[0];
+        const firstModel = firstProvider.models[0];
+        handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
+        console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
+        message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
+      }
+      return;
+    }
+
+    // 检查当前选择的模型是否存在于可用模型列表中
+    const modelExists = provider.models.some(
+      (model) => model.id === config.modelId
+    );
+
+    // 如果模型不存在，选择该提供商的第一个可用模型
+    if (!modelExists) {
+      if (provider.models.length > 0) {
+        const firstModel = provider.models[0];
+        handleModelChange(`${provider.provider.id}|${firstModel.id}`);
+        console.log(`当前模型不可用，自动选择了: ${firstModel.name}`);
+        message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
+      } else if (
+        providerModels.length > 0 &&
+        providerModels[0].models.length > 0
+      ) {
+        // 如果该提供商没有可用模型，选择第一个可用的提供商的第一个模型
+        const firstProvider = providerModels[0];
+        const firstModel = firstProvider.models[0];
+        handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
+        console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
+        message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
+      }
+    }
+  }, [config.providerId, config.modelId, providerModels, handleModelChange]);
 
   return (
     <div className="chat-window">

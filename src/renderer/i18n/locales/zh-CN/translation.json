@@ -117,7 +117,6 @@
     "toolsFoundSuccessMsg": "成功获取到 {{count}} 个工具",
     "refreshToolsFailedMsg": "刷新工具列表失败：{{message}}",
     "loadMessagesFailed": "加载消息失败",
-    "sendMessageFailed": "发送消息失败",
     "missingProviderOrModel": "请先选择服务提供商和模型",
     "providerDisabled": "服务提供商 {{name}} 已被禁用，请先在设置中启用",
     "unsupportedProvider": "不支持的提供商: {{name}}",
@@ -144,7 +143,7 @@
     "addProvider": "添加供应商",
     "apiSettings": "API 设置",
     "apiSettingsInfo": "供应商 API 配置",
-    "apiSettingsDescription": "配置此服务提供商的 API 认证和端点。您需要设置 API 密钥才能使用该提供商的模型。",
+    "apiSettingsDescription": "配置此服务提供商的 API 认证和端点。",
     "apiBaseUrl": "API 基础 URL",
     "enterApiBaseUrl": "输入 API 基础 URL",
     "enterApiKey": "输入 API 密钥"
@@ -188,6 +187,8 @@
     "noToolCallsDirectComplete": "没有工具调用，直接调用onComplete回调",
     "apiCallFailed": "调用 AI API 失败",
     "requestCancelled": "请求被用户取消",
+    "autoSelectedModel": "已自动选择模型: {{model}}",
+    "sendMessageFailed": "发送消息失败",
     "mcpTools": {
       "useTool": "使用MCP工具",
       "loading": "加载工具中...",
