@@ -6,10 +6,7 @@
 // 添加i18next导入
 import { v4 as uuidv4 } from "uuid";
 import i18n from "../i18n";
-import {
-  getProvidersConfig,
-  saveProviderConfigById,
-} from "../hooks/useUserConfig";
+import { getProvidersConfig } from "../hooks/useUserConfig";
 
 // 模型分类正则表达式
 const VISION_REGEX =
@@ -350,15 +347,6 @@ export const getAllProviders = () => {
 
   return allProviders;
 };
-
-/**
- * 保存提供商配置
- * @param {string} providerId 提供商ID
- * @param {Object} config 配置对象
- */
-export function saveProviderConfig(providerId, config) {
-  return saveProviderConfigById(providerId, config);
-}
 
 // 初始化系统提供商配置
 // 这段代码会在应用启动时执行，确保系统提供商被正确保存到配置中

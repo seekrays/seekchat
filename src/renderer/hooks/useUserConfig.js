@@ -147,6 +147,18 @@ export const saveProviderConfig = (providersConfig) => {
     if (!providersConfig) {
       providersConfig = {};
     }
+    // 对比 providersConfig 和 getAllProviders，如果providersConfig中没有的字段，则添加
+    const allProviders = getAllProviders();
+    allProviders.forEach((provider) => {
+      if (providersConfig[provider.id]) {
+        // 对比providersConfig[provider.id]和provider，如果providersConfig[provider.id]中没有的字段，则添加
+        Object.keys(provider).forEach((key) => {
+          if (!providersConfig[provider.id][key]) {
+            providersConfig[provider.id][key] = provider[key];
+          }
+        });
+      }
+    });
 
     // 确保每个provider都有models属性
     Object.keys(providersConfig).forEach((providerId) => {
