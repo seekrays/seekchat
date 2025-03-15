@@ -155,10 +155,10 @@ export function isReasoningModel(model) {
  * @param {boolean} useAllProviders 是否使用所有提供商（包括自定义提供商）
  * @returns {string} 模型名称
  */
-export function getModelName(providerId, modelId, useAllProviders = true) {
+export function getModelName(providerId, modelId) {
   // 如果 useAllProviders 为 true，则使用 getAllProviders 获取所有提供商
   // 否则只使用系统提供商
-  const providerList = useAllProviders ? getAllProviders() : providers;
+  const providerList = getAllProviders();
   const provider = providerList.find((p) => p.id === providerId);
 
   if (!provider) return i18n.t("settings.unknownModel");

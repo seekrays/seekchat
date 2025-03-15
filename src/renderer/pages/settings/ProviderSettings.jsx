@@ -12,6 +12,7 @@ import {
   message,
   Modal,
   Popconfirm,
+  Alert,
 } from "antd";
 import {
   ArrowLeftOutlined,
@@ -41,6 +42,7 @@ const ProviderSettings = ({
   const [isAddModelModalVisible, setIsAddModelModalVisible] = useState(false);
   const [isEditModelModalVisible, setIsEditModelModalVisible] = useState(false);
   const [currentEditModel, setCurrentEditModel] = useState(null);
+  const [currentModelId, setCurrentModelId] = useState(null);
 
   // 初始化表单和状态
   useEffect(() => {
@@ -445,12 +447,29 @@ const ProviderSettings = ({
     // 确保模型的enabled属性有一个明确的布尔值
     const isEnabled = model.enabled !== false; // 如果undefined或null，默认为true
 
+    // 确定是否为聊天模型
+    const isChatModel = model.name.toLowerCase().includes("chat");
+    const modelIcon = isChatModel ? (
+      <MessageOutlined
+        style={{ fontSize: "14px", color: "#1677ff", marginRight: "8px" }}
+      />
+    ) : (
+      <CodeOutlined
+        style={{ fontSize: "14px", color: "#1677ff", marginRight: "8px" }}
+      />
+    );
+
     return (
       <Card
         key={model.id}
         className="model-card"
         size="small"
-        variant={true}
+        title={
+          <div className="model-card-title">
+            {modelIcon}
+            <span>{model.name}</span>
+          </div>
+        }
         extra={
           <div className="model-card-actions">
             <Switch
@@ -486,34 +505,12 @@ const ProviderSettings = ({
             </Popconfirm>
           </div>
         }
-        title={
-          <div className="model-card-title">
-            {model.name.toLowerCase().includes("chat") ? (
-              <MessageOutlined
-                style={{
-                  fontSize: "14px",
-                  color: "#1677ff",
-                  marginRight: "8px",
-                }}
-              />
-            ) : (
-              <CodeOutlined
-                style={{
-                  fontSize: "14px",
-                  color: "#1677ff",
-                  marginRight: "8px",
-                }}
-              />
-            )}
-            <span>{model.name}</span>
-          </div>
-        }
       >
         <div className="model-card-content">
           <div>{model.description || t("settings.modelDescription")}</div>
           <div className="model-status">
             {t("common.status")}:{" "}
-            <Tag color={isEnabled ? "green" : "red"}>
+            <Tag color={isEnabled ? "success" : "error"}>
               {isEnabled ? t("common.enabled") : t("common.disabled")}
             </Tag>
           </div>
@@ -523,7 +520,7 @@ const ProviderSettings = ({
   };
 
   return (
-    <div className="provider-settings">
+    <div className="provider-settings settings-content">
       <div className="provider-header">
         <div className="provider-header-left">
           <Button
@@ -551,74 +548,109 @@ const ProviderSettings = ({
         )}
       </div>
 
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{
-          apiKey: selectedProvider.apiKey || "",
-          baseUrl: selectedProvider.baseUrl || "",
-        }}
-      >
-        <Form.Item
-          name="apiKey"
-          label={t("settings.apiKey")}
-          rules={[{ required: true, message: "API Key是必须的" }]}
-        >
-          <Input.Password placeholder={t("settings.apiKey")} />
-        </Form.Item>
+      <div className="provider-settings-container">
+        <Card className="settings-card" title={t("settings.apiSettings")}>
+          <Alert
+            message={t("settings.apiSettingsInfo")}
+            description={t("settings.apiSettingsDescription")}
+            type="info"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+          <Form
+            layout="vertical"
+            form={form}
+            onFinish={handleSaveProvider}
+            initialValues={{
+              apiKey: selectedProvider.apiKey || "",
+              baseUrl: selectedProvider.baseUrl || "",
+            }}
+          >
+            {/* API Base URL */}
+            <Form.Item
+              name="baseUrl"
+              label={t("settings.apiBaseUrl")}
+              rules={[
+                {
+                  required: true,
+                  message: t("settings.baseUrlRequired"),
+                },
+              ]}
+            >
+              <Input placeholder={t("settings.enterApiBaseUrl")} />
+            </Form.Item>
 
-        <Form.Item name="baseUrl" label={t("settings.baseUrl")}>
-          <Input placeholder={t("settings.baseUrl")} />
-        </Form.Item>
+            {/* API Key */}
+            <Form.Item
+              name="apiKey"
+              label={t("settings.apiKey")}
+              rules={[
+                {
+                  required: true,
+                  message: t("settings.apiKeyRequired"),
+                },
+              ]}
+            >
+              <Input.Password placeholder={t("settings.enterApiKey")} />
+            </Form.Item>
 
-        <Form.Item>
-          <Space>
+            <Form.Item>
+              <Button type="primary" htmlType="submit">
+                {t("common.save")}
+              </Button>
+            </Form.Item>
+          </Form>
+        </Card>
+
+        <Card
+          className="settings-card"
+          title={t("settings.modelSettings")}
+          extra={
             <Button
               type="primary"
-              icon={<SaveOutlined />}
-              onClick={handleSaveProvider}
+              onClick={showAddModelModal}
+              icon={<PlusOutlined />}
             >
-              {t("common.save")}
+              {t("settings.addModel")}
             </Button>
-          </Space>
-        </Form.Item>
-      </Form>
-
-      <Divider orientation="left">
-        <Space>
-          {t("settings.modelSettings")}
-          <Button
-            type="primary"
-            size="small"
-            icon={<PlusOutlined />}
-            onClick={showAddModelModal}
-          >
-            {t("settings.addModel")}
-          </Button>
-        </Space>
-      </Divider>
-
-      <div className="models-container">
-        {selectedProvider.models
-          .filter((model) => !model.deleted)
-          .map((model) => renderModelCard(model))}
+          }
+        >
+          <div className="settings-section">
+            <Alert
+              message={t("settings.modelSettingsHint")}
+              type="info"
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+            <div className="models-card-container">
+              {selectedProvider.models
+                .filter((model) => !model.deleted)
+                .map((model) => renderModelCard(model))}
+            </div>
+            {selectedProvider.models.filter((model) => !model.deleted)
+              .length === 0 && (
+              <div className="empty-models">
+                <div className="empty-models-text">
+                  {t("settings.noModelAvailable")}
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
       </div>
 
-      <div style={{ marginTop: "20px" }}>
-        <Typography.Text type="secondary">
-          <span style={{ marginRight: "8px" }}>ℹ️</span>
-          {t("settings.modelSettingsHint")}
-        </Typography.Text>
-      </div>
-
-      {/* 添加模型对话框 */}
+      {/* Add Model Modal */}
       <Modal
         title={t("settings.addModel")}
         open={isAddModelModalVisible}
         onOk={handleAddModel}
         onCancel={() => setIsAddModelModalVisible(false)}
+        destroyOnClose={true}
+        maskClosable={false}
+        okText={t("common.save")}
+        cancelText={t("common.cancel")}
       >
-        <Form form={modelForm} layout="vertical">
+        <Form form={modelForm} layout="vertical" className="model-form">
           <Form.Item
             name="modelId"
             label={t("settings.modelId")}
@@ -629,10 +661,13 @@ const ProviderSettings = ({
           <Form.Item name="modelName" label={t("settings.modelName")}>
             <Input placeholder={t("settings.modelNamePlaceholder")} />
           </Form.Item>
+          <div className="model-form-tips">
+            {t("settings.modelDescription")}
+          </div>
         </Form>
       </Modal>
 
-      {/* 编辑模型对话框 */}
+      {/* Edit Model Modal */}
       <Modal
         title={t("settings.editModel")}
         open={isEditModelModalVisible}
@@ -641,8 +676,12 @@ const ProviderSettings = ({
           setIsEditModelModalVisible(false);
           setCurrentEditModel(null);
         }}
+        destroyOnClose={true}
+        maskClosable={false}
+        okText={t("common.save")}
+        cancelText={t("common.cancel")}
       >
-        <Form form={modelForm} layout="vertical">
+        <Form form={modelForm} layout="vertical" className="model-form">
           <Form.Item
             name="modelId"
             label={t("settings.modelId")}
@@ -653,6 +692,9 @@ const ProviderSettings = ({
           <Form.Item name="modelName" label={t("settings.modelName")}>
             <Input placeholder={t("settings.modelNamePlaceholder")} />
           </Form.Item>
+          <div className="model-form-tips">
+            {t("settings.modelDescription")}
+          </div>
         </Form>
       </Modal>
     </div>

@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Switch, Typography, message, Button, Modal, Form, Input } from "antd";
+import {
+  Switch,
+  Typography,
+  message,
+  Button,
+  Modal,
+  Form,
+  Input,
+  Card,
+  Alert,
+  Tag,
+  Divider,
+} from "antd";
 import { useTranslation } from "react-i18next";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, ApiOutlined } from "@ant-design/icons";
 import { v4 as uuidv4 } from "uuid";
 import { saveProviderConfigById } from "../../hooks/useUserConfig";
 
@@ -103,88 +115,106 @@ const ModelServices = ({
   };
 
   return (
-    <div className="provider-list-container">
-      <div className="provider-header">
-        <div>
-          <Title level={4}>{t("settings.selectProvider")}</Title>
-          <Paragraph>{t("settings.selectProviderHint")}</Paragraph>
-        </div>
-      </div>
+    <div className="settings-content">
+      <Card className="settings-card" title={t("settings.modelServices")}>
+        <Alert
+          message={t("settings.selectProvider")}
+          description={t("settings.selectProviderHint")}
+          type="info"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
 
-      <div className="provider-grid">
-        {providers && providers.length > 0 ? (
-          <>
-            {providers.map((provider) => (
-              <div
-                key={provider.id}
-                className={`provider-grid-item ${
-                  !provider.enabled ? "provider-disabled" : ""
-                }`}
-              >
+        <div className="provider-grid">
+          {providers && providers.length > 0 ? (
+            <>
+              {providers.map((provider) => (
                 <div
-                  className="provider-content"
-                  onClick={() => handleSelectProvider(provider)}
+                  key={provider.id}
+                  className={`provider-grid-item ${
+                    !provider.enabled ? "provider-disabled" : ""
+                  }`}
                 >
-                  <div className="provider-logo-container">
-                    {provider.logo ? (
-                      <img
-                        src={provider.logo}
-                        alt={provider.name}
-                        className="provider-logo"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          // 显示首字母
-                          const textElement = e.target.parentNode.querySelector(
-                            ".provider-logo-text"
-                          );
-                          if (textElement) {
-                            textElement.style.display = "flex";
+                  <div
+                    className="provider-content"
+                    onClick={() => handleSelectProvider(provider)}
+                  >
+                    <div className="provider-logo-container">
+                      {provider.logo ? (
+                        <img
+                          src={provider.logo}
+                          alt={provider.name}
+                          className="provider-logo"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                            // 显示首字母
+                            const textElement =
+                              e.target.parentNode.querySelector(
+                                ".provider-logo-text"
+                              );
+                            if (textElement) {
+                              textElement.style.display = "flex";
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="provider-logo-text">
+                          {provider.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className="provider-info">
+                      <div className="provider-name">{provider.name}</div>
+                      <div className="provider-model-count">
+                        {provider.models.length} {t("common.models")}
+                        <Tag
+                          color={
+                            provider.enabled !== false ? "success" : "error"
                           }
-                        }}
-                      />
-                    ) : (
-                      <div className="provider-logo-text">
-                        {provider.name.charAt(0).toUpperCase()}
+                          style={{ marginLeft: 8 }}
+                        >
+                          {provider.enabled !== false
+                            ? t("common.enabled")
+                            : t("common.disabled")}
+                        </Tag>
                       </div>
-                    )}
-                  </div>
-                  <div className="provider-info">
-                    <div className="provider-name">{provider.name}</div>
-                    <div className="provider-model-count">
-                      {provider.models.length} {t("common.models")}
                     </div>
                   </div>
+                  <div
+                    className="provider-actions"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Switch
+                      checked={provider.enabled !== false}
+                      onChange={(checked) =>
+                        handleProviderEnabledChange(provider.id, checked)
+                      }
+                      checkedChildren={t("common.enable")}
+                      unCheckedChildren={t("common.disable")}
+                    />
+                  </div>
                 </div>
-                <div
-                  className="provider-actions"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <Switch
-                    checked={provider.enabled !== false}
-                    onChange={(checked) =>
-                      handleProviderEnabledChange(provider.id, checked)
-                    }
-                    checkedChildren={t("common.enable")}
-                    unCheckedChildren={t("common.disable")}
-                  />
+              ))}
+              {/* 添加供应商按钮作为最后一个卡片 */}
+              <div
+                className="provider-grid-item add-provider-item"
+                onClick={showAddModal}
+              >
+                <div className="add-provider-content">
+                  <PlusOutlined className="add-icon" />
+                  <div className="add-text">{t("settings.addProvider")}</div>
                 </div>
               </div>
-            ))}
-            {/* 添加供应商按钮作为最后一个卡片 */}
-            <div
-              className="provider-grid-item add-provider-item"
-              onClick={showAddModal}
-            >
-              <div className="add-provider-content">
-                <PlusOutlined className="add-icon" />
-                <div className="add-text">{t("settings.addProvider")}</div>
+            </>
+          ) : (
+            <div className="empty-providers">
+              <div className="empty-providers-text">
+                {t("settings.noProvidersAvailable")}
               </div>
             </div>
-          </>
-        ) : (
-          <div>{t("settings.noProvidersAvailable")}</div>
-        )}
-      </div>
+          )}
+        </div>
+      </Card>
 
       {/* 添加供应商对话框 */}
       <Modal
@@ -192,8 +222,13 @@ const ModelServices = ({
         open={isAddModalVisible}
         onOk={handleAddProvider}
         onCancel={() => setIsAddModalVisible(false)}
+        destroyOnClose={true}
+        maskClosable={false}
+        okText={t("common.save")}
+        cancelText={t("common.cancel")}
+        width={500}
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" className="provider-form">
           <Form.Item
             name="name"
             label={t("settings.providerName")}
@@ -205,7 +240,7 @@ const ModelServices = ({
           </Form.Item>
           <Form.Item
             name="baseUrl"
-            label={t("settings.baseUrl")}
+            label={t("settings.apiBaseUrl")}
             rules={[{ required: true, message: t("settings.baseUrlRequired") }]}
           >
             <Input placeholder="https://api.example.com/v1" />
@@ -215,8 +250,13 @@ const ModelServices = ({
             label={t("settings.apiKey")}
             rules={[{ required: true, message: t("settings.apiKeyRequired") }]}
           >
-            <Input.Password placeholder={t("settings.apiKeyPlaceholder")} />
+            <Input.Password placeholder={t("settings.enterApiKey")} />
           </Form.Item>
+
+          <Divider style={{ margin: "12px 0" }}>
+            {t("settings.modelSettings")}
+          </Divider>
+
           <Form.Item
             name="modelId"
             label={t("settings.modelId")}
@@ -227,6 +267,9 @@ const ModelServices = ({
           <Form.Item name="modelName" label={t("settings.modelName")}>
             <Input placeholder={t("settings.modelNamePlaceholder")} />
           </Form.Item>
+          <div className="provider-form-tips">
+            {t("settings.modelDescription")}
+          </div>
         </Form>
       </Modal>
     </div>

@@ -140,7 +140,13 @@
     "deleteProvider": "删除供应商",
     "confirmDeleteProvider": "确定要删除此供应商吗？",
     "deleteProviderSuccess": "删除供应商成功",
-    "addProvider": "添加供应商"
+    "addProvider": "添加供应商",
+    "apiSettings": "API 设置",
+    "apiSettingsInfo": "供应商 API 配置",
+    "apiSettingsDescription": "配置此服务提供商的 API 认证和端点。您需要设置 API 密钥才能使用该提供商的模型。",
+    "apiBaseUrl": "API 基础 URL",
+    "enterApiBaseUrl": "输入 API 基础 URL",
+    "enterApiKey": "输入 API 密钥"
   },
   "chat": {
     "newChat": "新建会话",

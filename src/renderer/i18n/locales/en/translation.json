@@ -140,7 +140,13 @@
     "deleteProvider": "Delete Provider",
     "confirmDeleteProvider": "Are you sure you want to delete this provider?",
     "deleteProviderSuccess": "Provider deleted successfully",
-    "addProvider": "Add Provider"
+    "addProvider": "Add Provider",
+    "apiSettings": "API Settings",
+    "apiSettingsInfo": "Provider API Configuration",
+    "apiSettingsDescription": "Configure the API authentication and endpoint for this service provider. You need to set the API key to use this provider's models.",
+    "apiBaseUrl": "API Base URL",
+    "enterApiBaseUrl": "Enter API Base URL",
+    "enterApiKey": "Enter API Key"
   },
   "chat": {
     "newChat": "New Chat",

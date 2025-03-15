@@ -171,9 +171,6 @@ const SettingsPage = () => {
         >
           {t("common.back")}
         </Button>
-        <Title level={4} className="settings-title">
-          {t("settings.title")}
-        </Title>
       </Header>
       <Layout className="settings-layout">
         <Sider width={200} className="settings-sider">
