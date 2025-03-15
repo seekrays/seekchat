@@ -4,7 +4,6 @@
  */
 
 import baseOpenAICompatibleAdapter from "./baseAdapter.js";
-import i18n from "../../../../i18n";
 
 /**
  * OpenAI 提供商适配器
