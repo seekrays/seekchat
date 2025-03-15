@@ -5,6 +5,7 @@ const {
   executeTool,
   initMCP,
 } = require("./services/mcpService");
+const logger = require("./logger");
 
 let _db = null;
 
@@ -17,7 +18,7 @@ function wrapDbHandler(handler) {
       }
       return await handler(_db, ...args);
     } catch (err) {
-      console.error("IPC 处理器错误:", err);
+      logger.error("IPC 处理器错误:", err);
       throw err;
     }
   };
@@ -47,7 +48,7 @@ function registerMCPHandlers() {
       try {
         return await database.getAllMCPServers();
       } catch (error) {
-        console.error("IPC: 获取MCP服务器失败", error);
+        logger.error("IPC: 获取MCP服务器失败", error);
         throw error;
       }
     })
@@ -60,7 +61,7 @@ function registerMCPHandlers() {
       try {
         return await database.getActiveMCPServers();
       } catch (error) {
-        console.error("IPC: 获取激活的MCP服务器失败", error);
+        logger.error("IPC: 获取激活的MCP服务器失败", error);
         throw error;
       }
     })
@@ -73,7 +74,7 @@ function registerMCPHandlers() {
       try {
         return await database.addMCPServer(serverData);
       } catch (error) {
-        console.error("IPC: 添加MCP服务器失败", error);
+        logger.error("IPC: 添加MCP服务器失败", error);
         throw error;
       }
     })
@@ -86,7 +87,7 @@ function registerMCPHandlers() {
       try {
         return await database.updateMCPServer(id, updates);
       } catch (error) {
-        console.error("IPC: 更新MCP服务器失败", error);
+        logger.error("IPC: 更新MCP服务器失败", error);
         throw error;
       }
     })
@@ -99,7 +100,7 @@ function registerMCPHandlers() {
       try {
         return await database.deleteMCPServer(id);
       } catch (error) {
-        console.error("IPC: 删除MCP服务器失败", error);
+        logger.error("IPC: 删除MCP服务器失败", error);
         throw error;
       }
     })
@@ -112,7 +113,7 @@ function registerMCPHandlers() {
       try {
         return await database.setMCPServerActive(id, active);
       } catch (error) {
-        console.error("IPC: 设置MCP服务器激活状态失败", error);
+        logger.error("IPC: 设置MCP服务器激活状态失败", error);
         throw error;
       }
     })
@@ -125,7 +126,7 @@ function registerMCPHandlers() {
       try {
         return await testMCPConnection(serverData);
       } catch (error) {
-        console.error("IPC: 测试MCP连接失败", error);
+        logger.error("IPC: 测试MCP连接失败", error);
         return {
           success: false,
           message: `连接失败: ${error.message}`,
@@ -142,7 +143,7 @@ function registerMCPHandlers() {
       try {
         return await executeTool(serverId, toolId, parameters);
       } catch (error) {
-        console.error("IPC: 执行MCP工具失败", error);
+        logger.error("IPC: 执行MCP工具失败", error);
         return {
           success: false,
           message: `执行工具失败: ${error.message}`,
@@ -159,7 +160,7 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "get-sessions",
     wrapDbHandler(async (database) => {
-      console.log("main进程: 获取所有会话");
+      logger.info("main进程: 获取所有会话");
       return await database.getAllSessions();
     })
   );
@@ -168,7 +169,7 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "create-session",
     wrapDbHandler(async (database, name) => {
-      console.log("main进程: 创建会话", name);
+      logger.info("main进程: 创建会话", name);
       return await database.createSession(name);
     })
   );
@@ -177,7 +178,7 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "get-messages",
     wrapDbHandler(async (database, sessionId) => {
-      console.log("main进程: 获取会话消息", sessionId);
+      logger.info("main进程: 获取会话消息", sessionId);
       return await database.getMessages(sessionId);
     })
   );
@@ -186,7 +187,7 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "delete-messages",
     wrapDbHandler(async (database, sessionId) => {
-      console.log("main进程: 删除会话消息", sessionId);
+      logger.info("main进程: 删除会话消息", sessionId);
       return await database.deleteMessages(sessionId);
     })
   );
@@ -195,9 +196,9 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "add-message",
     wrapDbHandler(async (database, message) => {
-      console.log("main进程: 即将添加消息");
+      logger.info("main进程: 即将添加消息");
       const result = await database.addMessage(message);
-      console.log("main进程: 添加消息成功, ID:", result.id);
+      logger.info("main进程: 添加消息成功, ID:", result.id);
       return result;
     })
   );
@@ -206,9 +207,9 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "update-message-status",
     wrapDbHandler(async (database, id, status) => {
-      console.log("main进程: 即将更新消息状态, ID:", id);
+      logger.info("main进程: 即将更新消息状态, ID:", id);
       const result = await database.updateMessageStatus(id, status);
-      console.log("main进程: 更新消息状态成功");
+      logger.info("main进程: 更新消息状态成功");
       return result;
     })
   );
@@ -217,9 +218,9 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "update-message-content",
     wrapDbHandler(async (database, id, content) => {
-      console.log("main进程: 即将更新消息内容, ID:", id);
+      logger.info("main进程: 即将更新消息内容, ID:", id);
       const result = await database.updateMessageContent(id, content);
-      console.log("main进程: 更新消息内容成功");
+      logger.info("main进程: 更新消息内容成功");
       return result;
     })
   );
@@ -228,9 +229,9 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "delete-session",
     wrapDbHandler(async (database, id) => {
-      console.log("main进程: 即将删除会话", id);
+      logger.info("main进程: 即将删除会话", id);
       const result = await database.deleteSession(id);
-      console.log("main进程: 删除会话成功");
+      logger.info("main进程: 删除会话成功");
       return result;
     })
   );
@@ -239,12 +240,12 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "create-or-update-message",
     wrapDbHandler(async (database, message) => {
-      console.log(
+      logger.info(
         "main进程: 即将创建或更新消息",
         message.id ? `ID: ${message.id}` : "新消息"
       );
       const result = await database.createOrUpdateMessage(message);
-      console.log("main进程: 创建或更新消息成功, ID:", result.id);
+      logger.info("main进程: 创建或更新消息成功, ID:", result.id);
       return result;
     })
   );
@@ -253,9 +254,9 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "update-session-metadata",
     wrapDbHandler(async (database, sessionId, metadata) => {
-      console.log("main进程: 即将更新会话元数据, ID:", sessionId);
+      logger.info("main进程: 即将更新会话元数据, ID:", sessionId);
       const result = await database.updateSessionMetadata(sessionId, metadata);
-      console.log("main进程: 更新会话元数据成功");
+      logger.info("main进程: 更新会话元数据成功");
       return result;
     })
   );
@@ -264,9 +265,9 @@ function registerSessionMessageHandlers() {
   ipcMain.handle(
     "update-session-name",
     wrapDbHandler(async (database, sessionId, name) => {
-      console.log("main进程: 即将更新会话名称, ID:", sessionId);
+      logger.info("main进程: 即将更新会话名称, ID:", sessionId);
       const result = await database.updateSessionName(sessionId, name);
-      console.log("main进程: 更新会话名称成功");
+      logger.info("main进程: 更新会话名称成功");
       return result;
     })
   );

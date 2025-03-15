@@ -643,7 +643,7 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         const firstModel = firstProvider.models[0];
         handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
         console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
-        message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
+        // message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
       }
       return;
     }
@@ -659,7 +659,7 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         const firstModel = provider.models[0];
         handleModelChange(`${provider.provider.id}|${firstModel.id}`);
         console.log(`当前模型不可用，自动选择了: ${firstModel.name}`);
-        message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
+        // message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
       } else if (
         providerModels.length > 0 &&
         providerModels[0].models.length > 0
@@ -669,7 +669,7 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         const firstModel = firstProvider.models[0];
         handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
         console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
-        message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
+        // message.info(t("chat.autoSelectedModel", { model: firstModel.name }));
       }
     }
   }, [config.providerId, config.modelId, providerModels, handleModelChange]);

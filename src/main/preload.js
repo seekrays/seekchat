@@ -17,36 +17,40 @@ function safeIpcCall(channel, ...args) {
 }
 
 // 确保 API 在 window 对象上可用
-contextBridge.exposeInMainWorld("electronAPI", {
-  // 会话相关
-  getSessions: () => safeIpcCall("get-sessions"),
-  createSession: (name) => safeIpcCall("create-session", name),
-  deleteSession: (id) => safeIpcCall("delete-session", id),
-  updateSessionMetadata: (sessionId, metadata) =>
-    safeIpcCall("update-session-metadata", sessionId, metadata),
-  updateSessionName: (sessionId, name) =>
-    safeIpcCall("update-session-name", sessionId, name),
+if (process.contextIsolated) {
+  contextBridge.exposeInMainWorld("electronAPI", {
+    // 会话相关
+    getSessions: () => safeIpcCall("get-sessions"),
+    createSession: (name) => safeIpcCall("create-session", name),
+    deleteSession: (id) => safeIpcCall("delete-session", id),
+    updateSessionMetadata: (sessionId, metadata) =>
+      safeIpcCall("update-session-metadata", sessionId, metadata),
+    updateSessionName: (sessionId, name) =>
+      safeIpcCall("update-session-name", sessionId, name),
 
-  // 消息相关
-  getMessages: (sessionId) => safeIpcCall("get-messages", sessionId),
-  deleteMessages: (sessionId) => safeIpcCall("delete-messages", sessionId),
-  addMessage: (message) => safeIpcCall("add-message", message),
-  updateMessageStatus: (id, status) =>
-    safeIpcCall("update-message-status", id, status),
-  updateMessageContent: (id, content) =>
-    safeIpcCall("update-message-content", id, content),
-  createOrUpdateMessage: (message) =>
-    safeIpcCall("create-or-update-message", message),
+    // 消息相关
+    getMessages: (sessionId) => safeIpcCall("get-messages", sessionId),
+    deleteMessages: (sessionId) => safeIpcCall("delete-messages", sessionId),
+    addMessage: (message) => safeIpcCall("add-message", message),
+    updateMessageStatus: (id, status) =>
+      safeIpcCall("update-message-status", id, status),
+    updateMessageContent: (id, content) =>
+      safeIpcCall("update-message-content", id, content),
+    createOrUpdateMessage: (message) =>
+      safeIpcCall("create-or-update-message", message),
 
-  // MCP相关
-  invokeMCP: (channel, ...args) => safeIpcCall(channel, ...args),
+    // MCP相关
+    invokeMCP: (channel, ...args) => safeIpcCall(channel, ...args),
 
-  // 数据库事件
-  onDatabaseError: (callback) => {
-    ipcRenderer.on("db-error", (_, message) => callback(message));
-    return () => ipcRenderer.removeListener("db-error", callback);
-  },
+    // 数据库事件
+    onDatabaseError: (callback) => {
+      ipcRenderer.on("db-error", (_, message) => callback(message));
+      return () => ipcRenderer.removeListener("db-error", callback);
+    },
 
-  // 在系统默认浏览器中打开链接
-  openExternalURL: (url) => safeIpcCall("open-external-url", url),
-});
+    // 在系统默认浏览器中打开链接
+    openExternalURL: (url) => safeIpcCall("open-external-url", url),
+  });
+} else {
+  window.electronAPI = electronAPI;
+}
