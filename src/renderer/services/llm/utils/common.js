@@ -108,25 +108,19 @@ export const parseMCPToolParams = (paramStr) => {
     return {};
   }
 
-  // 测试特殊案例
-  if (paramStr.includes('\\"')) {
-    // 对于 {\"destination\": \"/path/to/dir\", \"source\": \"/path/to/file\"}"} 这种格式
-    if (paramStr.endsWith('"}') || paramStr.endsWith('"}"}')) {
-      // 删除末尾多余的 "} 或 "}"
-      let cleaned = paramStr;
-      while (cleaned.endsWith('"}')) {
-        cleaned = cleaned.substring(0, cleaned.length - 1);
-      }
-
-      // 替换所有的 \" 为 "
-      cleaned = cleaned.replace(/\\"/g, '"');
-
-      try {
-        return JSON.parse(cleaned);
-      } catch (e) {
-        console.warn("MCP工具参数解析失败:", e);
-      }
+  // 处理代码块格式
+  const codeBlockRegex = /```(?:\w*\n)?([\s\S]*?)```/;
+  const codeMatch = paramStr.match(codeBlockRegex);
+  if (codeMatch) {
+    // 提取代码块内容
+    let extractedArgs = codeMatch[1].trim();
+    // 清理函数调用格式，如 tool_call(name1=value1,name2=value2)
+    const functionCallRegex = /^\s*\w+\s*\(([\s\S]*?)\)\s*$/;
+    const functionMatch = extractedArgs.match(functionCallRegex);
+    if (functionMatch) {
+      extractedArgs = functionMatch[1];
     }
+    paramStr = extractedArgs;
   }
 
   // 如果特殊处理失败，回退到通用方法

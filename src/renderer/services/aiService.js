@@ -190,8 +190,8 @@ const sendMessageToAI = async (
         // 获取当前递归深度或初始化为1
         const recursionDepth = options._recursionDepth || 1;
 
-        // 检查是否超过最大递归深度(10轮)，防止无限循环
-        const maxRecursionDepth = 10;
+        // 检查是否超过最大递归深度(20轮)，防止无限循环
+        const maxRecursionDepth = 20;
         const hasReachedMaxDepth = recursionDepth >= maxRecursionDepth;
 
         // 在完成数据中添加工具调用结果

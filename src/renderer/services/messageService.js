@@ -87,20 +87,17 @@ export const sendMessage = async (
   onComplete,
   options = {}
 ) => {
-  console.log(
-    "sendMessage",
+  console.log("messageService: sendMessage", {
     messages,
     session,
     onProgress,
     onError,
     onComplete,
-    options
-  );
+    options,
+  });
   if (!session) {
     throw new Error(i18n.t("chat.pleaseSelectOrCreateASession"));
   }
-
-  console.log("messageService: sendMessage", options);
 
   // get current config
   const userConfig = getUserConfig();
