@@ -83,6 +83,7 @@ const sendMessageToAI = async (
     console.log(`准备调用 ${provider.name} 的 API`, {
       modelId: model.id,
       messagesCount: messages.length,
+      messages: messages,
       useStream: !!onProgress,
       temperature,
       hasSignal: !!options.signal,
