@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, ipcMain, shell, Menu } = require("electron");
 const path = require("path");
 const ChatDatabase = require("./database");
 const { registerIpcHandlers } = require("./ipc");
@@ -44,10 +44,13 @@ function createWindow() {
       enableRemoteModule: false,
       preload: path.join(__dirname, "preload.js"),
     },
+
     icon: isDev
       ? path.join(__dirname, "../../public/assets/logo/logo.png")
       : path.join(__dirname, "../../dist/assets/logo/logo.png"),
   });
+
+  Menu.setApplicationMenu(null);
 
   // 监听页面开始加载事件（刷新或导航）
   mainWindow.webContents.on("did-start-loading", () => {
