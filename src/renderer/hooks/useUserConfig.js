@@ -10,7 +10,7 @@ const providersConfigName = "providers_config";
 // 默认用户配置
 const defaultUserConfig = {
   theme: "light", // 默认主题
-  language: "en", // 默认语言
+  // language: "en", // 默认语言
   // 其他默认配置...
 };
 

@@ -87,7 +87,6 @@ const SettingsPage = () => {
     Modal.confirm({
       title: t("settings.clearConfigConfirm"),
       icon: <ExclamationCircleOutlined />,
-      content: "这将清除所有用户配置和提供商配置，恢复到默认状态。",
       onOk() {
         // 清除所有配置
         const success = clearAllConfig();
