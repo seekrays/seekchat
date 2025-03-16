@@ -126,12 +126,62 @@ export const parseMCPToolParams = (paramStr) => {
   // 处理开头可能的多余引号和空格
   paramStr = paramStr.trim().replace(/^["'\s]+/, "");
 
+  // 流式解析特殊处理：尝试提取最可能是JSON的部分
+  // 查找第一个 { 和最后一个 } 之间的内容
+  const firstBrace = paramStr.indexOf("{");
+  const lastBrace = paramStr.lastIndexOf("}");
+
+  if (firstBrace !== -1 && lastBrace !== -1 && firstBrace < lastBrace) {
+    try {
+      // 提取可能的JSON部分
+      const jsonCandidate = paramStr.substring(firstBrace, lastBrace + 1);
+
+      // 处理转义的引号
+      const unescaped = jsonCandidate.replace(/\\"/g, '"');
+
+      try {
+        const result = JSON.parse(unescaped);
+        console.log("成功从流式数据中提取JSON:", result);
+        return result;
+      } catch (e) {
+        console.warn("从流式数据提取JSON失败，尝试其他方法:", e);
+      }
+    } catch (e) {
+      console.warn("流式数据处理失败:", e);
+    }
+  }
+
+  // 处理特殊格式: " " {\"script\": \"...\"}"}"
+  if (paramStr.startsWith('" "') || paramStr.startsWith('" {')) {
+    try {
+      // 移除开头的多余引号和空格
+      let cleaned = paramStr.replace(/^"\s+"/, "");
+
+      // 移除末尾多余的引号和花括号
+      cleaned = cleaned.replace(/"}"+$/, "}");
+
+      // 处理转义的引号
+      cleaned = cleaned.replace(/\\"/g, '"');
+
+      try {
+        return JSON.parse(cleaned);
+      } catch (e) {
+        console.warn("特殊格式JSON解析失败:", e);
+      }
+    } catch (e) {
+      console.warn("特殊格式处理失败:", e);
+    }
+  }
+
   // 处理多层转义的JSON字符串
   // 例如: " " \" {\\\"script\\\": \\\"setTimeout...\\\"}\"}""
   if (paramStr.includes('\\\\"')) {
     try {
       // 逐步解除转义，一层一层处理
       let cleaned = paramStr;
+
+      // 去除开头的多余引号和空格
+      cleaned = cleaned.replace(/^["'\s]+/, "");
 
       // 去除末尾多余的引号和花括号
       cleaned = cleaned.replace(/["'}]+$/, "");
@@ -176,9 +226,44 @@ export const parseMCPToolParams = (paramStr) => {
         } catch (e) {
           console.warn("单层转义JSON解析失败:", e);
         }
+      } else {
+        // 处理其他形式的单层转义
+        let cleaned = paramStr;
+
+        // 如果字符串不是以 { 开头，但包含 {，则从 { 开始截取
+        if (!cleaned.startsWith("{") && cleaned.includes("{")) {
+          cleaned = cleaned.substring(cleaned.indexOf("{"));
+        }
+
+        // 如果字符串不是以 } 结尾，但包含 }，则截取到最后一个 }
+        if (!cleaned.endsWith("}") && cleaned.includes("}")) {
+          cleaned = cleaned.substring(0, cleaned.lastIndexOf("}") + 1);
+        }
+
+        // 替换所有的 \" 为 "
+        cleaned = cleaned.replace(/\\"/g, '"');
+
+        try {
+          return JSON.parse(cleaned);
+        } catch (e) {
+          console.warn("单层转义JSON解析失败(通用处理):", e);
+        }
       }
     } catch (e) {
       console.warn("单层转义处理失败:", e);
+    }
+  }
+
+  // 尝试处理引号包裹的JSON字符串
+  if (paramStr.startsWith('"') && paramStr.endsWith('"')) {
+    try {
+      // 去掉外层引号
+      const unquoted = paramStr.substring(1, paramStr.length - 1);
+      // 处理内部转义
+      const unescaped = unquoted.replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+      return JSON.parse(unescaped);
+    } catch (e) {
+      console.warn("引号包裹JSON解析失败:", e);
     }
   }
 

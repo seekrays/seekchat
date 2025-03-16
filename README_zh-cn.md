@@ -3,11 +3,15 @@
 <div align="center">
   <img src="public/assets/logo/logo.png" alt="SeekChat Logo" width="200" />
   <h3>✨ 一个简洁强大的AI聊天桌面应用 ✨</h3>
+  <p>
+    <a href="https://www.seekrays.com/chat/" target="_blank">官网</a> |
+    <a href="README.md">英文文档</a>
+  </p>
 </div>
 
 ## 简介
 
-SeekChat 是一款支持多种 LLM（大型语言模型）的桌面聊天应用程序，采用 Electron + React 技术栈开发，旨在为用户提供无缝的 AI 对话体验。无论是个人助手、创意伙伴还是专业工具，SeekChat 都能满足您的需求。
+SeekChat 支持 MCP 工具调用，让 AI 直接操作您的电脑并执行各种任务。轻松实现文件管理、数据分析、代码开发等自动化操作，将 AI 变成真正的智能助手。
 
 ## ✨ 主要特性
 

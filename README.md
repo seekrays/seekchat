@@ -11,7 +11,7 @@
 
 ## Introduction
 
-SeekChat is a desktop chat application that supports multiple Large Language Models (LLMs), built with Electron + React. It aims to provide users with a seamless AI conversation experience. Whether you need a personal assistant, creative partner, or professional tool, SeekChat can meet your requirements.
+SeekChat supports MCP tool execution, enabling AI to directly control your computer and perform various tasks. Easily automate file management, data analysis, code development, and more, turning AI into a truly intelligent assistant.
 
 ## ✨ Key Features
 
