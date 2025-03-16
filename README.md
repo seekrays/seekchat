@@ -4,7 +4,7 @@
   <img src="public/assets/logo/logo.png" alt="SeekChat Logo" width="200" />
   <h3>✨ A Sleek and Powerful AI Chat Desktop Application ✨</h3>
   <p>
-    <a href="https://chat.seekrays.com" target="_blank">Official Website</a> |
+    <a href="https://www.seekrays.com/chat/" target="_blank">Official Website</a> |
     <a href="README_zh-cn.md">中文文档</a>
   </p>
 </div>
@@ -16,6 +16,8 @@ SeekChat is a desktop chat application that supports multiple Large Language Mod
 ## ✨ Key Features
 
 - **Multi-Model Support**: Connect to multiple AI service providers, including OpenAI, DeepSeek, Silicon Valley AI, and more
+- **MCP Tools Integration**: Access and utilize Machine Comprehension and Processing tools for enhanced functionality
+- **Custom Providers**: Add your own API providers with flexible configuration options
 - **Local Memory**: All conversation history is stored in a local SQLite database, protecting your privacy
 - **Streaming Responses**: Real-time display of AI replies, providing a ChatGPT-like conversation experience
 - **Markdown Support**: Full support for Markdown formatting, including code blocks, tables, and math formulas
@@ -67,6 +69,7 @@ SeekChat supports the following AI service providers:
 - **OpenAI** (GPT-4o, GPT-4.5-preview, o1-mini, etc.)
 - **DeepSeek** (DeepSeek Chat, DeepSeek Reasoner)
 - **Silicon Valley AI** (DeepSeek-V3, DeepSeek-R1, Qwen2.5, Llama-3.3, etc.)
+- **Custom Providers**: Configure your own API endpoints and parameters
 - **More coming soon!**
 
 ## 🤝 Contributing

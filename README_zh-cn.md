@@ -12,6 +12,8 @@ SeekChat 是一款支持多种 LLM（大型语言模型）的桌面聊天应用�
 ## ✨ 主要特性
 
 - **多模型支持**：连接多个 AI 服务提供商，包括 OpenAI、DeepSeek、硅基流动 等
+- **MCP 工具集成**：访问和使用机器理解与处理工具，增强应用功能
+- **自定义提供商**：添加自己的 API 提供商，支持灵活配置选项
 - **本地记忆**：所有对话历史都保存在本地 SQLite 数据库中，保护您的隐私
 - **流式响应**：实时显示 AI 回复，提供类似 ChatGPT 的对话体验
 - **Markdown 支持**：完整支持 Markdown 格式，包括代码块、表格和数学公式
@@ -55,6 +57,15 @@ npm run electron:build
 1. 启动应用后，首先进入设置页面配置 API 密钥
 2. 选择您要使用的 AI 模型服务提供商
 3. 开始新的对话！
+
+## 🔌 支持的 AI 提供商
+
+SeekChat 支持以下 AI 服务提供商：
+
+- **OpenAI** (GPT-4o, GPT-4.5-preview, o1-mini 等)
+- **DeepSeek** (DeepSeek Chat, DeepSeek Reasoner)
+- **硅基流动** (DeepSeek-V3, DeepSeek-R1, Qwen2.5, Llama-3.3 等)
+- **自定义提供商**：配置您自己的 API 端点和参数
 
 ## 🤝 贡献
 
