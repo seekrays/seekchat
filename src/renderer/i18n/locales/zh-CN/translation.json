@@ -146,7 +146,9 @@
     "apiSettingsDescription": "配置此服务提供商的 API 认证和端点。",
     "apiBaseUrl": "API 基础 URL",
     "enterApiBaseUrl": "输入 API 基础 URL",
-    "enterApiKey": "输入 API 密钥"
+    "enterApiKey": "输入 API 密钥",
+    "modelAlreadyExists": "模型 ID 已存在",
+    "modelNotFound": "未找到模型"
   },
   "chat": {
     "newChat": "新建会话",
@@ -252,8 +254,8 @@
     "toolNotFound": "找不到ID为{{id}}的工具",
     "specialTokenInToolParam": "工具参数中包含特殊token",
     "incorrectParamFormat": "参数格式不正确",
-    "toolParamParseFailed": "工具参数解析失败",
-    "toolExecutionFailed": "工具调用失败",
+    "toolParamParseFailed": "工具参数解析失败: {{message}}",
+    "toolExecutionFailed": "工具调用失败: {{message}}",
     "anthropicSerializationFailed": "序列化Anthropic工具输入失败"
   },
   "status": {

@@ -146,7 +146,9 @@
     "apiSettingsDescription": "Configure the API authentication and endpoint for this service provider.",
     "apiBaseUrl": "API Base URL",
     "enterApiBaseUrl": "Enter API Base URL",
-    "enterApiKey": "Enter API Key"
+    "enterApiKey": "Enter API Key",
+    "modelAlreadyExists": "Model ID already exists",
+    "modelNotFound": "Model not found"
   },
   "chat": {
     "newChat": "New Chat",

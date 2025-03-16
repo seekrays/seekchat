@@ -123,6 +123,65 @@ export const parseMCPToolParams = (paramStr) => {
     paramStr = extractedArgs;
   }
 
+  // 处理开头可能的多余引号和空格
+  paramStr = paramStr.trim().replace(/^["'\s]+/, "");
+
+  // 处理多层转义的JSON字符串
+  // 例如: " " \" {\\\"script\\\": \\\"setTimeout...\\\"}\"}""
+  if (paramStr.includes('\\\\"')) {
+    try {
+      // 逐步解除转义，一层一层处理
+      let cleaned = paramStr;
+
+      // 去除末尾多余的引号和花括号
+      cleaned = cleaned.replace(/["'}]+$/, "");
+
+      // 修复可能的不完整JSON（缺少开始的花括号）
+      if (!cleaned.startsWith("{") && cleaned.includes("{")) {
+        cleaned = cleaned.substring(cleaned.indexOf("{"));
+      }
+
+      // 处理双重转义 \\\" -> \"
+      cleaned = cleaned.replace(/\\\\"/g, '\\"');
+
+      // 处理单重转义 \" -> "
+      cleaned = cleaned.replace(/\\"/g, '"');
+
+      try {
+        return JSON.parse(cleaned);
+      } catch (e) {
+        console.warn("多层转义JSON解析失败，尝试其他方法", e);
+      }
+    } catch (e) {
+      console.warn("多层转义处理失败:", e);
+    }
+  }
+
+  // 处理单层转义的JSON字符串
+  if (paramStr.includes('\\"')) {
+    try {
+      // 对于 {\"destination\": \"/path/to/dir\", \"source\": \"/path/to/file\"}"} 这种格式
+      if (paramStr.endsWith('"}') || paramStr.endsWith('"}"}')) {
+        // 删除末尾多余的 "} 或 "}"
+        let cleaned = paramStr;
+        while (cleaned.endsWith('"}')) {
+          cleaned = cleaned.substring(0, cleaned.length - 1);
+        }
+
+        // 替换所有的 \" 为 "
+        cleaned = cleaned.replace(/\\"/g, '"');
+
+        try {
+          return JSON.parse(cleaned);
+        } catch (e) {
+          console.warn("单层转义JSON解析失败:", e);
+        }
+      }
+    } catch (e) {
+      console.warn("单层转义处理失败:", e);
+    }
+  }
+
   // 如果特殊处理失败，回退到通用方法
   return safeJsonParse(paramStr, {});
 };
