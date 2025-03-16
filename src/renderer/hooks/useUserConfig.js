@@ -152,7 +152,9 @@ export const saveProviderConfig = (providersConfig) => {
       if (providersConfig[provider.id]) {
         // 对比providersConfig[provider.id]和provider，如果providersConfig[provider.id]中没有的字段，则添加
         Object.keys(provider).forEach((key) => {
-          if (!providersConfig[provider.id][key]) {
+          // 修改这里的判断逻辑，只有当providersConfig[provider.id][key]为undefined时才添加默认值
+          // 这样可以确保false值不会被默认值覆盖
+          if (providersConfig[provider.id][key] === undefined) {
             providersConfig[provider.id][key] = provider[key];
           }
         });
