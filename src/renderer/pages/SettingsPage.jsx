@@ -10,16 +10,8 @@ import {
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 
-import {
-  useUserConfig,
-  getProvidersConfig,
-  saveProviderConfig,
-  getUserConfig,
-} from "../hooks/useUserConfig";
-import {
-  providers as modelProviders,
-  getAllProviders,
-} from "../services/models";
+import { useUserConfig, getUserConfig } from "../hooks/useUserConfig";
+import { providerService } from "../services/providerService";
 import "../styles/SettingsPage.css";
 import { useTranslation } from "react-i18next";
 
@@ -38,18 +30,18 @@ const userConfigName = "user_config";
 const providersConfigName = "providers_config";
 
 const SettingsPage = () => {
+  const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { config, saveConfig, clearAllConfig, updateLanguage } =
     useUserConfig();
-  const [providersConfig, setProvidersConfig] = useState(getProvidersConfig());
   const [currentMenuKey, setCurrentMenuKey] = useState("model-services");
   const [selectedProvider, setSelectedProvider] = useState(null);
-  const [providers, setProviders] = useState([]); // 初始化为空数组，稍后通过 getAllProviders 获取
+  const [providers, setProviders] = useState([]);
 
   // 初始化时加载提供商配置
   useEffect(() => {
-    // 使用 getAllProviders 获取所有提供商（包括自定义提供商）
-    const allProviders = getAllProviders();
+    // 使用providerService获取所有提供商
+    const allProviders = providerService.getAllProviders();
     setProviders(allProviders);
     console.log("加载所有提供商:", allProviders);
   }, []);
@@ -78,7 +70,7 @@ const SettingsPage = () => {
     // 如果 updatedProvider 为 null，表示提供商已被删除
     if (!updatedProvider) {
       // 重新加载所有提供商
-      const allProviders = getAllProviders();
+      const allProviders = providerService.getAllProviders();
       setProviders(allProviders);
       return;
     }
@@ -118,15 +110,13 @@ const SettingsPage = () => {
     });
   };
 
-  // 根据当前菜单渲染内容
+  // 渲染当前选择的内容
   const renderContent = () => {
     switch (currentMenuKey) {
       case "model-services":
         return (
           <ModelServices
             providers={providers}
-            providersConfig={providersConfig}
-            saveProviderConfig={saveProviderConfig}
             handleSelectProvider={handleSelectProvider}
             onProvidersChange={setProviders}
           />
@@ -135,8 +125,6 @@ const SettingsPage = () => {
         return (
           <ProviderSettings
             initialProvider={selectedProvider}
-            getProvidersConfig={getProvidersConfig}
-            saveProviderConfig={saveProviderConfig}
             handleMenuSelect={handleMenuSelect}
             onProviderUpdate={handleProviderUpdate}
           />
@@ -158,8 +146,6 @@ const SettingsPage = () => {
         return <div>未知设置页面</div>;
     }
   };
-
-  const navigate = useNavigate();
 
   return (
     <Layout className="settings-page">

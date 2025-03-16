@@ -24,16 +24,14 @@ import {
   EditOutlined,
 } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
-import { v4 as uuidv4 } from "uuid";
+import { providerService } from "../../services/providerService";
 
 const { Title, Text } = Typography;
 
 const ProviderSettings = ({
-  initialProvider, // 重命名为initialProvider更清晰
-  getProvidersConfig,
-  saveProviderConfig,
-  handleMenuSelect, // 保留在父组件的导航方法
-  onProviderUpdate, // 用于通知父组件provider更新的回调
+  initialProvider,
+  handleMenuSelect,
+  onProviderUpdate,
 }) => {
   const { t } = useTranslation();
   const [form] = Form.useForm();
@@ -42,7 +40,6 @@ const ProviderSettings = ({
   const [isAddModelModalVisible, setIsAddModelModalVisible] = useState(false);
   const [isEditModelModalVisible, setIsEditModelModalVisible] = useState(false);
   const [currentEditModel, setCurrentEditModel] = useState(null);
-  const [currentModelId, setCurrentModelId] = useState(null);
 
   // 初始化表单和状态
   useEffect(() => {
@@ -70,48 +67,35 @@ const ProviderSettings = ({
   const handleModelChange = (modelId, enabled) => {
     if (!selectedProvider) return;
 
-    // 更新模型状态
-    const updatedModels = selectedProvider.models.map((model) => {
-      if (model.id === modelId) {
-        return { ...model, enabled };
+    // 使用providerService启用/禁用模型
+    const result = providerService.enableModel(
+      selectedProvider.id,
+      modelId,
+      enabled
+    );
+
+    if (result.success) {
+      // 更新本地状态
+      const updatedModels = selectedProvider.models.map((model) => {
+        if (model.id === modelId) {
+          return { ...model, enabled };
+        }
+        return model;
+      });
+
+      // 更新提供商状态
+      const updatedProvider = {
+        ...selectedProvider,
+        models: updatedModels,
+      };
+      setSelectedProvider(updatedProvider);
+
+      // 通知父组件更新
+      if (onProviderUpdate) {
+        onProviderUpdate(updatedProvider);
       }
-      return model;
-    });
-
-    // 更新提供商状态
-    const updatedProvider = {
-      ...selectedProvider,
-      models: updatedModels,
-    };
-    setSelectedProvider(updatedProvider);
-
-    // 保存到配置
-    const providersConfig = getProvidersConfig();
-    const providerConfig = providersConfig[selectedProvider.id] || {
-      id: selectedProvider.id,
-      models: [],
-    };
-
-    // 更新模型状态
-    providerConfig.models = updatedModels.map((model) => ({
-      id: model.id,
-      enabled: model.enabled !== false,
-      name: model.name,
-    }));
-
-    // 如果是自定义提供商，保存isCustom标志
-    if (selectedProvider.isCustom) {
-      providerConfig.isCustom = true;
-      providerConfig.name = selectedProvider.name;
-    }
-
-    // 保存配置
-    providersConfig[selectedProvider.id] = providerConfig;
-    saveProviderConfig(providersConfig);
-
-    // 通知父组件更新
-    if (onProviderUpdate) {
-      onProviderUpdate(updatedProvider);
+    } else {
+      message.error(result.message || t("settings.updateModelFailed"));
     }
   };
 
@@ -136,54 +120,33 @@ const ProviderSettings = ({
     try {
       const values = await modelForm.validateFields();
 
-      // 创建新模型
-      const newModel = {
+      // 使用providerService添加模型
+      const result = providerService.addModel(selectedProvider.id, {
         id: values.modelId,
         name: values.modelName || values.modelId,
-        provider: selectedProvider.id,
         enabled: true,
-      };
+      });
 
-      // 更新提供商状态
-      const updatedProvider = {
-        ...selectedProvider,
-        models: [...selectedProvider.models, newModel],
-      };
-      setSelectedProvider(updatedProvider);
+      if (result.success) {
+        // 更新当前提供商
+        const updatedProvider = providerService.getProviderById(
+          selectedProvider.id
+        );
+        setSelectedProvider(updatedProvider);
 
-      // 保存到配置
-      const providersConfig = getProvidersConfig();
-      const providerConfig = providersConfig[selectedProvider.id] || {
-        id: selectedProvider.id,
-        models: [],
-      };
+        // 通知父组件更新
+        if (onProviderUpdate) {
+          onProviderUpdate(updatedProvider);
+        }
 
-      // 更新模型列表
-      providerConfig.models = updatedProvider.models.map((model) => ({
-        id: model.id,
-        enabled: model.enabled !== false,
-        name: model.name,
-      }));
-
-      // 如果是自定义提供商，保存isCustom标志
-      if (selectedProvider.isCustom) {
-        providerConfig.isCustom = true;
-        providerConfig.name = selectedProvider.name;
+        message.success(t("settings.addModelSuccess"));
+        setIsAddModelModalVisible(false);
+      } else {
+        message.error(result.message || t("settings.addModelFailed"));
       }
-
-      // 保存配置
-      providersConfig[selectedProvider.id] = providerConfig;
-      saveProviderConfig(providersConfig);
-
-      // 通知父组件更新
-      if (onProviderUpdate) {
-        onProviderUpdate(updatedProvider);
-      }
-
-      message.success(t("settings.addModelSuccess"));
-      setIsAddModelModalVisible(false);
     } catch (error) {
       console.error("添加模型失败:", error);
+      message.error(t("settings.addModelFailed"));
     }
   };
 
@@ -194,59 +157,37 @@ const ProviderSettings = ({
     try {
       const values = await modelForm.validateFields();
 
-      // 更新模型
-      const updatedModels = selectedProvider.models.map((model) => {
-        if (model.id === currentEditModel.id) {
-          return {
-            ...model,
-            id: values.modelId,
-            name: values.modelName || values.modelId,
-          };
+      // 使用providerService编辑模型
+      const result = providerService.editModel(
+        selectedProvider.id,
+        currentEditModel.id,
+        {
+          id: values.modelId,
+          name: values.modelName || values.modelId,
         }
-        return model;
-      });
+      );
 
-      // 更新提供商状态
-      const updatedProvider = {
-        ...selectedProvider,
-        models: updatedModels,
-      };
-      setSelectedProvider(updatedProvider);
+      if (result.success) {
+        // 更新当前提供商
+        const updatedProvider = providerService.getProviderById(
+          selectedProvider.id
+        );
+        setSelectedProvider(updatedProvider);
 
-      // 保存到配置
-      const providersConfig = getProvidersConfig();
-      const providerConfig = providersConfig[selectedProvider.id] || {
-        id: selectedProvider.id,
-        models: [],
-      };
+        // 通知父组件更新
+        if (onProviderUpdate) {
+          onProviderUpdate(updatedProvider);
+        }
 
-      // 更新模型列表
-      providerConfig.models = updatedModels.map((model) => ({
-        id: model.id,
-        enabled: model.enabled !== false,
-        name: model.name,
-      }));
-
-      // 如果是自定义提供商，保存isCustom标志
-      if (selectedProvider.isCustom) {
-        providerConfig.isCustom = true;
-        providerConfig.name = selectedProvider.name;
+        message.success(t("settings.editModelSuccess"));
+        setIsEditModelModalVisible(false);
+        setCurrentEditModel(null);
+      } else {
+        message.error(result.message || t("settings.editModelFailed"));
       }
-
-      // 保存配置
-      providersConfig[selectedProvider.id] = providerConfig;
-      saveProviderConfig(providersConfig);
-
-      // 通知父组件更新
-      if (onProviderUpdate) {
-        onProviderUpdate(updatedProvider);
-      }
-
-      message.success(t("settings.editModelSuccess"));
-      setIsEditModelModalVisible(false);
-      setCurrentEditModel(null);
     } catch (error) {
       console.error("编辑模型失败:", error);
+      message.error(t("settings.editModelFailed"));
     }
   };
 
@@ -254,131 +195,54 @@ const ProviderSettings = ({
   const handleDeleteModel = (modelId) => {
     if (!selectedProvider) return;
 
-    // 检查是否是系统供应商
-    const isSystemProvider = !selectedProvider.isCustom;
+    // 使用providerService删除模型
+    const result = providerService.deleteModel(selectedProvider.id, modelId);
 
-    let updatedModels;
-
-    if (isSystemProvider) {
-      // 对于系统供应商，标记模型为已删除而不是移除
-      updatedModels = selectedProvider.models.map((model) => {
-        if (model.id === modelId) {
-          return { ...model, deleted: true };
-        }
-        return model;
-      });
-    } else {
-      // 对于自定义供应商，继续使用过滤方法删除
-      updatedModels = selectedProvider.models.filter(
-        (model) => model.id !== modelId
+    if (result.success) {
+      // 重新获取提供商以确保数据一致性
+      const updatedProvider = providerService.getProviderById(
+        selectedProvider.id
       );
-    }
+      setSelectedProvider(updatedProvider);
 
-    // 更新提供商状态
-    const updatedProvider = {
-      ...selectedProvider,
-      models: updatedModels,
-    };
-    setSelectedProvider(updatedProvider);
+      // 通知父组件更新
+      if (onProviderUpdate) {
+        onProviderUpdate(updatedProvider);
+      }
 
-    // 保存到配置
-    const providersConfig = getProvidersConfig();
-    const providerConfig = providersConfig[selectedProvider.id] || {
-      id: selectedProvider.id,
-      models: [],
-    };
-
-    // 更新模型列表
-    if (isSystemProvider) {
-      // 对于系统供应商，保存所有模型，包括标记为删除的
-      providerConfig.models = updatedModels.map((model) => ({
-        id: model.id,
-        enabled: model.enabled !== false,
-        name: model.name,
-        deleted: model.deleted === true,
-      }));
+      message.success(t("settings.deleteModelSuccess"));
     } else {
-      // 对于自定义供应商，只保存未删除的模型
-      providerConfig.models = updatedModels.map((model) => ({
-        id: model.id,
-        enabled: model.enabled !== false,
-        name: model.name,
-      }));
+      message.error(result.message || t("settings.deleteModelFailed"));
     }
-
-    // 如果是自定义提供商，保存isCustom标志
-    if (selectedProvider.isCustom) {
-      providerConfig.isCustom = true;
-      providerConfig.name = selectedProvider.name;
-    }
-
-    // 保存配置
-    providersConfig[selectedProvider.id] = providerConfig;
-    saveProviderConfig(providersConfig);
-
-    // 通知父组件更新
-    if (onProviderUpdate) {
-      // 在UI中更新提供商，但过滤掉已删除的模型
-      const uiProvider = {
-        ...updatedProvider,
-        models: updatedModels.filter((model) => !model.deleted),
-      };
-      onProviderUpdate(uiProvider);
-    }
-
-    message.success(t("settings.deleteModelSuccess"));
   };
 
-  // 处理删除供应商
+  // 处理删除提供商
   const handleDeleteProvider = () => {
     if (!selectedProvider || !selectedProvider.isCustom) {
-      console.error("无法删除：selectedProvider为空或不是自定义供应商");
+      message.error(t("settings.cannotDeleteSystemProvider"));
       return;
     }
 
-    console.log("开始删除供应商:", selectedProvider.id);
+    // 使用providerService删除提供商
+    const result = providerService.deleteProvider(selectedProvider.id);
 
-    try {
-      // 从配置中删除供应商
-      const providersConfig = getProvidersConfig();
-      console.log("当前配置:", providersConfig);
-
-      // 确保提供商存在于配置中
-      if (providersConfig[selectedProvider.id]) {
-        console.log("删除供应商:", selectedProvider.id);
-        delete providersConfig[selectedProvider.id];
-        console.log("删除后的配置:", providersConfig);
-
-        // 保存更新后的配置
-        const success = saveProviderConfig(providersConfig);
-        console.log("保存结果:", success);
-
-        if (success) {
-          // 通知父组件更新
-          if (onProviderUpdate) {
-            console.log("通知父组件更新");
-            onProviderUpdate(null);
-          }
-
-          message.success(t("settings.deleteProviderSuccess"));
-
-          // 返回列表页面
-          handleMenuSelect({ key: "model-services" });
-        } else {
-          console.error("删除供应商失败：保存配置返回false");
-          message.error("删除供应商失败，请重试");
-        }
-      } else {
-        console.warn("供应商不存在或已被删除:", selectedProvider.id);
-        message.warning("供应商不存在或已被删除");
-        handleMenuSelect({ key: "model-services" });
+    if (result.success) {
+      // 通知父组件更新
+      if (onProviderUpdate) {
+        // 传递null表示提供商已被删除
+        onProviderUpdate(null);
       }
-    } catch (error) {
-      console.error("删除供应商时发生错误:", error);
-      message.error("删除供应商失败: " + error.message);
+
+      message.success(t("settings.deleteProviderSuccess"));
+
+      // 返回列表页面
+      handleMenuSelect({ key: "model-services" });
+    } else {
+      message.error(result.message || t("settings.deleteProviderFailed"));
     }
   };
 
+  // 处理保存提供商设置
   const handleSaveProvider = () => {
     if (!selectedProvider) {
       console.error("无法保存：selectedProvider为空");
@@ -388,57 +252,46 @@ const ProviderSettings = ({
     form
       .validateFields()
       .then((values) => {
-        // 创建提供商配置
-        const providersConfig = getProvidersConfig();
-        const providerConfig = providersConfig[selectedProvider.id] || {
-          id: selectedProvider.id,
-          models: [],
-        };
+        // 使用providerService保存提供商设置
+        const result = providerService.saveProviderSettings(
+          selectedProvider.id,
+          {
+            apiKey: values.apiKey || "",
+            baseUrl: values.baseUrl || "",
+            // 如果是自定义提供商，保存isCustom标志和名称
+            ...(selectedProvider.isCustom
+              ? {
+                  isCustom: true,
+                  name: selectedProvider.name,
+                }
+              : {}),
+          }
+        );
 
-        // 更新apiKey和baseUrl
-        providerConfig.apiKey = values.apiKey || "";
-        providerConfig.baseUrl = values.baseUrl || "";
+        if (result.success) {
+          // 更新状态
+          const updatedProvider = {
+            ...selectedProvider,
+            apiKey: values.apiKey,
+            baseUrl: values.baseUrl,
+          };
+          setSelectedProvider(updatedProvider);
 
-        // 如果是自定义提供商，保存isCustom标志和名称
-        if (selectedProvider.isCustom) {
-          providerConfig.isCustom = true;
-          providerConfig.name = selectedProvider.name;
+          // 通知父组件更新
+          if (onProviderUpdate) {
+            onProviderUpdate(updatedProvider);
+          }
+
+          message.success(t("settings.saveSuccess"));
+
+          // 返回列表页面
+          handleMenuSelect({ key: "model-services" });
+        } else {
+          message.error(result.message || t("settings.saveFailed"));
         }
-
-        // 确保保存模型状态
-        providerConfig.models = selectedProvider.models.map((model) => ({
-          id: model.id,
-          enabled: model.enabled !== false, // 确保undefined或null被视为true
-          name: model.name,
-        }));
-
-        // 保存配置
-        providersConfig[selectedProvider.id] = providerConfig;
-        saveProviderConfig(providersConfig);
-
-        // 更新状态
-        const updatedProvider = {
-          ...selectedProvider,
-          apiKey: values.apiKey,
-          baseUrl: values.baseUrl,
-        };
-        setSelectedProvider(updatedProvider);
-
-        // 通知父组件更新
-        if (onProviderUpdate) {
-          onProviderUpdate(updatedProvider);
-        }
-
-        message.success(t("settings.saveSuccess"));
-
-        // 返回列表页面
-        handleMenuSelect({ key: "model-services" });
       })
       .catch((error) => {
-        console.error("保存失败:", error);
-        message.error(
-          t("common.save") + " " + t("common.failed") + ":" + error.message
-        );
+        console.error("表单验证失败:", error);
       });
   };
 

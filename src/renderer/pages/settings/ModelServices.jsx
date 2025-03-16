@@ -14,15 +14,12 @@ import {
 } from "antd";
 import { useTranslation } from "react-i18next";
 import { PlusOutlined, ApiOutlined } from "@ant-design/icons";
-import { v4 as uuidv4 } from "uuid";
-import { saveProviderConfigById } from "../../hooks/useUserConfig";
+import { providerService } from "../../services/providerService";
 
 const { Title, Paragraph } = Typography;
 
 const ModelServices = ({
   providers: initialProviders,
-  providersConfig,
-  saveProviderConfig,
   handleSelectProvider,
   onProvidersChange,
 }) => {
@@ -36,32 +33,32 @@ const ModelServices = ({
   }, [initialProviders]);
 
   const handleProviderEnabledChange = (providerId, enabled) => {
-    const updatedProviders = providers.map((provider) => {
-      if (provider.id === providerId) {
-        return { ...provider, enabled };
+    // 使用providerService来启用/禁用提供商
+    const result = providerService.enableProvider(providerId, enabled);
+
+    if (result.success) {
+      // 更新本地状态
+      const updatedProviders = providers.map((provider) => {
+        if (provider.id === providerId) {
+          return { ...provider, enabled };
+        }
+        return provider;
+      });
+
+      setProviders(updatedProviders);
+
+      if (onProvidersChange) {
+        onProvidersChange(updatedProviders);
       }
-      return provider;
-    });
 
-    setProviders(updatedProviders);
-
-    if (onProvidersChange) {
-      onProvidersChange(updatedProviders);
+      message.success(
+        `${enabled ? t("common.enable") : t("common.disable")} ${t(
+          "common.success"
+        )}`
+      );
+    } else {
+      message.error(result.message || t("common.operationFailed"));
     }
-
-    const updatedConfig = { ...providersConfig };
-    if (!updatedConfig[providerId]) {
-      updatedConfig[providerId] = {};
-    }
-    updatedConfig[providerId].enabled = enabled;
-
-    saveProviderConfig(updatedConfig);
-
-    message.success(
-      `${enabled ? t("common.enable") : t("common.disable")} ${t(
-        "common.success"
-      )}`
-    );
   };
 
   // 显示添加供应商对话框
@@ -75,12 +72,8 @@ const ModelServices = ({
     try {
       const values = await form.validateFields();
 
-      // 生成唯一ID
-      const providerId = `custom_${uuidv4().substring(0, 8)}`;
-
       // 创建新的供应商对象
-      const newProvider = {
-        id: providerId,
+      const newProviderData = {
         name: values.name,
         baseUrl: values.baseUrl,
         apiKey: values.apiKey || "",
@@ -88,29 +81,32 @@ const ModelServices = ({
           {
             id: values.modelId,
             name: values.modelName || values.modelId,
-            provider: providerId,
             enabled: true,
           },
         ],
         enabled: true,
-        isCustom: true,
       };
 
-      // 保存到本地存储
-      saveProviderConfigById(providerId, newProvider);
+      // 使用providerService添加自定义提供商
+      const result = providerService.addCustomProvider(newProviderData);
 
-      // 更新状态
-      const updatedProviders = [...providers, newProvider];
-      setProviders(updatedProviders);
+      if (result.success) {
+        // 重新获取所有提供商，确保数据一致性
+        const allProviders = providerService.getAllProviders();
+        setProviders(allProviders);
 
-      if (onProvidersChange) {
-        onProvidersChange(updatedProviders);
+        if (onProvidersChange) {
+          onProvidersChange(allProviders);
+        }
+
+        message.success(t("settings.addProviderSuccess"));
+        setIsAddModalVisible(false);
+      } else {
+        message.error(result.message || t("settings.addProviderFailed"));
       }
-
-      message.success(t("settings.addProviderSuccess"));
-      setIsAddModalVisible(false);
     } catch (error) {
       console.error("添加供应商失败:", error);
+      message.error(t("settings.addProviderFailed"));
     }
   };
 

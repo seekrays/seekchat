@@ -3,9 +3,8 @@
  * 负责与各种 AI 服务提供商的 API 交互
  */
 
-// 导入模型配置
-import { providers, getAllProviders } from "./models.js";
-import { getProvidersConfig } from "../hooks/useUserConfig";
+// 导入提供商服务
+import { providerService } from "./providerService.js";
 import i18n from "../i18n";
 
 // 导入工具相关功能
@@ -24,17 +23,7 @@ import {
  * @returns {Array} 启用的提供商列表
  */
 export const getEnabledProviders = () => {
-  // 使用 getAllProviders 获取所有提供商（包括自定义提供商）
-  const allProviders = getAllProviders();
-
-  // 过滤出启用的提供商
-  return allProviders.filter((provider) => {
-    // 如果提供商明确设置为禁用，则过滤掉
-    if (provider.enabled === false) {
-      return false;
-    }
-    return true;
-  });
+  return providerService.getEnabledProviders();
 };
 
 /**
@@ -70,9 +59,8 @@ const sendMessageToAI = async (
     : [];
 
   // 检查提供商是否被禁用
-  const providersConfig = getProvidersConfig();
-  const savedProvider = providersConfig[provider.id];
-  if (savedProvider && savedProvider.enabled === false) {
+  const providerFromService = providerService.getProviderById(provider.id);
+  if (!providerFromService || providerFromService.enabled === false) {
     console.error("提供商已禁用:", provider.name);
     throw new Error(
       i18n.t("settings.providerDisabled", { name: provider.name })
