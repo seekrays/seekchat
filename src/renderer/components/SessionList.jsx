@@ -51,10 +51,10 @@ const SessionList = ({
   // 确认删除
   const confirmDelete = (sessionId, sessionName) => {
     Modal.confirm({
-      title: t("chat.clearChatConfirm"),
+      title: t("chat.clearChatConfirm", { sessionName }),
       icon: <ExclamationCircleOutlined />,
       okType: "danger",
-      content: t("chat.clearChatConfirm", { sessionName }),
+      content: t("chat.clearChatConfirmContent"),
 
       okText: t("common.delete"),
       cancelText: t("common.cancel"),

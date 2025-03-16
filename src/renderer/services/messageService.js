@@ -4,7 +4,9 @@
  */
 
 import { sendMessageToAI } from "./aiService";
-import { getUserConfig, getProvidersConfig } from "../hooks/useUserConfig";
+import { getUserConfig } from "../hooks/useUserConfig";
+import { getAllProviders } from "./models";
+import i18n from "../i18n";
 
 /**
  * create a new message content object
@@ -95,7 +97,7 @@ export const sendMessage = async (
     options
   );
   if (!session) {
-    throw new Error(t("chat.pleaseSelectOrCreateASession"));
+    throw new Error(i18n.t("chat.pleaseSelectOrCreateASession"));
   }
 
   console.log("messageService: sendMessage", options);
@@ -107,18 +109,18 @@ export const sendMessage = async (
       "messageService: sendMessage: unselect provider or model:",
       userConfig
     );
-    throw new Error(t("chat.pleaseSelectAModel"));
+    throw new Error(i18n.t("chat.pleaseSelectAModel"));
   }
 
   // get provider config
-  const providersConfig = getProvidersConfig();
-  const provider = providersConfig[userConfig.providerId];
+  const allProviders = getAllProviders();
+  const provider = allProviders.find((p) => p.id === userConfig.providerId);
   if (!provider) {
     console.error(
       "messageService: sendMessage: unselect provider:",
       userConfig.providerId
     );
-    throw new Error(t("settings.noProvidersAvailable"));
+    throw new Error(i18n.t("settings.noProvidersAvailable"));
   }
 
   // get model
@@ -128,7 +130,7 @@ export const sendMessage = async (
       "messageService: sendMessage: unselect model:",
       userConfig.modelId
     );
-    throw new Error(t("chat.pleaseSelectAModel"));
+    throw new Error(i18n.t("chat.pleaseSelectAModel"));
   }
 
   console.log(
@@ -138,6 +140,7 @@ export const sendMessage = async (
       model: model.id,
       temperature: options.temperature,
       hasSignal: !!options.signal,
+      mcpToolsCount: options.mcpTools ? options.mcpTools.length : 0,
     }
   );
 
@@ -171,6 +174,7 @@ export const sendMessage = async (
       {
         temperature: options.temperature,
         signal: options.signal,
+        mcpTools: options.mcpTools,
       }
     );
   } catch (error) {

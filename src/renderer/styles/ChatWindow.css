@@ -99,8 +99,9 @@
   /* 使AI消息靠左 */
 }
 
+/* 移除悬停时的上浮效果 */
 .message-item:hover {
-  transform: translateY(-2px);
+  /* transform: translateY(-2px); */
 }
 
 .message-avatar {
@@ -248,7 +249,7 @@
 }
 
 .message-text pre {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: #1e1e1e;
   padding: 12px;
   border-radius: 6px;
   margin: 10px 0;
@@ -258,6 +259,15 @@
   font-size: 13px;
   line-height: 1.45;
   border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 语法高亮相关样式 */
+.message-text pre > div {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  border: none !important;
 }
 
 .message-text code {
@@ -676,4 +686,166 @@
 /* 调整消息文本对齐方式 */
 .user-message .message-text {
   text-align: left;
+}
+
+/* 代码块包装器 */
+.code-block-wrapper {
+  position: relative;
+  margin: 10px 0;
+}
+
+/* 代码块头部 */
+.code-block-header {
+  background-color: #2d2d2d;
+  color: #d4d4d4;
+  padding: 6px 12px;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+/* 代码语言标签 */
+.code-language {
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #c2c2c2;
+}
+
+/* 复制按钮 */
+.code-copy-button {
+  color: #c2c2c2;
+  background: transparent;
+  border: none;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.code-copy-button:hover {
+  color: white;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* 调整代码高亮区域的边框半径 */
+.code-block-wrapper pre {
+  margin: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.message-text pre {
+  background-color: #1e1e1e;
+  padding: 12px;
+  border-radius: 6px;
+  margin: 10px 0;
+  overflow-x: auto;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier,
+    monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* MCP工具调用组件样式 */
+.mcp-tool-call {
+  margin: 10px 0;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f9f9f9;
+}
+
+.mcp-tool-call-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f0f0f0;
+  border-bottom: 1px solid #e6e6e6;
+  gap: 8px;
+}
+
+.mcp-tool-name {
+  flex: 1;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.mcp-tool-call-details {
+  padding: 12px;
+}
+
+.mcp-tool-parameters,
+.mcp-tool-result {
+  margin-bottom: 12px;
+}
+
+.mcp-tool-parameters pre,
+.mcp-tool-result pre {
+  background-color: #fff;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.tool-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: #1890ff;
+}
+
+/* 工具调用中状态信息 */
+.tool-calling-status {
+  background-color: #e6f7ff;
+  border: 1px solid #91d5ff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1890ff;
+}
+
+/* 消息渐入动画 */
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-item:last-child {
+  animation: messageAppear 0.3s ease-out;
+}
+
+/* 空消息状态样式优化 */
+.empty-message-icon {
+  margin-bottom: 15px;
+  opacity: 0.6;
+}
+
+.empty-message-text {
+  font-size: 16px;
+  color: #888;
+  opacity: 0.8;
 }

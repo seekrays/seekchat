@@ -1,0 +1,58 @@
+appId: com.seekrays.seekchat
+productName: SeekChat
+
+directories:
+  buildResources: build
+
+files:
+  - dist/**/*
+  - build/**/*
+  - node_modules/**/*
+  - package.json
+  - src/main/**/*
+  - public/**/*
+  - "!node_modules/**/*.{md,markdown,ts,map}"
+  - "!**/*.{o,hprof,orig,pyc,pyo,rbc}"
+
+asarUnpack:
+  - public/assets/**
+  - "**/*.{node,dll,metal,exp,lib}"
+win:
+  executableName: SeekChat
+  artifactName: ${productName}-${version}-portable.${ext}
+  target:
+    - target: nsis
+    - target: portable
+nsis:
+  artifactName: ${productName}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always
+  allowToChangeInstallationDirectory: true
+  oneClick: false
+mac:
+  entitlementsInherit: build/entitlements.mac.plist
+  notarize: false
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  extendInfo:
+    - NSCameraUsageDescription: Application requests access to the device's camera.
+    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+  target:
+    - target: dmg
+      arch:
+        - arm64
+        - x64
+    - target: zip
+      arch:
+        - arm64
+        - x64
+linux:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  target:
+    - target: AppImage
+      arch:
+        - x64
+  maintainer: electronjs.org
+  category: Utility

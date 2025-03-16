@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { providers } from "../services/models";
+import { getAllProviders } from "../services/models";
+// 移除对 models.js 的导入，避免循环依赖
+// import { providers } from "../services/models";
 
 // 配置名称常量
 const userConfigName = "user_config";
@@ -8,7 +10,7 @@ const providersConfigName = "providers_config";
 // 默认用户配置
 const defaultUserConfig = {
   theme: "light", // 默认主题
-  language: "en", // 默认语言
+  // language: "en", // 默认语言
   // 其他默认配置...
 };
 
@@ -54,7 +56,7 @@ export const useUserConfig = () => {
     getProvidersConfig,
     saveProviderConfig,
     clearAllConfig: () => {
-      const success = clearAllConfig();
+      const success = clearAllConfigInternal();
       if (success) {
         setConfig(defaultUserConfig);
       }
@@ -140,11 +142,24 @@ export const saveProviderConfig = (providersConfig) => {
       providersConfig = configObj;
     }
 
-    // 检查providersConfig是否为空对象
-    if (!providersConfig || Object.keys(providersConfig).length === 0) {
-      console.error("providersConfig为空，无法保存");
-      return false;
+    // 确保providersConfig是一个对象
+    if (!providersConfig) {
+      providersConfig = {};
     }
+    // 对比 providersConfig 和 getAllProviders，如果providersConfig中没有的字段，则添加
+    const allProviders = getAllProviders();
+    allProviders.forEach((provider) => {
+      if (providersConfig[provider.id]) {
+        // 对比providersConfig[provider.id]和provider，如果providersConfig[provider.id]中没有的字段，则添加
+        Object.keys(provider).forEach((key) => {
+          // 修改这里的判断逻辑，只有当providersConfig[provider.id][key]为undefined时才添加默认值
+          // 这样可以确保false值不会被默认值覆盖
+          if (providersConfig[provider.id][key] === undefined) {
+            providersConfig[provider.id][key] = provider[key];
+          }
+        });
+      }
+    });
 
     // 确保每个provider都有models属性
     Object.keys(providersConfig).forEach((providerId) => {
@@ -164,13 +179,6 @@ export const saveProviderConfig = (providersConfig) => {
     console.log("保存提供商配置成功，数据大小:", configJson.length, "字节");
     console.log("保存的数据:", providersConfig);
 
-    // 验证保存是否成功
-    const savedJson = localStorage.getItem(providersConfigName);
-    if (!savedJson) {
-      console.error("保存后无法读取数据");
-      return false;
-    }
-
     return true;
   } catch (error) {
     console.error("保存提供商配置失败:", error);
@@ -178,11 +186,32 @@ export const saveProviderConfig = (providersConfig) => {
   }
 };
 
-// 清除所有配置
-export const clearAllConfig = () => {
+/**
+ * 保存单个提供商的配置
+ * @param {string} providerId 提供商ID
+ * @param {Object} config 提供商配置
+ * @returns {boolean} 是否保存成功
+ */
+export const saveProviderConfigById = (providerId, config) => {
   try {
+    const savedConfig = getProvidersConfig();
+    savedConfig[providerId] = config;
+    return saveProviderConfig(savedConfig);
+  } catch (error) {
+    console.error("保存提供商配置失败:", error);
+    return false;
+  }
+};
+
+// 清除所有配置
+export const clearAllConfigInternal = () => {
+  try {
+    // 清除用户配置
     localStorage.removeItem(userConfigName);
+
+    // 清除提供商配置
     localStorage.removeItem(providersConfigName);
+
     console.log("已清除所有配置");
     return true;
   } catch (error) {
@@ -199,15 +228,9 @@ if (typeof window !== "undefined") {
 
   // 初始化提供商配置
   if (!localStorage.getItem(providersConfigName)) {
-    // 为每个提供商添加enabled字段，默认为false（禁用状态）
-    const providersWithEnabled = providers.map((provider) => ({
-      ...provider,
-      enabled: false,
-    }));
-    localStorage.setItem(
-      providersConfigName,
-      JSON.stringify(providersWithEnabled)
-    );
+    // 不再依赖 models.js 中的 providers
+    // 初始化为空对象，providers 将在应用启动时通过其他方式加载
+    localStorage.setItem(providersConfigName, "{}");
   } else {
     // 检查现有配置中是否有enabled字段，如果没有则添加
     const existingConfig = JSON.parse(
@@ -260,27 +283,28 @@ if (typeof window !== "undefined") {
  */
 export function isAIConfigured() {
   const config = getUserConfig();
-  const providersConfig = getProvidersConfig();
-  console.log("providersConfig", providersConfig);
-  console.log("config", config);
+  const allProviders = getAllProviders();
+  console.log("检查AI配置:", { userConfig: config, allProviders });
   // 检查是否选择了提供商和模型
   if (!config.providerId || !config.modelId) {
+    console.log("未选择提供商或模型");
     return false;
   }
 
-  // 检查提供商是否存在且已启用
-  const provider = providersConfig[config.providerId];
-  if (!provider || provider.enabled === false) {
+  // 从allProviders 中检查服务商没有被禁用以及模型没有被禁用货真删除
+  const provider = allProviders.find(
+    (p) => p.id === config.providerId && p.enabled !== false
+  );
+  console.log("检查AI配置:", { provider });
+  if (!provider) {
     return false;
   }
-
-  // 检查模型是否存在
-  const providerConfig = provider || {};
-
-  // 检查 API 密钥是否已设置
-  if (!providerConfig.apiKey && !providerConfig.mockResponse) {
+  const model = provider.models.find(
+    (m) => m.id === config.modelId && m.enabled !== false && m.deleted !== true
+  );
+  console.log("检查AI配置:", { model });
+  if (!model) {
     return false;
   }
-
   return true;
 }

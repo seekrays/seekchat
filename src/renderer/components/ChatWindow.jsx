@@ -1,4 +1,4 @@
-import React, { useRef, memo, useState, useEffect } from "react";
+import React, { useRef, memo, useState, useEffect, useCallback } from "react";
 import {
   Input,
   Button,
@@ -21,9 +21,13 @@ import {
   SettingOutlined,
   CopyOutlined,
   StopOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
-import { getModelName, getEnabledProviders } from "../services/aiService";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { getEnabledProviders } from "../services/aiService";
+import { getModelName, getAllProviders } from "../services/models";
 import { providers } from "../services/models";
 import { useUserConfig } from "../hooks/useUserConfig";
 import { useMessages } from "../hooks/useMessages";
@@ -33,62 +37,13 @@ import {
 } from "../services/messageService";
 import "../styles/ChatWindow.css";
 import { useTranslation } from "react-i18next";
+import ChatInputContainer from "./ChatInputContainer";
+import MCPToolsButton from "./MCPToolsButton";
+import MessageItem from "./MessageItem";
 
 const { TextArea } = Input;
 const { Option, OptGroup } = Select;
 const { Panel } = Collapse;
-
-// 创建一个单独的 ChatInput 组件
-const ChatInput = memo(
-  ({
-    inputValue,
-    setInputValue,
-    handleKeyPress,
-    handleSendMessage,
-    isSending,
-    handleStopGeneration,
-  }) => {
-    const { t } = useTranslation();
-
-    return (
-      <div className="chat-input-container">
-        <div className="input-wrapper">
-          <TextArea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={t("chat.typing")}
-            autoSize={{ minRows: 1, maxRows: 5 }}
-            disabled={isSending}
-          />
-          <div className="input-actions">
-            {isSending ? (
-              <Button
-                type="primary"
-                danger
-                icon={<StopOutlined />}
-                onClick={handleStopGeneration}
-                className="stop-button"
-              >
-                {t("chat.stop")}
-              </Button>
-            ) : (
-              <Button
-                type="primary"
-                icon={<SendOutlined />}
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
-                className="send-button"
-              >
-                {t("chat.send")}
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-);
 
 // 消息内容组件
 const MessageContent = ({ content }) => {
@@ -98,15 +53,72 @@ const MessageContent = ({ content }) => {
   const parsedContent =
     typeof content === "string" ? parseMessageContent(content) : content;
 
+  // 复制代码到剪贴板
+  const copyCodeToClipboard = (code) => {
+    navigator.clipboard
+      .writeText(code)
+      .then(() => {
+        message.success(t("chat.codeCopied"));
+      })
+      .catch((error) => {
+        console.error("复制代码失败:", error);
+        message.error(t("chat.copyToClipboard") + t("common.failed"));
+      });
+  };
+
+  // 自定义渲染器，添加代码高亮功能
+  const renderers = {
+    code({ node, inline, className, children, ...props }) {
+      const match = /language-(\w+)/.exec(className || "");
+      const language = match ? match[1] : "text";
+      const codeString = String(children).replace(/\n$/, "");
+
+      return !inline && match ? (
+        <div className="code-block-wrapper">
+          <div className="code-block-header">
+            <span className="code-language">{language}</span>
+            <Tooltip title={t("chat.copyCode")}>
+              <Button
+                type="text"
+                icon={<CopyOutlined />}
+                className="code-copy-button"
+                onClick={() => copyCodeToClipboard(codeString)}
+              />
+            </Tooltip>
+          </div>
+          <SyntaxHighlighter
+            style={vscDarkPlus}
+            language={language}
+            PreTag="div"
+            {...props}
+          >
+            {codeString}
+          </SyntaxHighlighter>
+        </div>
+      ) : (
+        <code className={className} {...props}>
+          {children}
+        </code>
+      );
+    },
+  };
+
   // 如果解析后是数组，渲染多个内容块
   if (Array.isArray(parsedContent)) {
     // 找到主要内容（类型为 content）
     const mainContent = parsedContent.find((item) => item.type === "content");
-    // console.log('mainContent', mainContent);
     // 找到思考内容（类型为 reasoning_content）
     const reasoningContent = parsedContent.find(
       (item) => item.type === "reasoning_content"
     );
+    // 找到工具调用内容（类型为 tool_calls）
+    const toolCallsContent = parsedContent.find(
+      (item) => item.type === "tool_calls"
+    );
+    console.log("toolCallsContent:", toolCallsContent);
+
+    // 导入MCP工具调用组件
+    const MCPToolCall = lazy(() => import("./MCPToolCall"));
 
     return (
       <div className="message-content-blocks">
@@ -117,7 +129,7 @@ const MessageContent = ({ content }) => {
             <Collapse
               ghost
               className="reasoning-collapse"
-              defaultActiveKey={["1"]}
+              defaultActiveKey={[]}
             >
               <Panel
                 header={
@@ -134,17 +146,41 @@ const MessageContent = ({ content }) => {
                   {reasoningContent.status === "pending" ? (
                     <Spin size="small" />
                   ) : (
-                    <ReactMarkdown>{reasoningContent.content}</ReactMarkdown>
+                    <ReactMarkdown components={renderers}>
+                      {reasoningContent.content}
+                    </ReactMarkdown>
                   )}
                 </div>
               </Panel>
             </Collapse>
           )}
-
+        {/* 工具调用内容 */}
+        {toolCallsContent &&
+          toolCallsContent.content &&
+          Array.isArray(toolCallsContent.content) && (
+            <div className="tool-calls-container">
+              {toolCallsContent.status === "receiving" && (
+                <div className="tool-calling-status">
+                  <Spin size="small" />
+                  <span>{t("chat.mcpTools.executingTools")}</span>
+                </div>
+              )}
+              {toolCallsContent.content.map((toolCall, index) => (
+                <React.Suspense
+                  key={toolCall.id || index}
+                  fallback={<Spin size="small" />}
+                >
+                  <MCPToolCall toolCall={toolCall} isCollapsed={true} />
+                </React.Suspense>
+              ))}
+            </div>
+          )}
         {/* 主要内容 - 移到思考内容之后 */}
         {mainContent && mainContent.status !== "error" && (
           <div className="message-main-content">
-            <ReactMarkdown>{mainContent.content}</ReactMarkdown>
+            <ReactMarkdown components={renderers}>
+              {mainContent.content}
+            </ReactMarkdown>
             {mainContent.status === "pending" && mainContent.content && (
               <div className="message-pending-indicator">
                 <Spin size="small" />
@@ -159,14 +195,16 @@ const MessageContent = ({ content }) => {
         )}
 
         {/* 如果没有内容，显示加载中 */}
-        {!mainContent && !reasoningContent && <Spin size="small" />}
+        {!mainContent && !reasoningContent && !toolCallsContent && (
+          <Spin size="small" />
+        )}
       </div>
     );
   }
 
   // 如果不是数组，直接渲染内容
   return (
-    <ReactMarkdown>
+    <ReactMarkdown components={renderers}>
       {typeof parsedContent === "string"
         ? parsedContent
         : formatMessageContent(parsedContent)}
@@ -342,8 +380,11 @@ const ModelSettingsModal = ({ visible, onCancel, onSave, initialSettings }) => {
 
 // 获取服务提供商和模型信息
 const getProviderAndModelInfo = (providerId, modelId) => {
+  // 获取所有供应商（包括系统和自定义供应商）
+  const allProviders = getAllProviders();
+
   // 查找提供商
-  const provider = providers.find((p) => p.id === providerId);
+  const provider = allProviders.find((p) => p.id === providerId);
   if (!provider)
     return {
       providerName: "AI助手",
@@ -378,18 +419,19 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
   const electronAPI = window.electronAPI;
   const sessionIdRef = useRef(null);
 
+  // 跟踪可见消息ID，用于优化滚动和渲染
+  const [visibleMessageIds, setVisibleMessageIds] = useState({});
+
   const {
     messages,
-    inputValue,
-    setInputValue,
     isSending,
     loading,
     messagesEndRef,
     chatContainerRef,
     handleSendMessage,
-    handleKeyPress,
     loadMessages,
     handleStopGeneration,
+    scrollToBottom,
   } = useMessages(session, sessionSettings);
 
   // 当会话变化时加载设置
@@ -451,6 +493,30 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
     loadSessionSettings();
   }, [session, electronAPI]);
 
+  // 监听消息列表变化，自动滚动到底部
+  useEffect(() => {
+    if (messages.length > 0 && !loading) {
+      // 使用requestAnimationFrame确保在下一次渲染周期执行滚动
+      requestAnimationFrame(() => {
+        scrollToBottom();
+        console.log("消息更新后自动滚动到底部");
+      });
+    }
+  }, [messages.length, loading, scrollToBottom]);
+
+  // 处理消息可见性变化
+  const handleMessageVisibilityChange = useCallback((messageId, isVisible) => {
+    if (isVisible) {
+      setVisibleMessageIds((prev) => ({ ...prev, [messageId]: true }));
+    } else {
+      setVisibleMessageIds((prev) => {
+        const newState = { ...prev };
+        delete newState[messageId];
+        return newState;
+      });
+    }
+  }, []);
+
   // 保存会话设置
   const saveSessionSettings = async (settings) => {
     if (!session) return;
@@ -506,7 +572,9 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
 
     // 显示提示
     message.success(
-      `${t("chat.modelChanged")} ${getModelName(providerId, modelId)}`
+      `${t("chat.modelChanged", {
+        model: getModelName(providerId, modelId),
+      })}`
     );
   };
 
@@ -522,10 +590,10 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
           return { provider, models: [] };
         }
 
-        // 过滤出启用的模型
+        // 过滤出启用的且未删除的模型
         const enabledModels = provider.models.filter((model) => {
-          // 如果模型没有明确的enabled属性或者enabled为true，则认为是启用的
-          return model.enabled !== false;
+          // 如果模型没有明确的enabled属性或者enabled为true，并且未被删除，则认为是可用的
+          return model.enabled !== false && model.deleted !== true;
         });
 
         return {
@@ -535,14 +603,85 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
       })
       .filter((item) => item.models.length > 0); // 只返回有启用模型的提供商
   };
+  const providerModels = getProviderModels();
 
   // 获取当前选择的模型
   const getCurrentModel = () => {
+    // 首先检查配置中是否有providerId和modelId
     if (!config.providerId || !config.modelId) return null;
+    // 检查当前选择的提供商是否存在于可用提供商列表中
+    const provider = providerModels.find(
+      (item) => item.provider.id === config.providerId
+    );
+    if (!provider) return null;
+
+    // 检查当前选择的模型是否存在于可用模型列表中
+    const modelExists = provider.models.some(
+      (model) => model.id === config.modelId
+    );
+    if (!modelExists) return null;
+
+    // 只有当提供商和模型都存在且启用时，才返回完整的选择值
     return `${config.providerId}|${config.modelId}`;
   };
 
-  const providerModels = getProviderModels();
+  // 检查当前选中的模型是否可用，如果不可用则选择第一个可用模型
+  useEffect(() => {
+    // 只有当没有可用模型时才返回
+    if (providerModels.length === 0) return;
+
+    // 如果用户没有选择模型或选择的模型/提供商不可用，自动选择一个默认模型
+    if (!config.providerId || !config.modelId) {
+      // 当用户初始化没有选择模型时，自动选择第一个可用模型
+      if (providerModels.length > 0 && providerModels[0].models.length > 0) {
+        const firstProvider = providerModels[0];
+        const firstModel = firstProvider.models[0];
+        handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
+        console.log(`初始化自动选择模型: ${firstModel.name}`);
+      }
+      return;
+    }
+
+    // 检查当前选择的提供商是否存在于可用提供商列表中
+    const provider = providerModels.find(
+      (item) => item.provider.id === config.providerId
+    );
+
+    // 如果提供商不存在或没有模型，选择第一个可用模型
+    if (!provider) {
+      // 如果有可用的提供商和模型，选择第一个
+      if (providerModels.length > 0 && providerModels[0].models.length > 0) {
+        const firstProvider = providerModels[0];
+        const firstModel = firstProvider.models[0];
+        handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
+        console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
+      }
+      return;
+    }
+
+    // 检查当前选择的模型是否存在于可用模型列表中
+    const modelExists = provider.models.some(
+      (model) => model.id === config.modelId
+    );
+
+    // 如果模型不存在，选择该提供商的第一个可用模型
+    if (!modelExists) {
+      if (provider.models.length > 0) {
+        const firstModel = provider.models[0];
+        handleModelChange(`${provider.provider.id}|${firstModel.id}`);
+        console.log(`当前模型不可用，自动选择了: ${firstModel.name}`);
+      } else if (
+        providerModels.length > 0 &&
+        providerModels[0].models.length > 0
+      ) {
+        // 如果该提供商没有可用模型，选择第一个可用的提供商的第一个模型
+        const firstProvider = providerModels[0];
+        const firstModel = firstProvider.models[0];
+        handleModelChange(`${firstProvider.provider.id}|${firstModel.id}`);
+        console.log(`自动选择了第一个可用模型: ${firstModel.name}`);
+      }
+    }
+  }, [config.providerId, config.modelId, providerModels, handleModelChange]);
 
   return (
     <div className="chat-window">
@@ -597,111 +736,25 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         ) : (
           <>
             {messages && messages.length > 0 ? (
-              messages.map((msg) => {
-                // 获取当前消息的AI模型信息
-                const modelInfo =
-                  msg.role === "assistant" && msg.providerId && msg.modelId
-                    ? getProviderAndModelInfo(msg.providerId, msg.modelId)
-                    : {
-                        providerName: t("settings.aiAssistant"),
-                        modelName: t("settings.aiAssistant"),
-                        logo: null,
-                        providerId: "",
-                      };
-
-                return (
-                  <div
+              <div className="message-list">
+                {messages.map((msg) => (
+                  <MessageItem
                     key={msg.id}
-                    className={`message-item ${
-                      msg.role === "user" ? "user-message" : "ai-message"
-                    }`}
-                  >
-                    <div className="message-avatar">
-                      {msg.role === "user" ? (
-                        <Avatar
-                          icon={<UserOutlined />}
-                          className="user-avatar"
-                        />
-                      ) : (
-                        <div className="ai-avatar">
-                          {modelInfo.logo ? (
-                            <img
-                              src={modelInfo.logo}
-                              alt={modelInfo.providerName}
-                              onError={(e) => {
-                                e.target.style.display = "none";
-                                e.target.parentNode.querySelector(
-                                  ".anticon"
-                                ).style.display = "block";
-                              }}
-                            />
-                          ) : null}
-                          <RobotOutlined
-                            style={{
-                              display: modelInfo.logo ? "none" : "block",
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    <div className="message-content">
-                      <div className="message-header">
-                        <span className="message-sender">
-                          {msg.role === "user"
-                            ? t("common.user")
-                            : modelInfo.modelName}
-                        </span>
-                        {msg.role === "assistant" &&
-                          modelInfo.providerName !==
-                            t("common.aiAssistant") && (
-                            <span className="message-provider">
-                              {modelInfo.providerName}
-                            </span>
-                          )}
-                        <span className="message-time">
-                          {new Date(msg.createdAt).toLocaleString("zh-CN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: false,
-                          })}
-                        </span>
-                      </div>
-                      <div className="message-text">
-                        {msg.status === "pending" &&
-                        (!msg.content ||
-                          (typeof msg.content === "string" &&
-                            JSON.parse(msg.content).find(
-                              (item) => item.type === "content"
-                            )?.content === "")) ? (
-                          <Spin size="small" />
-                        ) : msg.status === "error" ? (
-                          <MessageContent content={msg.content} />
-                        ) : (
-                          <MessageContent content={msg.content} />
-                        )}
-
-                        <div className="message-footer">
-                          <Tooltip title={t("chat.copyMessage")}>
-                            <Button
-                              type="text"
-                              icon={<CopyOutlined />}
-                              size="small"
-                              onClick={() => copyToClipboard(msg.content, t)}
-                              className="copy-button"
-                            />
-                          </Tooltip>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+                    message={msg}
+                    getProviderAndModelInfo={getProviderAndModelInfo}
+                    onVisibilityChange={handleMessageVisibilityChange}
+                  />
+                ))}
+              </div>
             ) : (
               <div className="empty-messages">
-                <p>{t("chat.noMessages")}</p>
+                <div className="empty-message-icon">
+                  <RobotOutlined style={{ fontSize: 48, opacity: 0.5 }} />
+                </div>
+                <div className="empty-message-text">{t("chat.noMessages")}</div>
               </div>
             )}
-            {/* 用于自动滚动的参考元素 */}
+            {/* 仍需保留引用元素但不使其可见 */}
             <div
               ref={messagesEndRef}
               style={{ height: "1px", marginBottom: "20px" }}
@@ -710,16 +763,12 @@ const ChatWindow = memo(({ session, onUpdateSession }) => {
         )}
       </div>
 
-      <ChatInput
-        inputValue={inputValue}
-        setInputValue={setInputValue}
-        handleKeyPress={handleKeyPress}
-        handleSendMessage={handleSendMessage}
+      <ChatInputContainer
+        onSendMessage={handleSendMessage}
         isSending={isSending}
-        handleStopGeneration={handleStopGeneration}
+        onStopGeneration={handleStopGeneration}
       />
 
-      {/* 设置弹窗 */}
       <ModelSettingsModal
         visible={settingsVisible}
         onCancel={() => setSettingsVisible(false)}

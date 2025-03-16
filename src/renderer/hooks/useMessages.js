@@ -14,6 +14,8 @@ import {
   isAIConfigured,
 } from "../hooks/useUserConfig";
 import { useTranslation } from "react-i18next";
+import mcpService from "../services/mcpService";
+import { sendMessageToAI } from "../services/aiService";
 
 /**
  * message management hook, for handling message sending, receiving and status management
@@ -25,7 +27,6 @@ export const useMessages = (session, sessionSettings) => {
   const { t } = useTranslation();
   // ================== define status ==================
   const [messages, setMessages] = useState([]);
-  const [inputValue, setInputValue] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [currentAIMessageId, setCurrentAIMessageId] = useState(null); // track the id of the current generating ai message
@@ -38,6 +39,20 @@ export const useMessages = (session, sessionSettings) => {
 
   // use the api exposed in preload.js
   const electronAPI = window.electronAPI;
+
+  // ================== scroll control ==================
+  /**
+   * 滚动到聊天底部的函数
+   * 已优化为立即滚动到底部，没有过渡动画或不必要的延迟
+   */
+  const scrollToBottom = useCallback(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "instant" });
+    } else if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, [messagesEndRef, chatContainerRef]);
 
   // ================== load messages ==================
   /**
@@ -60,12 +75,12 @@ export const useMessages = (session, sessionSettings) => {
         setMessages(processedMessages);
       } catch (error) {
         console.error("加载消息失败:", error);
-        antMessage.error("加载消息失败");
+        antMessage.error(t("chat.loadMessagesFailed"));
       } finally {
         setLoading(false);
       }
     },
-    [electronAPI]
+    [electronAPI, t]
   );
 
   // when session changes, load messages
@@ -82,30 +97,17 @@ export const useMessages = (session, sessionSettings) => {
     }
   }, [session?.id, loadMessages]);
 
-  // ================== scroll control ==================
-  /**
-   * scroll to the bottom of the conversation
-   */
-  const scrollToBottom = useCallback(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
-    } else if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-  }, []);
-
-  // merge scroll logic: when the message list changes or the session changes, scroll to the bottom
+  // 当消息加载完成后，滚动到底部
   useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollToBottom();
-    }, 150); // use the middle value of delay time
-
-    return () => clearTimeout(timer);
-  }, [messages, session?.id, scrollToBottom]);
+    if (messages.length > 0 && !loading) {
+      // console.log("消息加载完成，准备滚动到底部");
+      // 使用requestAnimationFrame确保DOM已更新后再滚动
+      requestAnimationFrame(() => {
+        scrollToBottom();
+        // console.log("已执行滚动到底部");
+      });
+    }
+  }, [messages, loading, scrollToBottom]);
 
   // ================== handle message context ==================
   /**
@@ -496,9 +498,16 @@ export const useMessages = (session, sessionSettings) => {
    * @param {String} content 消息内容
    * @param {String} reasoning_content 推理内容
    * @param {String} status 消息状态
+   * @param {Array} toolCallResults 工具调用结果
    */
   const updateAIMessage = useCallback(
-    async (messageId, content, reasoning_content, status) => {
+    async (
+      messageId,
+      content,
+      reasoning_content,
+      status,
+      toolCallResults = []
+    ) => {
       const messageContent = [
         createMessageContent("content", content, status),
         ...(reasoning_content
@@ -512,6 +521,16 @@ export const useMessages = (session, sessionSettings) => {
           : []),
       ];
 
+      // 如果存在工具调用结果，添加到消息内容中
+      if (toolCallResults && toolCallResults.length > 0) {
+        messageContent.push(
+          createMessageContent("tool_calls", toolCallResults, status)
+        );
+
+        // 不再单独保存工具调用到数据库，而是直接包含在消息内容中
+        // saveToolCalls(messageId, toolCallResults);
+      }
+
       const updatedContent = JSON.stringify(messageContent);
 
       try {
@@ -519,9 +538,16 @@ export const useMessages = (session, sessionSettings) => {
         if (status === "success" || status === "error") {
           await updateMessageContent(messageId, updatedContent, electronAPI);
           await updateMessageStatus(messageId, status, electronAPI);
+
+          // 当消息状态为成功或错误时，也直接滚动到底部
+          // 使用requestAnimationFrame确保DOM更新后再滚动
+          requestAnimationFrame(() => {
+            scrollToBottom();
+            console.log("AI消息完成，已滚动到底部");
+          });
         }
 
-        // 更新本地消息列表
+        // 更新本地消息列表 - 使用函数式更新以确保始终基于最新状态
         setMessages((prevMessages) =>
           prevMessages.map((msg) =>
             msg.id === messageId
@@ -537,7 +563,7 @@ export const useMessages = (session, sessionSettings) => {
         console.error("更新消息内容失败:", error);
       }
     },
-    [electronAPI]
+    [electronAPI, scrollToBottom]
   );
 
   // ================== 获取最新会话 ==================
@@ -702,6 +728,16 @@ export const useMessages = (session, sessionSettings) => {
           `After context limiting, sending ${messagesToSend.length} messages to AI service`
         );
 
+        // 获取激活的MCP工具
+        let mcpTools = [];
+        try {
+          mcpTools = await mcpService.getAllActiveTools();
+          console.log(`获取到${mcpTools.length}个激活的MCP工具`);
+        } catch (error) {
+          console.error("获取MCP工具失败:", error);
+          // 获取工具失败不影响正常聊天
+        }
+
         // 记录前两条和最后一条消息，帮助调试
         if (messagesToSend.length > 0) {
           console.log("First message:", {
@@ -744,12 +780,15 @@ export const useMessages = (session, sessionSettings) => {
           (response) => {
             const content = response.content || "";
             const reasoning_content = response.reasoning_content || "";
+            // 获取工具调用状态
+            const toolCallResults = response.toolCallResults || [];
             // receiving 表示会显示在ui上，但不会立即更新到db中
             updateAIMessage(
               aiMessageId,
               content,
               reasoning_content,
-              "receiving"
+              "receiving",
+              toolCallResults
             );
           },
           // 错误回调
@@ -771,9 +810,17 @@ export const useMessages = (session, sessionSettings) => {
           },
           // 完成回调
           async (response) => {
+            console.log("sendMessageToAI complete", response);
             const content = response.content || "";
             const reasoning_content = response.reasoning_content || "";
-            updateAIMessage(aiMessageId, content, reasoning_content, "success");
+            const toolCallResults = response.toolCallResults || [];
+            updateAIMessage(
+              aiMessageId,
+              content,
+              reasoning_content,
+              "success",
+              toolCallResults
+            );
 
             // 清除当前AI消息ID
             setCurrentAIMessageId(null);
@@ -784,6 +831,7 @@ export const useMessages = (session, sessionSettings) => {
           {
             temperature,
             signal: abortController.signal,
+            mcpTools, // 传递MCP工具
           }
         );
 
@@ -810,77 +858,81 @@ export const useMessages = (session, sessionSettings) => {
 
   /**
    * handle send message - main function
+   * @param {string} content 要发送的消息内容
    */
-  const handleSendMessage = useCallback(async () => {
-    const content = inputValue.trim();
-    if (!content) return;
+  const handleSendMessage = useCallback(
+    async (content) => {
+      if (!content) return;
 
-    if (!session) {
-      antMessage.error(t("chat.pleaseSelectOrCreateASession"));
-      return;
-    }
+      if (!session) {
+        antMessage.error(t("chat.pleaseSelectOrCreateASession"));
+        return;
+      }
 
-    // check if AI is configured
-    if (!isAIConfigured()) {
-      antMessage.error(t("chat.pleaseSelectAModel"));
-      return;
-    }
+      // check if AI is configured
+      if (!isAIConfigured()) {
+        antMessage.error(t("chat.pleaseSelectAModel"));
+        return;
+      }
 
-    // get current config and provider and model infofig and provider and model info
-    const userConfig = getUserConfig();
+      // get current config and provider and model infofig and provider and model info
+      const userConfig = getUserConfig();
 
-    // clear input value and set sending status
-    setInputValue("");
-    setIsSending(true);
+      // 设置发送状态
+      setIsSending(true);
 
-    try {
-      // get latest session info
-      const currentSession = await getFreshSession(session);
+      try {
+        // get latest session info
+        const currentSession = await getFreshSession(session);
 
-      // create and save user message
-      const localUserMessage = await createUserMessage(
-        content,
-        currentSession,
-        userConfig
-      );
-      setMessages((prevMessages) => [...prevMessages, localUserMessage]);
+        // create and save user message
+        const localUserMessage = await createUserMessage(
+          content,
+          currentSession,
+          userConfig
+        );
+        setMessages((prevMessages) => [...prevMessages, localUserMessage]);
 
-      // create and save ai response message
-      const { message: localAiMessage, id: aiMessageId } =
-        await createAIMessage(currentSession, userConfig);
-      setMessages((prevMessages) => [...prevMessages, localAiMessage]);
-      console.log("localAiMessage", localAiMessage);
-      // get temperature setting
-      const temperature = getTemperatureSetting(currentSession);
+        // create and save ai response message
+        const { message: localAiMessage, id: aiMessageId } =
+          await createAIMessage(currentSession, userConfig);
+        setMessages((prevMessages) => [...prevMessages, localAiMessage]);
+        console.log("localAiMessage", localAiMessage);
 
-      // send message to ai service
-      await sendMessageToAI(
-        currentSession,
-        [...messages, localUserMessage],
-        aiMessageId,
-        temperature
-      );
-    } catch (error) {
-      // handle error directly, not call handleSendError
-      console.error("send message failed:", error);
-      antMessage.error("send message failed: " + error.message);
+        // 发送消息后直接滚动到底部
+        // 使用requestAnimationFrame确保DOM更新后再滚动
+        requestAnimationFrame(() => {
+          scrollToBottom();
+          console.log("发送消息后，已滚动到底部");
+        });
 
-      // note: no need to update ai message status and clear currentAIMessageId
-      // because the error handling in sendMessageToAI has already done this work
-    } finally {
-      // note: no need to setIsSending(false)
-      // because the error handling in sendMessageToAI has already done this work
-    }
-  }, [
-    inputValue,
-    session,
-    messages,
-    createUserMessage,
-    createAIMessage,
-    getFreshSession,
-    getTemperatureSetting,
-    // remove sendMessageToAI dependency to avoid circular reference
-  ]);
+        // get temperature setting
+        const temperature = getTemperatureSetting(currentSession);
+
+        // send message to ai service
+        await sendMessageToAI(
+          currentSession,
+          [...messages, localUserMessage],
+          aiMessageId,
+          temperature
+        );
+      } catch (error) {
+        // handle error directly, not call handleSendError
+        console.error("send message failed:", error);
+        antMessage.error(t("chat.sendMessageFailed") + ": " + error.message);
+      }
+    },
+    [
+      session,
+      messages,
+      createUserMessage,
+      createAIMessage,
+      getFreshSession,
+      getTemperatureSetting,
+      t,
+      scrollToBottom,
+    ]
+  );
 
   /**
    * handle stop generation operation
@@ -955,33 +1007,16 @@ export const useMessages = (session, sessionSettings) => {
     updateMessageStatus,
   ]);
 
-  // ================== handle key press event ==================
-  /**
-   * handle key press event
-   * @param {Event} e keyboard event
-   */
-  const handleKeyPress = useCallback(
-    (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleSendMessage();
-      }
-    },
-    [handleSendMessage]
-  );
-
   // ================== export interface ==================
   return {
     messages,
-    inputValue,
-    setInputValue,
     isSending,
     loading,
     messagesEndRef,
     chatContainerRef,
     handleSendMessage,
-    handleKeyPress,
     loadMessages,
     handleStopGeneration,
+    scrollToBottom,
   };
 };
