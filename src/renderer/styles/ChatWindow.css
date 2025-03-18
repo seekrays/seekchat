@@ -849,3 +849,16 @@
   color: #888;
   opacity: 0.8;
 }
+
+/* 假设已有 .chat-input-container 相关样式 */
+.chat-input-container .input-actions {
+  display: flex;
+  align-items: center;
+  margin-top: 8px;
+}
+
+/* 确保发送按钮仍然在右侧 */
+.send-button,
+.stop-button {
+  margin-left: auto;
+}
