@@ -2,34 +2,32 @@
 
 <div align="center">
   <img src="public/assets/logo/logo.png" alt="SeekChat Logo" width="200" />
-  <h3>✨ A Sleek and Powerful AI Chat Desktop Application ✨</h3>
+  <h3>✨ A Sleek and Powerful AI Desktop Assistant ✨</h3>
   <p>
-    <a href="https://chat.seekrays.com" target="_blank">Official Website</a> |
+    <a href="https://www.seekrays.com/chat" target="_blank">Official Website</a> |
     <a href="README_zh-cn.md">中文文档</a>
   </p>
 </div>
 
-## Introduction
 
-SeekChat is a desktop chat application that supports multiple Large Language Models (LLMs), built with Electron + React. It aims to provide users with a seamless AI conversation experience. Whether you need a personal assistant, creative partner, or professional tool, SeekChat can meet your requirements.
+SeekChat supports MCP tool execution, enabling AI to directly control your computer and perform various tasks. Easily automate file management, data analysis, code development, and more, turning AI into a truly intelligent assistant.
+
 
 ## ✨ Key Features
 
-- **Multi-Model Support**: Connect to multiple AI service providers, including OpenAI, DeepSeek, Silicon Valley AI, and more
-- **Local Memory**: All conversation history is stored in a local SQLite database, protecting your privacy
-- **Streaming Responses**: Real-time display of AI replies, providing a ChatGPT-like conversation experience
-- **Markdown Support**: Full support for Markdown formatting, including code blocks, tables, and math formulas
-- **Beautiful Interface**: Modern interface design with light/dark theme switching
-- **Flexible Configuration**: Customize API keys, interface parameters, and model settings
-- **Multi-Platform Support**: Compatible with macOS, Windows, and Linux systems
+- **Multiple AI Providers**: Support for various AI service providers
+- **MCP Tool Integration**: Support for [Model Context Protocol](https://github.com/mccpros/model-context-protocol) tools that enhance AI capabilities
+- **Local Storage**: Chat history is stored locally to protect your privacy
+- **Multi-language Support**: Available in English and Chinese
+- **Modern UI**: Simple and intuitive user interface
 
-## 🛠️ Technology Stack
+## 🌠 Screenshots
 
-- **Framework**: Electron + React
-- **UI Components**: Ant Design
-- **Database**: SQLite
-- **Build Tool**: Vite
-- **Routing**: React Router
+### Chat Interface
+![Chat Interface](docs/screenshot/screenshot-chat.png)
+
+### MCP Tool Settings
+![MCP Tool Settings](docs/screenshot/screenshot-setting-mcp.png)
 
 ## 📦 Installation
 
@@ -40,7 +38,7 @@ Visit the [Releases](https://github.com/seekrays/seekchat/releases) page to down
 ### Build from Source
 
 ```bash
-# Clone repository
+# Clone the repository
 git clone https://github.com/seekrays/seekchat.git
 cd seekchat
 
@@ -50,24 +48,23 @@ npm install
 # Run in development mode
 npm run dev
 
-# Build application
-npm run electron:build
+# Build for production
+# For macOS
+npm run electron:build:mac
+
+# For Windows
+npm run electron:build:win
+
+# For Linux
+npm run electron:build:linux
 ```
-
-## 🚀 Getting Started
-
-1. After launching the application, first go to the settings page to configure your API keys
-2. Select the AI model service provider you want to use
-3. Start a new conversation!
 
 ## 🔌 Supported AI Providers
 
-SeekChat supports the following AI service providers:
-
-- **OpenAI** (GPT-4o, GPT-4.5-preview, o1-mini, etc.)
-- **DeepSeek** (DeepSeek Chat, DeepSeek Reasoner)
-- **Silicon Valley AI** (DeepSeek-V3, DeepSeek-R1, Qwen2.5, Llama-3.3, etc.)
-- **More coming soon!**
+- OpenAI
+- Anthropic (Claude)
+- Google (Gemini)
+- Custom providers
 
 ## 🤝 Contributing
 
@@ -79,8 +76,3 @@ Pull Requests and Issues are welcome! If you have any suggestions or find a bug,
 - Thanks to the Electron and React communities
 - Special thanks to all users for their support and feedback
 
----
-
-<div align="center">
-  <p>Built with ❤️</p>
-</div>

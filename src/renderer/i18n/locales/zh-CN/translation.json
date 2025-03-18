@@ -146,7 +146,9 @@
     "apiSettingsDescription": "配置此服务提供商的 API 认证和端点。",
     "apiBaseUrl": "API 基础 URL",
     "enterApiBaseUrl": "输入 API 基础 URL",
-    "enterApiKey": "输入 API 密钥"
+    "enterApiKey": "输入 API 密钥",
+    "modelAlreadyExists": "模型 ID 已存在",
+    "modelNotFound": "未找到模型"
   },
   "chat": {
     "newChat": "新建会话",
@@ -229,6 +231,12 @@
     "version": "版本",
     "feature": "功能",
     "officialWebsite": "官网",
+    "documentation": "文档说明",
+    "feedback": "意见反馈",
+    "github": "GitHub",
+    "openLinkFailed": "打开链接失败:",
+    "description": "智能AI助手，为您提供流畅的AI交互体验",
+    "allRightsReserved": "保留所有权利",
     "aboutDescription": "SeekChat是一个强大的AI聊天客户端，支持多个AI服务提供商，提供流畅的用户体验和丰富的功能。",
     "features": {
       "multipleProviders": "支持多个AI服务提供商",
@@ -252,8 +260,8 @@
     "toolNotFound": "找不到ID为{{id}}的工具",
     "specialTokenInToolParam": "工具参数中包含特殊token",
     "incorrectParamFormat": "参数格式不正确",
-    "toolParamParseFailed": "工具参数解析失败",
-    "toolExecutionFailed": "工具调用失败",
+    "toolParamParseFailed": "工具参数解析失败: {{message}}",
+    "toolExecutionFailed": "工具调用失败: {{message}}",
     "anthropicSerializationFailed": "序列化Anthropic工具输入失败"
   },
   "status": {

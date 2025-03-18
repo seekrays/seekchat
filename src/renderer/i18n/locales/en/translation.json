@@ -146,7 +146,9 @@
     "apiSettingsDescription": "Configure the API authentication and endpoint for this service provider.",
     "apiBaseUrl": "API Base URL",
     "enterApiBaseUrl": "Enter API Base URL",
-    "enterApiKey": "Enter API Key"
+    "enterApiKey": "Enter API Key",
+    "modelAlreadyExists": "Model ID already exists",
+    "modelNotFound": "Model not found"
   },
   "chat": {
     "newChat": "New Chat",
@@ -229,6 +231,12 @@
     "version": "Version",
     "feature": "Feature",
     "officialWebsite": "Official Website",
+    "documentation": "Documentation",
+    "feedback": "Feedback",
+    "github": "GitHub",
+    "openLinkFailed": "Failed to open link:",
+    "description": "Smart chat application providing a smooth AI interaction experience",
+    "allRightsReserved": "All rights reserved",
     "aboutDescription": "SeekChat is a powerful AI chat client that supports multiple AI service providers, providing a smooth user experience and rich features.",
     "features": {
       "multipleProviders": "Support multiple AI service providers",

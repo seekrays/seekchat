@@ -756,3 +756,8 @@
   height: 100%;
   border-radius: 8px;
 }
+
+.settings-main-content {
+  padding: 0px;
+  overflow-y: auto;
+}

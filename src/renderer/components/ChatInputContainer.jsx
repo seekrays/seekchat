@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Input, Button } from "antd";
+import React, { useState, useEffect } from "react";
+import { Input, Button, Tooltip } from "antd";
 import { SendOutlined, StopOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 
@@ -18,6 +18,7 @@ const { TextArea } = Input;
 const ChatInputContainer = React.memo(
   ({ onSendMessage, isSending, onStopGeneration }) => {
     const [inputValue, setInputValue] = useState("");
+    const [isComposing, setIsComposing] = useState(false);
     const { t } = useTranslation();
 
     const handleSend = () => {
@@ -26,7 +27,20 @@ const ChatInputContainer = React.memo(
       setInputValue(""); // 清空输入
     };
 
+    // 监听输入法编辑状态
+    const handleCompositionStart = () => {
+      setIsComposing(true);
+    };
+
+    const handleCompositionEnd = () => {
+      setIsComposing(false);
+    };
+
     const handleKeyDown = (e) => {
+      // 如果正在使用输入法，不处理Enter键
+      if (isComposing) return;
+
+      // 普通Enter发送消息（但不在输入法编辑状态时）
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleSend();
@@ -40,6 +54,8 @@ const ChatInputContainer = React.memo(
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
             placeholder={t("chat.typing")}
             autoSize={{ minRows: 1, maxRows: 5 }}
             disabled={isSending}
