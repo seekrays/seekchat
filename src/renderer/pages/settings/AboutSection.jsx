@@ -54,7 +54,7 @@ const AboutSection = () => {
               SeekChat
             </Title>
             <Text type="secondary" style={{ fontSize: "16px" }}>
-              {t("about.version")}: 0.0.1
+              {t("about.version")}: 0.0.2
             </Text>
             <Paragraph
               style={{

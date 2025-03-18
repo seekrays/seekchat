@@ -1,6 +1,6 @@
 {
   "name": "seekchat",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "main": "src/main/main.js",
   "description": "a ai chat app",
   "scripts": {
