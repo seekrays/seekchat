@@ -1,67 +1,187 @@
 import React from "react";
-import { Card, Space, Divider, Typography } from "antd";
+import {
+  Card,
+  Space,
+  Divider,
+  Typography,
+  Button,
+  Row,
+  Col,
+  Avatar,
+} from "antd";
 import { useTranslation } from "react-i18next";
+import {
+  GithubOutlined,
+  BookOutlined,
+  CommentOutlined,
+  GlobalOutlined,
+  RobotOutlined,
+} from "@ant-design/icons";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const AboutSection = () => {
   const { t, i18n } = useTranslation();
 
-  // 根据当前语言选择不同的URL
-  const currentLanguage = i18n.language || "en";
-  const aboutUrl =
-    currentLanguage === "zh-CN"
-      ? "http://chat.seekrays.com/about_zh-CN/?version=0.0.1"
-      : "http://chat.seekrays.com/about/?version=0.0.1";
+  // 打开外部链接的函数
+  const openExternalLink = (url) => {
+    window.electronAPI.openExternalURL(url).catch((err) => {
+      console.error(t("about.openLinkFailed"), err);
+    });
+  };
 
   return (
     <div className="about-section settings-content">
-      <Card>
-        <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <Title level={3} style={{ marginTop: 16, marginBottom: 0 }}>
+      <Card
+        bordered={false}
+        style={{
+          borderRadius: "12px",
+          boxShadow: "0 6px 16px rgba(0, 0, 0, 0.08)",
+        }}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          {/* 顶部Logo和标题 */}
+          <div style={{ textAlign: "center", marginBottom: 20 }}>
+            <Avatar
+              size={80}
+              icon={<RobotOutlined />}
+              style={{
+                backgroundColor: "#1890ff",
+                marginBottom: 16,
+              }}
+            />
+            <Title level={2} style={{ marginTop: 0, marginBottom: 4 }}>
               SeekChat
             </Title>
-            <Text type="secondary">{t("about.version")}: 0.0.1</Text>
-            <div style={{ marginTop: 8 }}>
-              <Text>
-                {t("about.officialWebsite")}：{" "}
-                <div
-                  onClick={(e) => {
-                    e.preventDefault();
-                    window.electronAPI
-                      .openExternalURL("http://chat.seekrays.com")
-                      .catch((err) => {
-                        console.error("打开链接失败:", err);
-                      });
-                  }}
-                  style={{ cursor: "pointer", color: "#1890ff" }}
-                >
-                  http://chat.seekrays.com
-                </div>
-              </Text>
-            </div>
+            <Text type="secondary" style={{ fontSize: "16px" }}>
+              {t("about.version")}: 0.0.1
+            </Text>
+            <Paragraph
+              style={{
+                marginTop: 16,
+                color: "#666",
+                maxWidth: "450px",
+                margin: "0 auto",
+              }}
+            >
+              {t("about.description")}
+            </Paragraph>
           </div>
 
-          <Divider />
+          <Divider style={{ margin: "24px 0" }} />
 
-          {/* 嵌入外部关于页面 */}
-          <div
-            style={{ width: "100%", overflow: "hidden", borderRadius: "8px" }}
-          >
-            <iframe
-              src={aboutUrl}
-              title="About SeekChat"
-              style={{
-                width: "100%",
-                height: "580px",
-                border: "none",
-                overflow: "auto",
-                maxWidth: "100%",
-              }}
-              allowFullScreen={true}
-              loading="lazy"
-            />
+          {/* 链接卡片区域 */}
+          <Row gutter={[16, 16]} justify="center">
+            <Col xs={24} sm={12} md={6}>
+              <Card
+                hoverable
+                style={{
+                  textAlign: "center",
+                  borderRadius: "8px",
+                  height: "100%",
+                }}
+                onClick={() => openExternalLink("https://seekrays.com/chat")}
+              >
+                <div style={{ padding: "8px 0" }}>
+                  <GlobalOutlined
+                    style={{
+                      fontSize: "28px",
+                      color: "#1890ff",
+                      marginBottom: "12px",
+                    }}
+                  />
+                  <p style={{ fontSize: "16px", fontWeight: 500, margin: 0 }}>
+                    {t("about.officialWebsite")}
+                  </p>
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card
+                hoverable
+                style={{
+                  textAlign: "center",
+                  borderRadius: "8px",
+                  height: "100%",
+                }}
+                onClick={() =>
+                  openExternalLink("https://seekrays.com/chat/docs/")
+                }
+              >
+                <div style={{ padding: "8px 0" }}>
+                  <BookOutlined
+                    style={{
+                      fontSize: "28px",
+                      color: "#52c41a",
+                      marginBottom: "12px",
+                    }}
+                  />
+                  <p style={{ fontSize: "16px", fontWeight: 500, margin: 0 }}>
+                    {t("about.documentation")}
+                  </p>
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card
+                hoverable
+                style={{
+                  textAlign: "center",
+                  borderRadius: "8px",
+                  height: "100%",
+                }}
+                onClick={() => openExternalLink("https://seekrays.com/chat")}
+              >
+                <div style={{ padding: "8px 0" }}>
+                  <CommentOutlined
+                    style={{
+                      fontSize: "28px",
+                      color: "#fa8c16",
+                      marginBottom: "12px",
+                    }}
+                  />
+                  <p style={{ fontSize: "16px", fontWeight: 500, margin: 0 }}>
+                    {t("about.feedback")}
+                  </p>
+                </div>
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Card
+                hoverable
+                style={{
+                  textAlign: "center",
+                  borderRadius: "8px",
+                  height: "100%",
+                }}
+                onClick={() =>
+                  openExternalLink("https://github.com/seekrays/seekchat")
+                }
+              >
+                <div style={{ padding: "8px 0" }}>
+                  <GithubOutlined
+                    style={{
+                      fontSize: "28px",
+                      color: "#333",
+                      marginBottom: "12px",
+                    }}
+                  />
+                  <p style={{ fontSize: "16px", fontWeight: 500, margin: 0 }}>
+                    {t("about.github", "GitHub")}
+                  </p>
+                </div>
+              </Card>
+            </Col>
+          </Row>
+
+          <Divider style={{ margin: "24px 0" }} />
+
+          {/* 版权信息 */}
+          <div style={{ textAlign: "center" }}>
+            <Text type="secondary" style={{ fontSize: "14px" }}>
+              © {new Date().getFullYear()} SeekRays.{" "}
+              {t("about.allRightsReserved")}
+            </Text>
           </div>
         </Space>
       </Card>

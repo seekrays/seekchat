@@ -231,6 +231,12 @@
     "version": "版本",
     "feature": "功能",
     "officialWebsite": "官网",
+    "documentation": "文档说明",
+    "feedback": "意见反馈",
+    "github": "GitHub",
+    "openLinkFailed": "打开链接失败:",
+    "description": "智能AI助手，为您提供流畅的AI交互体验",
+    "allRightsReserved": "保留所有权利",
     "aboutDescription": "SeekChat是一个强大的AI聊天客户端，支持多个AI服务提供商，提供流畅的用户体验和丰富的功能。",
     "features": {
       "multipleProviders": "支持多个AI服务提供商",
