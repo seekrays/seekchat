@@ -249,11 +249,11 @@ export const baseOpenAICompatibleAdapter = async (
 
                 // 如果有更新，调用进度回调
                 if (hasUpdate) {
-                  console.log("onProgress", {
-                    content,
-                    reasoning_content,
-                    toolCalls: currentToolCalls,
-                  });
+                  // console.log("onProgress", {
+                  //   content,
+                  //   reasoning_content,
+                  //   toolCalls: currentToolCalls,
+                  // });
                   onProgress({
                     content,
                     reasoning_content,

@@ -33,6 +33,17 @@ const MessageContent = ({ content }) => {
       });
   };
 
+  // 处理链接点击事件，在外部浏览器中打开
+  const handleLinkClick = (href, event) => {
+    event.preventDefault();
+
+    // 使用electronAPI在浏览器中打开链接
+    window.electronAPI.openExternalURL(href).catch((err) => {
+      console.error(t("about.openLinkFailed"), err);
+      message.error(`${t("about.openLinkFailed")} ${err.message}`);
+    });
+  };
+
   // 自定义渲染器，添加代码高亮功能
   const renderers = {
     code({ node, inline, className, children, ...props }) {
@@ -66,6 +77,20 @@ const MessageContent = ({ content }) => {
         <code className={className} {...props}>
           {children}
         </code>
+      );
+    },
+
+    // 自定义链接渲染，设置为在外部浏览器打开
+    a({ node, href, children, ...props }) {
+      return (
+        <a
+          href={href}
+          onClick={(event) => handleLinkClick(href, event)}
+          style={{ color: "#1890ff", textDecoration: "underline" }}
+          {...props}
+        >
+          {children}
+        </a>
       );
     },
   };
