@@ -1,4 +1,6 @@
 # SeekChat
+
+
 <div align="center">
   <img src="public/assets/logo/logo.png" alt="SeekChat Logo" width="200" />
   <h3>✨ 一个简洁强大的AI桌面助手 ✨</h3>
@@ -7,6 +9,9 @@
     <a href="README.md">English Document</a>
   </p>
 </div>
+
+[![Discord](https://img.shields.io/badge/Discord-加入讨论-blue?logo=discord&logoColor=white)](https://discord.gg/qbaNshaq)
+
 
 SeekChat 支持 MCP 工具调用，让 AI 直接操作您的电脑并执行各种任务。轻松实现文件管理、数据分析、代码开发等自动化操作，将 AI 变成真正的智能助手。
 

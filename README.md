@@ -9,6 +9,7 @@
   </p>
 </div>
 
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-blue?logo=discord&logoColor=white)](https://discord.gg/qbaNshaq)
 
 SeekChat supports MCP tool execution, enabling AI to directly control your computer and perform various tasks. Easily automate file management, data analysis, code development, and more, turning AI into a truly intelligent assistant.
 
