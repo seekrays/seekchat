@@ -11,7 +11,7 @@
 </div>
 
 [![Discord](https://img.shields.io/badge/Discord-加入讨论-blue?logo=discord&logoColor=white)](https://discord.gg/qbaNshaq)
-
+[![WeChat](https://img.shields.io/badge/WeChat-加入社群-brightgreen?logo=wechat&logoColor=white)](https://seekrays.com/chat/zh-cn/docs/contacts/)
 
 SeekChat 支持 MCP 工具调用，让 AI 直接操作您的电脑并执行各种任务。轻松实现文件管理、数据分析、代码开发等自动化操作，将 AI 变成真正的智能助手。
 
