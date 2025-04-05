@@ -63,12 +63,20 @@ npm run electron:build:win
 npm run electron:build:linux
 ```
 
-## 🔌 支持的 AI 提供商
 
-- OpenAI
-- Anthropic (Claude)
-- Google (Gemini)
-- 自定义提供商
+## 加入社群
+
+<div style="float: right; margin-left: 20px; margin-bottom: 20px; width: 100px;">
+    <img src="https://seekrays.com/chat/images/qrcode_seekrays.jpg" alt="seekrays-wechat" style="width: 100%; height: auto;">
+    <p style="text-align: center; margin-top: 8px; color: #666;">扫码关注公众号</p>
+</div>
+
+### 微信社群
+关注公众号后，发送消息"加群"即可加入微信社群，与其他用户交流使用心得。
+
+### Discord 社区
+加入我们的 [Discord 社区](https://discord.com/invite/qbaNshaq)，获取最新动态，参与产品讨论。
+
 
 ## 🤝 贡献
 
