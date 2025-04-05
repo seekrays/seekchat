@@ -62,16 +62,21 @@ npm run electron:build:win
 npm run electron:build:linux
 ```
 
-## 🔌 Supported AI Providers
 
-- OpenAI
-- Anthropic (Claude)
-- Google (Gemini)
-- Custom providers
+## Community
+
+### Discord Community
+Join our [Discord community](https://discord.com/invite/qbaNshaq) to get the latest updates and participate in product discussions.
+
+### WeChat Community
+![](https://seekrays.com/chat/images/qrcode_seekrays.jpg)
+
+After following our WeChat Official Account, send the message "加群" to join our WeChat community group and discuss with other users.
 
 ## 🤝 Contributing
 
 Pull Requests and Issues are welcome! If you have any suggestions or find a bug, please let us know.
+
 
 ## 🙏 Acknowledgements
 
