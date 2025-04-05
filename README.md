@@ -62,23 +62,20 @@ npm run electron:build:win
 npm run electron:build:linux
 ```
 
-## 🤝 Contributing
-
-Pull Requests and Issues are welcome! If you have any suggestions or find a bug, please let us know.
-
 
 ## Community
 
 ### Discord Community
 Join our [Discord community](https://discord.com/invite/qbaNshaq) to get the latest updates and participate in product discussions.
 
-<div style="float: right; margin-left: 20px; margin-bottom: 20px; width: 100px;">
-    <img src="https://seekrays.com/chat/images/qrcode_seekrays.jpg" alt="seekrays-wechat" style="width: 100%; height: auto;">
-    <p style="text-align: center; margin-top: 8px; color: #666;">Follow our WeChat Official Account</p>
-</div>
-
 ### WeChat Community
+![](https://seekrays.com/chat/images/qrcode_seekrays.jpg)
+
 After following our WeChat Official Account, send the message "加群" to join our WeChat community group and discuss with other users.
+
+## 🤝 Contributing
+
+Pull Requests and Issues are welcome! If you have any suggestions or find a bug, please let us know.
 
 
 ## 🙏 Acknowledgements
