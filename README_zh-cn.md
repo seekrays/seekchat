@@ -68,6 +68,7 @@ npm run electron:build:linux
 
 ### 微信社群
 ![](https://seekrays.com/chat/images/qrcode_seekrays.jpg)
+
 关注公众号后，发送消息"加群"即可加入微信社群，与其他用户交流使用心得。
 
 ### Discord 社区
