@@ -8,6 +8,67 @@ const logger = require("../logger");
 const os = require("os");
 const path = require("path");
 
+/**
+ * 解析命令行字符串，正确处理引号和转义字符
+ * @param {string} cmdline 命令行字符串
+ * @returns {string[]} 解析后的命令和参数数组
+ * @example
+ * // 基本用法
+ * parseCommandLine('npm install') // => ['npm', 'install']
+ *
+ * // 带引号的路径
+ * parseCommandLine('"C:\\Program Files\\nodejs\\npx.cmd" mcp-server')
+ * // => ['C:\\Program Files\\nodejs\\npx.cmd', 'mcp-server']
+ *
+ * // 带空格的参数
+ * parseCommandLine('echo "hello world"') // => ['echo', 'hello world']
+ *
+ * // 转义字符
+ * parseCommandLine('path\\ with\\ spaces file') // => ['path with spaces', 'file']
+ */
+const parseCommandLine = (cmdline) => {
+  const args = [];
+  let current = "";
+  let inQuotes = false;
+  let escaped = false;
+
+  for (let i = 0; i < cmdline.length; i++) {
+    const char = cmdline[i];
+
+    if (escaped) {
+      current += char;
+      escaped = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
+
+    if (char === " " && !inQuotes) {
+      if (current) {
+        args.push(current);
+        current = "";
+      }
+      continue;
+    }
+
+    current += char;
+  }
+
+  if (current) {
+    args.push(current);
+  }
+
+  return args;
+};
+
 // 判断操作系统类型
 const isMac = process.platform === "darwin";
 const isLinux = process.platform === "linux";
@@ -179,10 +240,10 @@ const createMCPClient = async (
       const connectionTimeout = 15000; // 15秒连接超时
 
       if (serverData.type === "stdio") {
-        // 解析命令行和参数
-        const urlParts = serverData.url.split(" ");
-        const command = urlParts[0];
-        const args = urlParts.slice(1);
+        // 解析命令行
+        const parsedArgs = parseCommandLine(serverData.url);
+        const command = parsedArgs[0];
+        const args = parsedArgs.slice(1);
 
         logger.info(
           `创建stdio传输: 命令=${command}, 参数=${JSON.stringify(args)}`
@@ -591,4 +652,5 @@ module.exports = {
   executeTool,
   initMCP,
   cleanup,
+  parseCommandLine,
 };

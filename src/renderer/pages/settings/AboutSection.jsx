@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Space,
@@ -22,6 +22,21 @@ const { Title, Text, Paragraph } = Typography;
 
 const AboutSection = () => {
   const { t, i18n } = useTranslation();
+  const [version, setVersion] = useState("");
+
+  // 在组件加载时获取版本号
+  useEffect(() => {
+    const fetchVersion = async () => {
+      try {
+        const appVersion = await window.electronAPI.getAppVersion();
+        setVersion(appVersion);
+      } catch (error) {
+        console.error("获取应用版本号失败:", error);
+        setVersion("unknown");
+      }
+    };
+    fetchVersion();
+  }, []);
 
   // 打开外部链接的函数
   const openExternalLink = (url) => {
@@ -54,7 +69,7 @@ const AboutSection = () => {
               SeekChat
             </Title>
             <Text type="secondary" style={{ fontSize: "16px" }}>
-              {t("about.version")}: 0.0.2
+              {t("about.version")}: {version}
             </Text>
             <Paragraph
               style={{

@@ -102,6 +102,11 @@ app.whenReady().then(() => {
     }
   });
 
+  // 处理获取应用版本号的请求
+  ipcMain.handle("get-app-version", () => {
+    return app.getVersion();
+  });
+
   // 确保数据库已初始化
   const database = ensureDatabase();
 

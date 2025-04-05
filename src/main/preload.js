@@ -50,6 +50,9 @@ if (process.contextIsolated) {
 
     // 在系统默认浏览器中打开链接
     openExternalURL: (url) => safeIpcCall("open-external-url", url),
+
+    // 获取应用版本号
+    getAppVersion: () => ipcRenderer.invoke("get-app-version"),
   });
 } else {
   window.electronAPI = electronAPI;
