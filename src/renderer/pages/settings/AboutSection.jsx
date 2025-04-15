@@ -130,7 +130,9 @@ const AboutSection = () => {
                   borderRadius: "8px",
                   height: "100%",
                 }}
-                onClick={() => openExternalLink("https://seekrays.com/chat")}
+                onClick={() =>
+                  openExternalLink("https://seekrays.com/chat/docs/contacts/")
+                }
               >
                 <div style={{ padding: "8px 0" }}>
                   <CommentOutlined
