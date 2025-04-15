@@ -210,10 +210,7 @@ const createMCPClient = async (
         );
 
         // 创建SSE传输 - 不再使用apiKey
-        transport = new SSEClientTransport({
-          baseUrl: serverData.url,
-          timeout: connectionTimeout,
-        });
+        transport = new SSEClientTransport(new URL(serverData.url));
       } else {
         throw new Error(`不支持的MCP服务器类型: ${serverData.type}`);
       }
