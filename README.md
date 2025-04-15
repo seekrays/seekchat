@@ -10,7 +10,7 @@
 </div>
 
 
-[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-blue?logo=discord&logoColor=white)](https://discord.gg/qbaNshaq)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Chat-blue?logo=discord&logoColor=white)](https://discord.gg/qcSXXmX9Gx)
 [![WeChat](https://img.shields.io/badge/WeChat-Join%20Group-brightgreen?logo=wechat&logoColor=white)](https://seekrays.com/chat/zh-cn/docs/contacts/)
 
 SeekChat supports MCP tool execution, enabling AI to directly control your computer and perform various tasks. Easily automate file management, data analysis, code development, and more, turning AI into a truly intelligent assistant.
@@ -66,7 +66,7 @@ npm run electron:build:linux
 ## Community
 
 ### Discord Community
-Join our [Discord community](https://discord.com/invite/qbaNshaq) to get the latest updates and participate in product discussions.
+Join our [Discord community](https://discord.gg/qcSXXmX9Gx) to get the latest updates and participate in product discussions.
 
 ### WeChat Community
 ![](https://seekrays.com/chat/images/qrcode_seekrays.jpg)
