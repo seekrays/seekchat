@@ -17,6 +17,7 @@ import {
   GlobalOutlined,
   RobotOutlined,
 } from "@ant-design/icons";
+import packageJson from "../../../../package.json";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -54,7 +55,7 @@ const AboutSection = () => {
               SeekChat
             </Title>
             <Text type="secondary" style={{ fontSize: "16px" }}>
-              {t("about.version")}: 0.0.2
+              {t("about.version")}: {packageJson.version}
             </Text>
             <Paragraph
               style={{
