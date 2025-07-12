@@ -1,0 +1,49 @@
+{
+  "name": "seekchat",
+  "version": "0.0.3",
+  "main": "src/main/main.js",
+  "description": "a ai chat app",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"cross-env NODE_ENV=development electron .\"",
+    "build": "vite build",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:mac": "npm run build && electron-builder --mac --publish never --config.mac.identity=null",
+    "electron:build:win": "npm run build && electron-builder --win --publish never",
+    "electron:build:linux": "npm run build && electron-builder --linux --publish never",
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-icon": "electron-icon-builder --input=./public/assets/logo/logo.png --output=./public/assets/logo --flatten"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ant-design/icons": "^5.6.1",
+    "@modelcontextprotocol/sdk": "^1.9.0",
+    "antd": "^5.24.2",
+    "electron-is-dev": "^3.0.1",
+    "electron-log": "^5.3.2",
+    "i18next": "^24.2.2",
+    "i18next-browser-languagedetector": "^8.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^15.4.1",
+    "react-icons": "^4.10.1",
+    "react-markdown": "^10.0.1",
+    "react-router-dom": "^7.2.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "remark-gfm": "^4.0.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-icon-builder": "^2.0.1",
+    "electron-rebuild": "^3.2.9",
+    "vite": "^6.2.0",
+    "wait-on": "^8.0.2"
+  }
+}
