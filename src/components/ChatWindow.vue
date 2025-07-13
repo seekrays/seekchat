@@ -1,18 +1,16 @@
 <template>
   <div class="flex flex-col h-full">
     <!-- 消息列表 -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-4">
+    <div class="flex-1 overflow-y-auto pr-4 pt-4 pb-4 pl-4 space-y-4">
       <div v-for="message in messages" :key="message.id" class="flex">
         <div
           :class="[
             'max-w-[80%] rounded-lg p-3',
-            message.role === 'user'
-              ? 'bg-blue-100 ml-auto'
-              : 'bg-gray-100',
+            message.role === 'user' ? 'bg-blue-100 ml-auto' : 'bg-gray-100',
           ]"
         >
           <div class="text-sm text-gray-600 mb-1">
-            {{ message.role === 'user' ? '我' : 'AI' }}
+            {{ message.role === "user" ? "我" : "AI" }}
           </div>
           <div class="whitespace-pre-wrap">{{ message.content }}</div>
         </div>
@@ -25,7 +23,7 @@
     </div>
 
     <!-- 输入区域 -->
-    <div class="border-t p-4">
+    <div class="border-t pr-4 pt-4 pb-4 pl-4">
       <div class="flex space-x-2">
         <textarea
           v-model="inputMessage"
@@ -50,27 +48,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
-import { databaseService, type ChatSession, type ChatMessage } from '../services/database';
-import { aiService } from '../services/ai';
+import { ref, onMounted, watch } from "vue";
+import {
+  databaseService,
+  type ChatSession,
+  type ChatMessage,
+} from "../services/database";
+import { aiService } from "../services/ai";
 
 const props = defineProps<{
   session: ChatSession;
 }>();
 
 const messages = ref<ChatMessage[]>([]);
-const inputMessage = ref('');
+const inputMessage = ref("");
 const loading = ref(false);
-const error = ref('');
+const error = ref("");
 
 async function loadMessages() {
   if (!props.session.id) return;
   try {
     messages.value = await databaseService.getMessages(props.session.id);
-    error.value = '';
+    error.value = "";
   } catch (err) {
-    error.value = '加载消息失败';
-    console.error('加载消息失败:', err);
+    error.value = "加载消息失败";
+    console.error("加载消息失败:", err);
   }
 }
 
@@ -79,13 +81,13 @@ async function sendMessage() {
 
   const activeModel = aiService.getActiveModel();
   if (!activeModel) {
-    error.value = '请先配置AI模型';
+    error.value = "请先配置AI模型";
     return;
   }
 
   const userMessage: ChatMessage = {
     sessionId: props.session.id,
-    role: 'user',
+    role: "user",
     providerId: 1, // TODO: 从设置中获取当前提供商ID
     modelId: activeModel.id || 1,
     content: inputMessage.value.trim(),
@@ -95,23 +97,23 @@ async function sendMessage() {
 
   try {
     loading.value = true;
-    error.value = '';
+    error.value = "";
 
     // 保存用户消息
     await databaseService.createMessage(userMessage);
     messages.value.push(userMessage);
-    inputMessage.value = '';
+    inputMessage.value = "";
 
     // 调用AI服务获取回复
     const response = await aiService.sendMessage({
-      role: 'user',
+      role: "user",
       content: userMessage.content,
       model: activeModel.name,
     });
 
     const aiMessage: ChatMessage = {
       sessionId: props.session.id,
-      role: 'assistant',
+      role: "assistant",
       providerId: 1,
       modelId: activeModel.id || 1,
       content: response.content,
@@ -122,8 +124,8 @@ async function sendMessage() {
     await databaseService.createMessage(aiMessage);
     messages.value.push(aiMessage);
   } catch (err) {
-    error.value = '发送消息失败';
-    console.error('发送消息失败:', err);
+    error.value = "发送消息失败";
+    console.error("发送消息失败:", err);
   } finally {
     loading.value = false;
   }

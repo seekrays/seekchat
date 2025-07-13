@@ -64,18 +64,19 @@ class DatabaseService {
   async createSession(name: string): Promise<ChatSession> {
     const db = await this.init();
     const now = Date.now();
-    const session: ChatSession = {
+    await db.execute(
+      "INSERT INTO chat_session (name, metadata, updatedAt, createdAt) VALUES (?, ?, ?, ?)",
+      [name, null, now, now]
+    );
+    // 获取新插入的 id
+    const result = await db.select("SELECT last_insert_rowid() as id");
+    const id = result && result[0] && result[0].id ? result[0].id : undefined;
+    return {
+      id,
       name,
       updatedAt: now,
       createdAt: now,
     };
-
-    await db.execute(
-      "INSERT INTO chat_session (name, metadata, updatedAt, createdAt) VALUES (?, ?, ?, ?)",
-      [session.name, null, session.updatedAt, session.createdAt]
-    );
-
-    return session;
   }
 
   async deleteSession(id: number): Promise<void> {
