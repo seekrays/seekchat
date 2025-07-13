@@ -31,5 +31,16 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "plugins": {
+    "sql": {
+      "preload": ["sqlite:seekchat.db"],
+      "default": {
+        "load": true,
+        "databases": {
+          "sqlite": "sqlite:seekchat.db"
+        }
+      }
+    }
   }
 }

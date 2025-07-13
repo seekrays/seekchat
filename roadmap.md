@@ -1,4 +1,5 @@
 # SeekChat Tauri+Vue3+TS+Tailwind 重构 Roadmap
+tauri2 plugin:https://v2.tauri.app/plugin/
 
 ## 目标
 - 使用 Tauri + Vue3 + TypeScript + TailwindCSS 重构 SeekChat 桌面端
@@ -8,26 +9,27 @@
 ---
 
 ## 1. 项目初始化与基础配置
-- [ ] 使用 tauri 官方脚手架创建新项目，选择 vue3 + typescript
-- [ ] 配置 tailwindcss（vite + tailwind）
-- [ ] 保留原有 src-tauri/ 目录和数据库文件，确保 tauri 后端直接复用
-- [ ] 配置 tauri.conf.json，确保数据库路径与原项目一致
+- [x] 使用 tauri 官方脚手架创建新项目，选择 vue3 + typescript
+- [x] 配置 tailwindcss（vite + tailwind）
+- [x] 保留原有 src-tauri/ 目录和数据库文件，确保 tauri 后端直接复用
+- [x] 配置 tauri.conf.json，确保数据库路径与原项目一致
 
 ---
 
 ## 2. 数据库与后端（Rust/Tauri/前端直连）
-- [ ] 复用原有 sqlite 数据库文件
-- [ ] MCP Server、模型、会话、消息等表结构与原有保持一致
-- [ ] 支持前端通过 tauri sqlite 插件或其它方式直接操作数据库
-- [ ] 仅安全/系统能力相关接口放在 tauri 后端，其余可前端直接实现
+- [x] 复用原有 sqlite 数据库文件
+- [x] MCP Server、模型、会话、消息等表结构与原有保持一致（已自动建表）
+- [x] 支持前端通过 tauri sqlite 插件或其它方式直接操作数据库
+- [x] 仅安全/系统能力相关接口放在 tauri 后端，其余可前端直接实现
 
 ---
 
 ## 3. 前端页面与组件（Vue3 + TS + Tailwind）
 ### 3.1 页面结构
+- [x] src/pages/ModelSettings.vue：模型管理与配置页面
+- [x] src/pages/Home.vue：主界面页面（含导航与 router-view）
 - [ ] src/pages/Settings.vue：设置主页面
 - [ ] src/pages/MCPSettings.vue：MCP Server 配置页面（表单+JSON Tab）
-- [ ] src/pages/ModelSettings.vue：模型管理与配置页面
 - [ ] src/pages/Chat.vue：聊天主页面（含对话框、历史、工具调用等）
 
 ### 3.2 组件
@@ -49,37 +51,38 @@
 ---
 
 ## 4. 前后端通信与本地能力
-- [ ] 前端通过 @tauri-apps/api/tauri 的 invoke 方法调用 tauri command
-- [ ] 支持前端直接操作 sqlite 数据库、文件、命令行等本地能力
-- [ ] MCP Server、模型、会话、消息等操作可前端直连 DB 或调用后端
+- [x] 前端通过 @tauri-apps/api/tauri 的 invoke 方法调用 tauri command
+- [x] 支持前端直接操作 sqlite 数据库、文件、命令行等本地能力
+- [x] MCP Server、模型、会话、消息等操作可前端直连 DB 或调用后端
 
 ---
 
 ## 5. 迁移与兼容
-- [ ] 保证所有数据结构与原有一致（如 MCP Server、模型、会话、消息等字段）
-- [ ] 兼容原有数据库 schema，无需迁移数据
-- [ ] 旧代码全部移至 old/ 目录，仅供参考
+- [x] 保证所有数据结构与原有一致（如 MCP Server、模型、会话、消息等字段）
+- [x] 兼容原有数据库 schema，无需迁移数据
+- [x] 旧代码全部移至 old/ 目录，仅供参考
 
 ---
 
 ## 6. 计划分步实施
 ### 第一步：项目初始化与基础配置
-- 完成 tauri+vue3+ts+tailwind 项目搭建，配置好 tailwind
-- 确认数据库文件可被 tauri 后端和前端访问
+- [x] 完成 tauri+vue3+ts+tailwind 项目搭建，配置好 tailwind
+- [x] 确认数据库文件可被 tauri 后端和前端访问
 
 ### 第二步：MCP Server、模型、会话、消息等表结构与接口实现
-- MCP Server、模型、会话、消息等增删改查、激活、测试等接口
-- 支持前端直连 DB 或调用 tauri 后端
+- [x] MCP Server、模型、会话、消息等增删改查、激活、测试等接口
+- [x] 支持前端直连 DB 或调用 tauri 后端
 
 ### 第三步：前端各页面与组件开发
-- MCP Server 配置页面（表单+JSON Tab）
-- 模型管理与配置页面
-- 聊天主页面（含对话框、历史、工具调用等）
-- 其它设置页面
+- [x] 模型管理与配置页面
+- [x] 主界面页面（含导航与 router-view）
+- [ ] MCP Server 配置页面（表单+JSON Tab）
+- [ ] 聊天主页面（含对话框、历史、工具调用等）
+- [ ] 其它设置页面
 
 ### 第四步：功能完善与兼容性测试
-- 兼容原有所有功能
-- UI/UX 优化，tailwindcss 统一风格
+- [ ] 兼容原有所有功能
+- [ ] UI/UX 优化，tailwindcss 统一风格
 
 ---
 
