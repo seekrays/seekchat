@@ -161,6 +161,143 @@ class DatabaseService {
     }
     return { updatedCount };
   }
+
+  // Provider（McpServer）相关接口
+  async getAllProviders(): Promise<McpServer[]> {
+    const db = await this.init();
+    const result = await db.select(
+      "SELECT * FROM mcp_servers ORDER BY created_at DESC"
+    );
+    return result as McpServer[];
+  }
+
+  async createProvider(provider: Partial<McpServer>): Promise<McpServer> {
+    const db = await this.init();
+    const now = Date.now();
+    await db.execute(
+      "INSERT INTO mcp_servers (name, url, type, active, tools, description, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        provider.name,
+        provider.url,
+        provider.type,
+        provider.active ? 1 : 0,
+        provider.tools || null,
+        provider.description || "",
+        now,
+        now,
+      ]
+    );
+    const result = await db.select("SELECT last_insert_rowid() as id");
+    const id = result && result[0] && result[0].id ? result[0].id : undefined;
+    return {
+      id,
+      name: provider.name || "",
+      url: provider.url || "",
+      type: provider.type || "",
+      active: provider.active ?? true,
+      tools: provider.tools || "",
+      description: provider.description || "",
+      created_at: now,
+      updated_at: now,
+    };
+  }
+
+  async updateProvider(provider: McpServer): Promise<void> {
+    const db = await this.init();
+    const now = Date.now();
+    await db.execute(
+      "UPDATE mcp_servers SET name=?, url=?, type=?, active=?, tools=?, description=?, updated_at=? WHERE id=?",
+      [
+        provider.name,
+        provider.url,
+        provider.type,
+        provider.active ? 1 : 0,
+        provider.tools || "",
+        provider.description || "",
+        now,
+        provider.id,
+      ]
+    );
+  }
+
+  async deleteProvider(id: number): Promise<void> {
+    const db = await this.init();
+    await db.execute("DELETE FROM mcp_servers WHERE id = ?", [id]);
+  }
+
+  async setActiveProvider(id: number): Promise<void> {
+    const db = await this.init();
+    // 先全部禁用，再激活指定id
+    await db.execute("UPDATE mcp_servers SET active = 0");
+    await db.execute("UPDATE mcp_servers SET active = 1 WHERE id = ?", [id]);
+  }
+
+  // Model 相关接口
+  async getAllModels(): Promise<Model[]> {
+    const db = await this.init();
+    const result = await db.select(
+      "SELECT * FROM models ORDER BY created_at DESC"
+    );
+    return result as Model[];
+  }
+
+  async createModel(model: Partial<Model>): Promise<Model> {
+    const db = await this.init();
+    const now = Date.now();
+    await db.execute(
+      "INSERT INTO models (name, provider, type, config, enabled, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [
+        model.name,
+        model.provider,
+        model.type,
+        model.config || "",
+        model.enabled ? 1 : 0,
+        now,
+        now,
+      ]
+    );
+    const result = await db.select("SELECT last_insert_rowid() as id");
+    const id = result && result[0] && result[0].id ? result[0].id : undefined;
+    return {
+      id,
+      name: model.name || "",
+      provider: model.provider || "",
+      type: model.type || "",
+      config: model.config || "",
+      enabled: model.enabled ?? true,
+      created_at: now,
+      updated_at: now,
+    };
+  }
+
+  async updateModel(model: Model): Promise<void> {
+    const db = await this.init();
+    const now = Date.now();
+    await db.execute(
+      "UPDATE models SET name=?, provider=?, type=?, config=?, enabled=?, updated_at=? WHERE id=?",
+      [
+        model.name,
+        model.provider,
+        model.type,
+        model.config || "",
+        model.enabled ? 1 : 0,
+        now,
+        model.id,
+      ]
+    );
+  }
+
+  async deleteModel(id: number): Promise<void> {
+    const db = await this.init();
+    await db.execute("DELETE FROM models WHERE id = ?", [id]);
+  }
+
+  async setActiveModel(id: number): Promise<void> {
+    const db = await this.init();
+    // 先全部禁用，再激活指定id
+    await db.execute("UPDATE models SET enabled = 0");
+    await db.execute("UPDATE models SET enabled = 1 WHERE id = ?", [id]);
+  }
 }
 
 export const databaseService = new DatabaseService();
