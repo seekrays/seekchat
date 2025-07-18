@@ -53,6 +53,8 @@ import {
   databaseService,
   type ChatSession,
   type ChatMessage,
+  type Provider,
+  type ProviderModel,
 } from "../services/database";
 import { aiService } from "../services/ai";
 
@@ -64,6 +66,8 @@ const messages = ref<ChatMessage[]>([]);
 const inputMessage = ref("");
 const loading = ref(false);
 const error = ref("");
+const activeProvider = ref<Provider | null>(null);
+const activeModel = ref<ProviderModel | null>(null);
 
 async function loadMessages() {
   if (!props.session.id) return;
@@ -76,11 +80,36 @@ async function loadMessages() {
   }
 }
 
+async function loadActiveModel() {
+  try {
+    // 获取启用的提供商
+    const enabledProviders = await databaseService.getEnabledProviders();
+    if (enabledProviders.length === 0) {
+      error.value = "请先启用一个AI服务提供商";
+      return;
+    }
+
+    // 获取第一个启用的提供商
+    activeProvider.value = enabledProviders[0];
+
+    // 获取该提供商的启用模型
+    const enabledModels = activeProvider.value.models.filter((m) => m.enabled);
+    if (enabledModels.length === 0) {
+      error.value = "请先启用一个AI模型";
+      return;
+    }
+
+    activeModel.value = enabledModels[0];
+  } catch (err) {
+    error.value = "加载模型配置失败";
+    console.error("加载模型配置失败:", err);
+  }
+}
+
 async function sendMessage() {
   if (!props.session.id || !inputMessage.value.trim() || loading.value) return;
 
-  const activeModel = aiService.getActiveModel();
-  if (!activeModel) {
+  if (!activeProvider.value || !activeModel.value) {
     error.value = "请先配置AI模型";
     return;
   }
@@ -88,8 +117,8 @@ async function sendMessage() {
   const userMessage: ChatMessage = {
     sessionId: props.session.id,
     role: "user",
-    providerId: 1, // TODO: 从设置中获取当前提供商ID
-    modelId: activeModel.id || 1,
+    providerId: activeProvider.value.id,
+    modelId: activeModel.value.id,
     content: inputMessage.value.trim(),
     updatedAt: Date.now(),
     createdAt: Date.now(),
@@ -108,14 +137,15 @@ async function sendMessage() {
     const response = await aiService.sendMessage({
       role: "user",
       content: userMessage.content,
-      model: activeModel.name,
+      model: activeModel.value.name,
+      provider: activeProvider.value,
     });
 
     const aiMessage: ChatMessage = {
       sessionId: props.session.id,
       role: "assistant",
-      providerId: 1,
-      modelId: activeModel.id || 1,
+      providerId: activeProvider.value.id,
+      modelId: activeModel.value.id,
       content: response.content,
       updatedAt: Date.now(),
       createdAt: Date.now(),
@@ -139,7 +169,7 @@ watch(
 );
 
 onMounted(async () => {
-  await aiService.init();
+  await loadActiveModel();
   await loadMessages();
 });
 </script>
