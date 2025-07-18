@@ -47,8 +47,6 @@ export interface Provider {
 export interface ProviderModel {
   id: string;
   name: string;
-  provider: string;
-  group?: string;
   enabled: boolean;
   deleted?: boolean;
 }
@@ -59,20 +57,18 @@ export const SYSTEM_PROVIDERS: Provider[] = [
     id: "deepseek",
     name: "DeepSeek",
     baseUrl: "https://api.deepseek.com/v1",
+    apiKey: "",
     enabled: true,
+    logo: "/assets/providers/deepseek.png",
     models: [
       {
         id: "deepseek-chat",
         name: "DeepSeek Chat",
-        provider: "deepseek",
-        group: "DeepSeek Chat",
         enabled: true,
       },
       {
         id: "deepseek-reasoner",
         name: "DeepSeek Reasoner",
-        provider: "deepseek",
-        group: "DeepSeek Reasoner",
         enabled: true,
       },
     ],
@@ -81,34 +77,23 @@ export const SYSTEM_PROVIDERS: Provider[] = [
     id: "openai",
     name: "OpenAI",
     baseUrl: "https://api.openai.com/v1",
+    apiKey: "",
     enabled: false,
+    logo: "/assets/providers/openai.png",
     models: [
       {
         id: "gpt-4o",
         name: "GPT-4o",
-        provider: "openai",
-        group: "GPT 4o",
         enabled: true,
       },
       {
         id: "gpt-4o-mini",
         name: "GPT-4o-mini",
-        provider: "openai",
-        group: "GPT 4o",
         enabled: true,
       },
       {
-        id: "o1-mini",
-        name: "o1-mini",
-        provider: "openai",
-        group: "o1",
-        enabled: true,
-      },
-      {
-        id: "o1-preview",
-        name: "o1-preview",
-        provider: "openai",
-        group: "o1",
+        id: "gpt-3.5-turbo",
+        name: "GPT-3.5-turbo",
         enabled: true,
       },
     ],
@@ -117,49 +102,38 @@ export const SYSTEM_PROVIDERS: Provider[] = [
     id: "silicon",
     name: "SiliconFlow",
     baseUrl: "https://api.siliconflow.cn/v1",
+    apiKey: "",
     enabled: false,
+    logo: "/assets/providers/silicon.png",
     models: [
-      {
-        id: "deepseek-ai/DeepSeek-R1",
-        name: "DeepSeek-R1",
-        provider: "silicon",
-        group: "deepseek-ai",
-        enabled: true,
-      },
       {
         id: "deepseek-ai/DeepSeek-V3",
         name: "DeepSeek-V3",
-        provider: "silicon",
-        group: "deepseek-ai",
         enabled: true,
       },
       {
         id: "Qwen/Qwen2.5-7B-Instruct",
         name: "Qwen2.5-7B-Instruct",
-        provider: "silicon",
-        group: "Qwen",
-        enabled: true,
-      },
-      {
-        id: "meta-llama/Llama-3.3-70B-Instruct",
-        name: "Llama-3.3-70B-Instruct",
-        provider: "silicon",
-        group: "meta-llama",
         enabled: true,
       },
     ],
   },
   {
     id: "moonshot",
-    name: "Moonshot AI",
+    name: "月之暗面",
     baseUrl: "https://api.moonshot.cn/v1",
+    apiKey: "",
     enabled: false,
+    logo: "/assets/providers/moonshot.png",
     models: [
       {
-        id: "moonshot-v1-auto",
-        name: "moonshot-v1-auto",
-        provider: "moonshot",
-        group: "moonshot-v1",
+        id: "moonshot-v1-8k",
+        name: "Moonshot v1 8K",
+        enabled: true,
+      },
+      {
+        id: "moonshot-v1-32k",
+        name: "Moonshot v1 32K",
         enabled: true,
       },
     ],
@@ -168,27 +142,18 @@ export const SYSTEM_PROVIDERS: Provider[] = [
     id: "dashscope",
     name: "阿里云百炼",
     baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    apiKey: "",
     enabled: false,
+    logo: "/assets/providers/dashscope.png",
     models: [
       {
         id: "qwen-turbo",
-        name: "qwen-turbo",
-        provider: "dashscope",
-        group: "qwen-turbo",
+        name: "通义千问-turbo",
         enabled: true,
       },
       {
         id: "qwen-plus",
-        name: "qwen-plus",
-        provider: "dashscope",
-        group: "qwen-plus",
-        enabled: true,
-      },
-      {
-        id: "qwen-max",
-        name: "qwen-max",
-        provider: "dashscope",
-        group: "qwen-max",
+        name: "通义千问-plus",
         enabled: true,
       },
     ],
@@ -196,15 +161,19 @@ export const SYSTEM_PROVIDERS: Provider[] = [
   {
     id: "ollama",
     name: "Ollama",
-    baseUrl: "http://127.0.0.1:11434/v1",
+    baseUrl: "http://localhost:11434/v1",
+    apiKey: "",
     enabled: false,
+    logo: "/assets/providers/ollama.png",
     models: [],
   },
   {
     id: "lmstudio",
     name: "LM Studio",
-    baseUrl: "http://127.0.0.1:1234/v1",
+    baseUrl: "http://localhost:1234/v1",
+    apiKey: "",
     enabled: false,
+    logo: "/assets/providers/lmstudio.png",
     models: [],
   },
 ];
@@ -312,8 +281,6 @@ class DatabaseService {
               provider.models.push({
                 id: savedModel.id,
                 name: savedModel.name || savedModel.id,
-                provider: provider.id,
-                group: savedModel.group,
                 enabled: savedModel.enabled ?? true,
                 deleted: savedModel.deleted ?? false,
               });
@@ -614,8 +581,6 @@ class DatabaseService {
     const model: ProviderModel = {
       id: modelData.id || `model_${Date.now()}`,
       name: modelData.name || modelData.id || "New Model",
-      provider: providerId,
-      group: modelData.group,
       enabled: modelData.enabled ?? true,
       deleted: false,
     };

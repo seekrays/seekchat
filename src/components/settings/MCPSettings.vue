@@ -432,6 +432,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { databaseService, type McpServer } from "../../services/database";
+import { notification } from "../../services/notification";
 
 const servers = ref<McpServer[]>([]);
 const loading = ref(false);
@@ -452,9 +453,14 @@ const form = ref({
   active: true,
 });
 
-function toast(message: string) {
-  // 简单的toast实现，可以替换为更好的toast库
-  alert(message);
+function toast(message: string, type: "success" | "error" | "info" = "info") {
+  if (type === "success") {
+    notification.success(message);
+  } else if (type === "error") {
+    notification.error(message);
+  } else {
+    notification.info(message);
+  }
 }
 
 async function loadServers() {
@@ -463,7 +469,7 @@ async function loadServers() {
     servers.value = await databaseService.getAllMcpServers();
   } catch (error) {
     console.error("加载MCP服务器失败:", error);
-    toast("加载服务器列表失败");
+    toast("加载服务器列表失败", "error");
   } finally {
     loading.value = false;
   }
@@ -485,14 +491,22 @@ function editServer(server: McpServer) {
 async function deleteServer(server: McpServer) {
   if (!server.id) return;
 
-  if (confirm(`确定要删除服务器 ${server.name} 吗？`)) {
+  const confirmed = await notification.confirm({
+    type: "danger",
+    title: "删除服务器",
+    message: `确定要删除服务器 ${server.name} 吗？此操作不可撤销。`,
+    confirmText: "删除",
+    cancelText: "取消",
+  });
+
+  if (confirmed) {
     try {
       await databaseService.deleteMcpServer(server.id);
-      toast("删除服务器成功");
+      toast("删除服务器成功", "success");
       await loadServers();
     } catch (error) {
       console.error("删除服务器失败:", error);
-      toast("删除服务器失败");
+      toast("删除服务器失败", "error");
     }
   }
 }

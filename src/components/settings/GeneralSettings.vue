@@ -5,13 +5,30 @@
       <h2 class="text-2xl font-bold text-gray-900 mb-4">通用设置</h2>
       <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
         <div class="flex items-center">
-          <svg class="w-5 h-5 text-gray-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          <svg
+            class="w-5 h-5 text-gray-600 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+            ></path>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+            ></path>
           </svg>
           <div>
             <p class="text-gray-800 font-medium">应用基本设置</p>
-            <p class="text-gray-600 text-sm mt-1">配置语言、主题、数据管理等基本功能</p>
+            <p class="text-gray-600 text-sm mt-1">
+              配置语言、主题、数据管理等基本功能
+            </p>
           </div>
         </div>
       </div>
@@ -21,16 +38,28 @@
       <!-- 语言和区域设置 -->
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center mb-4">
-          <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path>
+          <svg
+            class="w-6 h-6 text-blue-600 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+            ></path>
           </svg>
           <h3 class="text-lg font-semibold text-gray-900">语言和区域</h3>
         </div>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">界面语言</label>
-            <select 
-              v-model="language" 
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >界面语言</label
+            >
+            <select
+              v-model="language"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="zh-CN">简体中文</option>
@@ -40,9 +69,11 @@
             </select>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">时区</label>
-            <select 
-              v-model="timezone" 
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >时区</label
+            >
+            <select
+              v-model="timezone"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="Asia/Shanghai">Asia/Shanghai (UTC+8)</option>
@@ -57,14 +88,26 @@
       <!-- 主题设置 -->
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center mb-4">
-          <svg class="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+          <svg
+            class="w-6 h-6 text-purple-600 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"
+            ></path>
           </svg>
           <h3 class="text-lg font-semibold text-gray-900">主题外观</h3>
         </div>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">主题模式</label>
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >主题模式</label
+            >
             <div class="grid grid-cols-3 gap-3">
               <button
                 v-for="theme in themes"
@@ -74,7 +117,7 @@
                   'p-3 rounded-lg border-2 transition-all duration-200',
                   selectedTheme === theme.value
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-gray-200 hover:border-gray-300',
                 ]"
               >
                 <div class="text-center">
@@ -86,7 +129,9 @@
           </div>
           <div class="flex items-center justify-between">
             <div>
-              <label class="block text-sm font-medium text-gray-700">紧凑模式</label>
+              <label class="block text-sm font-medium text-gray-700"
+                >紧凑模式</label
+              >
               <p class="text-xs text-gray-500">减少界面元素间距</p>
             </div>
             <input
@@ -101,15 +146,27 @@
       <!-- 聊天设置 -->
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center mb-4">
-          <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          <svg
+            class="w-6 h-6 text-green-600 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            ></path>
           </svg>
           <h3 class="text-lg font-semibold text-gray-900">聊天设置</h3>
         </div>
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <label class="block text-sm font-medium text-gray-700">自动保存会话</label>
+              <label class="block text-sm font-medium text-gray-700"
+                >自动保存会话</label
+              >
               <p class="text-xs text-gray-500">自动保存聊天记录</p>
             </div>
             <input
@@ -120,7 +177,9 @@
           </div>
           <div class="flex items-center justify-between">
             <div>
-              <label class="block text-sm font-medium text-gray-700">发送快捷键</label>
+              <label class="block text-sm font-medium text-gray-700"
+                >发送快捷键</label
+              >
               <p class="text-xs text-gray-500">按 Enter 发送消息</p>
             </div>
             <input
@@ -130,9 +189,11 @@
             />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">默认模型</label>
-            <select 
-              v-model="defaultModel" 
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >默认模型</label
+            >
+            <select
+              v-model="defaultModel"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">请选择默认模型</option>
@@ -147,8 +208,18 @@
       <!-- 数据管理 -->
       <div class="bg-white rounded-lg shadow-sm p-6">
         <div class="flex items-center mb-4">
-          <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          <svg
+            class="w-6 h-6 text-red-600 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+            ></path>
           </svg>
           <h3 class="text-lg font-semibold text-gray-900">数据管理</h3>
         </div>
@@ -195,12 +266,25 @@
     </div>
 
     <!-- 确认重置弹窗 -->
-    <div v-if="showResetConfirm" class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+    <div
+      v-if="showResetConfirm"
+      class="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
         <div class="p-6">
           <div class="flex items-center mb-4">
-            <svg class="w-8 h-8 text-red-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+            <svg
+              class="w-8 h-8 text-red-600 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.268 16.5c-.77.833.192 2.5 1.732 2.5z"
+              ></path>
             </svg>
             <h3 class="text-lg font-bold text-gray-900">确认重置</h3>
           </div>
@@ -229,6 +313,7 @@
 
 <script setup lang="ts">
 import { ref, computed, h } from "vue";
+import { notification } from "../../services/notification";
 
 // 基本设置
 const language = ref("zh-CN");
@@ -251,42 +336,64 @@ const themes = [
   {
     value: "light",
     label: "浅色",
-    icon: () => h("svg", {
-      class: "w-6 h-6",
-      fill: "none",
-      stroke: "currentColor",
-      viewBox: "0 0 24 24"
-    }, [
-      h("circle", { cx: "12", cy: "12", r: "5" }),
-      h("path", { d: "m21 12-4.39-4.39M3 12l4.39-4.39M21 12l-4.39 4.39M3 12l4.39 4.39m8.95-8.95L12 12M3.05 8.05L12 12m8.95 8.95L12 12M3.05 15.95L12 12" })
-    ])
+    icon: () =>
+      h(
+        "svg",
+        {
+          class: "w-6 h-6",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+        },
+        [
+          h("circle", { cx: "12", cy: "12", r: "5" }),
+          h("path", {
+            d: "m21 12-4.39-4.39M3 12l4.39-4.39M21 12l-4.39 4.39M3 12l4.39 4.39m8.95-8.95L12 12M3.05 8.05L12 12m8.95 8.95L12 12M3.05 15.95L12 12",
+          }),
+        ]
+      ),
   },
   {
     value: "dark",
     label: "深色",
-    icon: () => h("svg", {
-      class: "w-6 h-6",
-      fill: "none",
-      stroke: "currentColor",
-      viewBox: "0 0 24 24"
-    }, [
-      h("path", { d: "M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" })
-    ])
+    icon: () =>
+      h(
+        "svg",
+        {
+          class: "w-6 h-6",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+        },
+        [h("path", { d: "M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" })]
+      ),
   },
   {
     value: "system",
     label: "系统",
-    icon: () => h("svg", {
-      class: "w-6 h-6",
-      fill: "none",
-      stroke: "currentColor",
-      viewBox: "0 0 24 24"
-    }, [
-      h("rect", { x: "2", y: "3", width: "20", height: "14", rx: "2", ry: "2" }),
-      h("line", { x1: "8", y1: "21", x2: "16", y2: "21" }),
-      h("line", { x1: "12", y1: "17", x2: "12", y2: "21" })
-    ])
-  }
+    icon: () =>
+      h(
+        "svg",
+        {
+          class: "w-6 h-6",
+          fill: "none",
+          stroke: "currentColor",
+          viewBox: "0 0 24 24",
+        },
+        [
+          h("rect", {
+            x: "2",
+            y: "3",
+            width: "20",
+            height: "14",
+            rx: "2",
+            ry: "2",
+          }),
+          h("line", { x1: "8", y1: "21", x2: "16", y2: "21" }),
+          h("line", { x1: "12", y1: "17", x2: "12", y2: "21" }),
+        ]
+      ),
+  },
 ];
 
 // 存储使用情况
@@ -295,12 +402,18 @@ const storageUsage = computed(() => {
   return {
     chat: "2.5 MB",
     settings: "0.1 MB",
-    total: "2.6 MB"
+    total: "2.6 MB",
   };
 });
 
-function toast(message: string) {
-  alert(message);
+function toast(message: string, type: "success" | "error" | "info" = "info") {
+  if (type === "success") {
+    notification.success(message);
+  } else if (type === "error") {
+    notification.error(message);
+  } else {
+    notification.info(message);
+  }
 }
 
 function confirmResetConfig() {
@@ -313,7 +426,7 @@ function resetConfig() {
     // 清除本地存储
     localStorage.clear();
     sessionStorage.clear();
-    
+
     // 重置所有设置为默认值
     language.value = "zh-CN";
     timezone.value = "Asia/Shanghai";
@@ -322,10 +435,10 @@ function resetConfig() {
     autoSave.value = true;
     enterToSend.value = true;
     defaultModel.value = "";
-    
+
     toast("重置配置成功，请刷新页面");
     showResetConfirm.value = false;
-    
+
     // 延迟刷新页面
     setTimeout(() => {
       window.location.reload();
@@ -350,17 +463,21 @@ function exportData() {
         defaultModel: defaultModel.value,
       },
       localStorage: { ...localStorage },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `seekchat-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `seekchat-backup-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
     a.click();
     URL.revokeObjectURL(url);
-    
+
     toast("导出数据成功");
   } catch (error) {
     console.error("导出数据失败:", error);
@@ -370,18 +487,18 @@ function exportData() {
 
 function importData() {
   try {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.json';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
     input.onchange = (event) => {
       const file = (event.target as HTMLInputElement).files?.[0];
       if (!file) return;
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
           const data = JSON.parse(e.target?.result as string);
-          
+
           // 恢复设置
           if (data.settings) {
             language.value = data.settings.language || "zh-CN";
@@ -392,16 +509,16 @@ function importData() {
             enterToSend.value = data.settings.enterToSend ?? true;
             defaultModel.value = data.settings.defaultModel || "";
           }
-          
+
           // 恢复localStorage
           if (data.localStorage) {
-            Object.keys(data.localStorage).forEach(key => {
+            Object.keys(data.localStorage).forEach((key) => {
               localStorage.setItem(key, data.localStorage[key]);
             });
           }
-          
+
           toast("导入数据成功，请刷新页面");
-          
+
           // 延迟刷新页面
           setTimeout(() => {
             window.location.reload();
