@@ -1,44 +1,37 @@
-import React, { useRef, memo, useState, useEffect, useCallback } from "react";
 import {
-  Input,
-  Button,
-  Spin,
-  Avatar,
-  Tooltip,
-  message,
-  Select,
-  Space,
-  Collapse,
-  Modal,
-  Slider,
-  InputNumber,
-  Form,
-} from "antd";
-import {
-  SendOutlined,
-  UserOutlined,
-  RobotOutlined,
-  SettingOutlined,
   CopyOutlined,
-  StopOutlined,
-  DownOutlined,
+  RobotOutlined,
+  SettingOutlined
 } from "@ant-design/icons";
+import {
+  Button,
+  Collapse,
+  Form,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Select,
+  Slider,
+  Spin,
+  Tooltip
+} from "antd";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { getEnabledProviders } from "../services/aiService";
-import { getModelName, getAllProviders } from "../services/models";
-import { providers } from "../services/models";
-import { useUserConfig } from "../hooks/useUserConfig";
+import remarkGfm from "remark-gfm";
 import { useMessages } from "../hooks/useMessages";
+import { useUserConfig } from "../hooks/useUserConfig";
+import { getEnabledProviders } from "../services/aiService";
 import {
-  parseMessageContent,
   formatMessageContent,
+  parseMessageContent,
 } from "../services/messageService";
+import { getAllProviders, getModelName } from "../services/models";
 import "../styles/ChatWindow.css";
-import { useTranslation } from "react-i18next";
 import ChatInputContainer from "./ChatInputContainer";
-import MCPToolsButton from "./MCPToolsButton";
 import MessageItem from "./MessageItem";
 
 const { TextArea } = Input;
@@ -171,7 +164,7 @@ const MessageContent = ({ content }) => {
                   {reasoningContent.status === "pending" ? (
                     <Spin size="small" />
                   ) : (
-                    <ReactMarkdown components={renderers}>
+                    <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
                       {reasoningContent.content}
                     </ReactMarkdown>
                   )}
@@ -203,7 +196,7 @@ const MessageContent = ({ content }) => {
         {/* 主要内容 - 移到思考内容之后 */}
         {mainContent && mainContent.status !== "error" && (
           <div className="message-main-content">
-            <ReactMarkdown components={renderers}>
+            <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
               {mainContent.content}
             </ReactMarkdown>
             {mainContent.status === "pending" && mainContent.content && (
@@ -229,7 +222,7 @@ const MessageContent = ({ content }) => {
 
   // 如果不是数组，直接渲染内容
   return (
-    <ReactMarkdown components={renderers}>
+    <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
       {typeof parsedContent === "string"
         ? parsedContent
         : formatMessageContent(parsedContent)}
@@ -280,9 +273,9 @@ const copyToClipboard = (content, t) => {
       console.error("fallback copy failed:", fallbackError);
       message.error(
         t("chat.copyToClipboard") +
-          t("common.failed") +
-          ":" +
-          fallbackError.message
+        t("common.failed") +
+        ":" +
+        fallbackError.message
       );
     }
   }
