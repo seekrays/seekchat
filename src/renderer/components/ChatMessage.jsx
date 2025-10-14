@@ -3,6 +3,7 @@ import { Avatar, Tooltip } from "antd";
 import { UserOutlined, RobotOutlined, CopyOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { message as antMessage } from "antd";
@@ -122,7 +123,7 @@ const MessageContent = ({ content }) => {
             status === "error" ? "error-message" : ""
           }`}
         >
-          <ReactMarkdown components={components}>
+          <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
             {mainContent.content}
           </ReactMarkdown>
         </div>
@@ -135,7 +136,7 @@ const MessageContent = ({ content }) => {
             reasoningContent.status ? reasoningContent.status : ""
           }`}
         >
-          <ReactMarkdown components={components}>
+          <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
             {reasoningContent.content}
           </ReactMarkdown>
         </div>
@@ -151,7 +152,7 @@ const MessageContent = ({ content }) => {
                   工具：{toolCall.name || "未知工具"}
                 </div>
                 <div className="tool-call-result">
-                  <ReactMarkdown components={components}>
+                  <ReactMarkdown components={components} remarkPlugins={[remarkGfm]}>
                     {toolCall.result || "无结果"}
                   </ReactMarkdown>
                 </div>

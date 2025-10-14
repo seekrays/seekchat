@@ -2,6 +2,7 @@ import React, { memo, lazy } from "react";
 import { Spin, Avatar, Tooltip, Button, Collapse, message } from "antd";
 import { UserOutlined, RobotOutlined, CopyOutlined } from "@ant-design/icons";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import {
@@ -137,7 +138,7 @@ const MessageContent = ({ content }) => {
                   {reasoningContent.status === "pending" ? (
                     <Spin size="small" />
                   ) : (
-                    <ReactMarkdown components={renderers}>
+                    <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
                       {reasoningContent.content}
                     </ReactMarkdown>
                   )}
@@ -169,7 +170,7 @@ const MessageContent = ({ content }) => {
         {/* 主要内容 - 移到思考内容之后 */}
         {mainContent && mainContent.status !== "error" && (
           <div className="message-main-content">
-            <ReactMarkdown components={renderers}>
+            <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
               {mainContent.content}
             </ReactMarkdown>
             {mainContent.status === "pending" && mainContent.content && (
@@ -195,7 +196,7 @@ const MessageContent = ({ content }) => {
 
   // 如果不是数组，直接渲染内容
   return (
-    <ReactMarkdown components={renderers}>
+    <ReactMarkdown components={renderers} remarkPlugins={[remarkGfm]}>
       {typeof parsedContent === "string"
         ? parsedContent
         : formatMessageContent(parsedContent)}
